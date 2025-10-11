@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A to Z Packers & Movers — Live Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --brand:#0d47a1; --brand-2:#174bbc; --ok:#1b5e20; --warn:#b71c1c; --bg:#f7f8fb;
+           --card:#ffffff; --text:#0f172a; --muted:#64748b; --chip:#eef2ff; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 "Inter",system-ui,-apple-system,Segoe UI,Roboto}
+    .container{max-width:960px;margin:0 auto;padding:16px}
+    header{background:var(--brand);color:#fff;padding:18px 0;margin-bottom:16px}
+    h1{margin:0;text-align:center;font-size:20px}
+    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 28px rgba(2,6,23,.08);padding:18px}
+    .title{display:flex;gap:10px;align-items:center;font-weight:700;margin:0 0 12px 0}
+    .muted{color:var(--muted);font-size:13px}
+    label{font-weight:600;font-size:13px;margin:8px 0 6px;display:block}
+    input,select,textarea{width:100%;padding:13px 14px;border:1px solid #dbe1ea;border-radius:12px;background:#fff;font:inherit}
+    .btn{width:100%;padding:13px 16px;border:0;border-radius:12px;color:#fff;font-weight:700;cursor:pointer}
+    .btn.primary{background:var(--brand-2)} .btn.ok{background:var(--ok)} .btn.warn{background:var(--warn)}
+    .grid2{display:grid;gap:10px} @media(min-width:640px){.grid2{grid-template-columns:1fr 1fr}}
+    .timeline{border-left:3px solid #e2e8f0;margin-left:8px;padding-left:14px}
+    .timeitem{margin:10px 0}.timeitem .dot{width:10px;height:10px;background:var(--brand-2);border-radius:50%;position:relative;left:-20px;top:16px}
+    .bar{display:flex;justify-content:space-between;align-items:center}
+    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#111827;color:#fff;border-radius:10px;padding:10px;font-size:12px;overflow:auto}
+    .hide{display:none}
+    .footer{margin:24px 0;color:var(--muted);font-size:12px;text-align:center}
+    .error{color:#b71c1c;margin-top:8px} .oktext{color:#1b5e20;margin-top:8px}
+    .debug{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:8px;margin-top:10px;color:#334155}
+  </style>
+</head>
+<body>
+<header><div class="container"><h1>🚚 A to Z Packers & Movers — Live Tracking</h1></div></header>
+
+<div class="container">
+
+  <!-- PUBLIC TRACKING -->
+  <div class="card">
+    <h2 class="title">🔍 Track Your Shipment</h2>
+    <div class="grid2">
+      <div>
+        <label for="trackInput">Enter Tracking ID</label>
+        <input id="trackInput" placeholder="AZ250821-8226" autocomplete="off">
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn ok" id="btnTrack" type="button">Track Now</button>
+      </div>
+    </div>
+
+    <div id="result" class="hide" style="margin-top:14px">
+      <div class="bar">
+        <div>
+          <div style="font-weight:700" id="rName">—</div>
+          <div class="muted" id="rContact">—</div>
+        </div>
+        <div class="pill" id="rTid">—</div>
+      </div>
+      <div class="muted" style="margin-top:6px" id="rRoute">—</div>
+      <div class="timeline" id="rTimeline" style="margin-top:10px"></div>
+    </div>
+
+    <div id="noResult" class="muted hide" style="margin-top:10px">No order found for that Tracking ID.</div>
+  </div>
+
+  <!-- ADMIN LOGIN (under tracking) -->
+  <div class="card" id="loginCard">
+    <h2 class="title">🔑 Admin Login</h2>
+    <form id="loginForm" autocomplete="off" novalidate>
+      <div class="grid2">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="no-autofill-email" type="email" placeholder="Enter admin email" inputmode="email" autocomplete="off" autocapitalize="none" />
+        </div>
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="no-autofill-pass" type="password" placeholder="Your password" autocomplete="new-password" />
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <button class="btn ok" id="btnSignIn" type="submit">Sign In</button>
+        <button class="btn warn" id="btnSignOut" type="button">Sign Out</button>
+      </div>
+      <div class="muted" id="authState">Not signed in</div>
+      <div class="error" id="authError" style="display:none"></div>
+      <div class="oktext" id="authOk" style="display:none"></div>
+      <div class="debug" id="dbg">JS: booting…</div>
+    </form>
+  </div>
+
+  <!-- ADMIN PANEL (hidden until signed in) -->
+  <div class="card hide" id="adminPanel">
+    <h2 class="title">⚙️ Admin Panel</h2>
+
+    <h3 style="margin:6px 0 8px">Create new order</h3>
+    <div class="grid2">
+      <div><label for="custName">Customer Name</label><input id="custName" placeholder="Full name"></div>
+      <div><label for="custContact">Contact</label><input id="custContact" placeholder="+91 98xxxxxxx"></div>
+    </div>
+    <div class="grid2">
+      <div><label for="fromCity">From (pickup city)</label><input id="fromCity" placeholder="Bhubaneswar"></div>
+      <div><label for="toCity">To (destination)</label><input id="toCity" placeholder="Lucknow"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Tracking ID (auto)</label><div class="kbd" id="autoTid"></div></div>
+      <div><label>&nbsp;</label><button class="btn primary" id="btnCreate" type="button">Save New Entry (Booked)</button></div>
+    </div>
+    <div class="muted">First status will be <span class="pill">Booked</span> with current time.</div>
+
+    <hr style="margin:18px 0;border:none;border-top:1px dashed #e2e8f0">
+
+    <h3 style="margin:6px 0 8px">Quick Status Update</h3>
+    <div class="grid2">
+      <div><label for="updTid">Tracking ID</label><input id="updTid" placeholder="Enter existing Tracking ID"></div>
+      <div><label for="updStatus">Status</label>
+        <select id="updStatus">
+          <option>Booked</option><option>Picked Up</option><option>Transit</option>
+          <option>Destination In</option><option>Destination Out</option>
+          <option>Out for Delivery</option><option>Delivered</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <label for="updItems">Items</label>
+        <input id="updItems" placeholder="Fridge, Sofa, Boxes">
+      </div>
+      <div>
+        <label for="updExpected">Expected Date of Delivery</label>
+        <input id="updExpected" type="date">
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <button class="btn ok" id="btnAddStatus" type="button">Add Status (now)</button>
+      <div class="muted" id="adminHint"></div>
+    </div>
+  </div>
+
+  <div class="footer">© A to Z Packers & Movers • Firestore Live Tracking</div>
+</div>
+
+<!-- Firebase COMPAT -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+(function(){
+  const dbg = (msg)=>{ const el=document.getElementById('dbg'); if(el){ el.textContent = (el.textContent?el.textContent+"\n":"")+msg; } console.log(msg); };
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAOCeCbqVvki8LN0LLQFNkLOwEoYer3EKQ",
+    authDomain: "a-to-z-packers-tracking-live.firebaseapp.com",
+    projectId: "a-to-z-packers-tracking-live",
+    storageBucket: "a-to-z-packers-tracking-live.firebasestorage.app",
+    messagingSenderId: "719198128823",
+    appId: "1:719198128823:web:d7ef4235dda458ff375b32",
+    measurementId: "G-B4KR2RETYR"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+  dbg("Firebase loaded ✅");
+
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{ return auth.setPersistence(firebase.auth.Auth.Persistence.NONE); });
+
+  const $ = (id)=>document.getElementById(id);
+  const show=(el)=>{ if(el) el.style.display=""; };
+  const hide=(el)=>{ if(el) el.style.display="none"; };
+  const authErr = $("authError"), authOk = $("authOk");
+
+  function showErr(e){ const m = (e && (e.message||e.code)) || String(e); if(authErr){ authErr.textContent = "❌ "+m; show(authErr); } dbg("ERR: "+m); }
+  function showOk(m){ if(authOk){ authOk.textContent = "✅ "+m; show(authOk); } dbg("OK: "+m); }
+
+  function makeTrackingId(){
+    const now = new Date();
+    const p = new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'2-digit',year:'2-digit'}).format(now).replace(/\//g,'');
+    const rnd = Math.floor(1000+Math.random()*9000);
+    return `AZ${p}-${rnd}`;
+  }
+
+  const nextTid = makeTrackingId();
+  $("autoTid").textContent = nextTid;
+  $("updTid").value = nextTid;
+
+  $("loginForm").addEventListener("submit", async (e)=>{
+    e.preventDefault(); hide(authErr); hide(authOk);
+    try{
+      await auth.signInWithEmailAndPassword($("email").value.trim(), $("password").value);
+      showOk("Signed in successfully");
+    }catch(err){ showErr(err); }
+  });
+
+  $("btnSignOut").addEventListener("click", async ()=>{
+    hide(authErr); hide(authOk);
+    try{ await auth.signOut(); $("authState").textContent="Not signed in"; showOk("Signed out"); }
+    catch(err){ showErr(err); }
+  });
+
+  auth.onAuthStateChanged((user)=>{ if(user){ $("authState").textContent = "Signed in"; $("adminPanel").classList.remove("hide"); } else { $("authState").textContent = "Not signed in"; $("adminPanel").classList.add("hide"); } });
+
+  $("btnCreate").addEventListener("click", async ()=>{
+    const user = auth.currentUser; if(!user){ return showErr("Please sign in first."); }
+    const name = $("custName").value.trim(), contact = $("custContact").value.trim(), from = $("fromCity").value.trim(), to = $("toCity").value.trim(), tid = $("autoTid").textContent.trim();
+    if(!name || !contact || !from || !to){ return showErr("Please fill all order fields."); }
+    try{
+      await db.collection("Orders").doc(tid).set({ Name:name, Contact:contact, From:from, To:to, CreatedAt: firebase.firestore.Timestamp.now(), Status:[{ Text:"Booked", Ts: firebase.firestore.Timestamp.now() }] });
+      $("updTid").value = tid; showOk("Order saved with Tracking ID: "+tid);
+    }catch(err){ showErr(err); }
+  });
+
+  $("btnAddStatus").addEventListener("click", async ()=>{
+    const user = auth.currentUser; if(!user){ return showErr("Please sign in first."); }
+    const tid = $("updTid").value.trim(), text = $("updStatus").value, items = $("updItems").value.trim(), expected = $("updExpected").value;
+    if(!tid){ return showErr("Enter Tracking ID."); }
+    try{
+      const ref = db.collection("Orders").doc(tid); const snap = await ref.get();
+      if(!snap.exists){ return showErr("No such order."); }
+      await ref.update({ Status: firebase.firestore.FieldValue.arrayUnion({ Text:text, Items:items, Expected:expected, Ts: firebase.firestore.Timestamp.now() }) });
+      $("adminHint").textContent = `Added "${text}" at ${new Date().toLocaleString()}`; showOk("Status added.");
+    }catch(err){ showErr(err); }
+  });
+
+  $("btnTrack").addEventListener("click", async ()=>{
+    const tid = $("trackInput").value.trim(); if(!tid){ return showErr("Enter Tracking ID."); }
+    try{
+      const snap = await db.collection("Orders").doc(tid).get();
+      if(!snap.exists){ $("result").classList.add("hide"); $("noResult").classList.remove("hide"); return; }
+      $("noResult").classList.add("hide"); $("result").classList.remove("hide");
+      const d = snap.data(); $("rName").textContent = d.Name || "-"; $("rContact").textContent = d.Contact || "-"; $("rTid").textContent = tid; $("rRoute").textContent = `${d.From || "-"} → ${d.To || "-"}`;
+      const tl = $("rTimeline"); tl.innerHTML = "";
+      (d.Status||[]).sort((a,b)=>(a.Ts?.seconds||0)-(b.Ts?.seconds||0)).forEach(i=>{
+        const div = document.createElement("div"); div.className="timeitem";
+        div.innerHTML = `<div class="dot"></div><div style="font-weight:600">${i.Text||"-"}</div><div class="muted">${i.Ts? i.Ts.toDate().toLocaleString():""}</div>${i.Items? `<div>🗂 Items: ${i.Items}</div>`:""}${i.Expected? `<div>📅 Expected Delivery: ${i.Expected}</div>`:""}`;
+        tl.appendChild(div);
+      });
+    }catch(err){ showErr(err); }
+  });
+
+  dbg("JS ready 🚀");
+})();
+</script>
+</body>
+</html>
