@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You - A to Z Packers & Movers</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e3ffe7 0%, #d9e7ff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+      text-align: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 40px 30px;
+      max-width: 450px;
+    }
+    h1 {
+      color: #007bff;
+      font-size: 1.8rem;
+    }
+    p {
+      font-size: 1rem;
+      margin: 10px 0;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+    a.button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎉 Thank You!</h1>
+    <p>Your quotation request has been sent successfully to <strong>A to Z Packers & Movers</strong>.</p>
+    <p>Our team will contact you shortly to confirm your details.</p>
+    <p>You will be redirected to the homepage in <span id="secs">5</span> seconds.</p>
+    <a href="index_v4.html" id="backHomeLink" class="button">Back to Home</a>
+  </div>
+
+  <script>
+    (function(){
+      function getParam(name){
+        try { return new URL(window.location.href).searchParams.get(name); }
+        catch(e){ return null; }
+      }
+      var target = getParam('return') || 'index_v4.html';
+      var secs = 5;
+      function update(){ document.getElementById('secs').textContent = String(secs); }
+      function go(){ window.location.href = target; }
+      function tick(){ secs -= 1; if(secs < 0){ go(); return; } update(); setTimeout(tick, 1000); }
+      document.addEventListener('DOMContentLoaded', function(){
+        document.getElementById('backHomeLink').setAttribute('href', target);
+        update();
+        setTimeout(tick, 1000);
+      });
+    })();
+  </script>
+</body>
+</html>
