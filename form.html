@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A to Z Packers and Movers Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      background: white;
+      margin: auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-top: 5px;
+    }
+    .submit-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 12px;
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>A to Z Packers and Movers Form</h2>
+    <form id="quoteForm">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label>Pickup Location</label>
+        <input type="text" id="pickup" required>
+      </div>
+      <div class="form-group">
+        <label>Delivery Location</label>
+        <input type="text" id="delivery" required>
+      </div>
+      <div class="form-group">
+        <label>Pickup Floor</label>
+        <select id="pickupFloor">
+          <option value="">Select</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Delivery Floor</label>
+        <select id="deliveryFloor">
+          <option value="">Select</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quotation Type</label>
+        <div class="radio-group">
+          <label><input type="radio" name="quotationType" value="GST" required> GST</label>
+          <label><input type="radio" name="quotationType" value="Non-GST"> Non-GST</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tentative Date of Shifting</label>
+        <input type="date" id="shiftingDate" required>
+      </div>
+      <div class="form-group">
+        <label>Household Goods Description</label>
+        <textarea id="description" rows="3" required placeholder="e.g., Sofa – 2, Fridge – 1, Bed – 1, Cartons – 5"></textarea>
+      </div>
+      <button type="button" class="submit-btn" onclick="sendToWhatsApp()">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    // Disable past dates and set today's date by default
+    const today = new Date().toISOString().split("T")[0];
+    const dateInput = document.getElementById("shiftingDate");
+    dateInput.setAttribute("min", today);
+    dateInput.value = today;
+
+    function sendToWhatsApp() {
+      const name = document.getElementById("name").value.trim();
+      const pickup = document.getElementById("pickup").value.trim();
+      const delivery = document.getElementById("delivery").value.trim();
+      const pickupFloor = document.getElementById("pickupFloor").value;
+      const deliveryFloor = document.getElementById("deliveryFloor").value;
+      const description = document.getElementById("description").value.trim();
+      const shiftingDate = document.getElementById("shiftingDate").value;
+      const quoteType = document.querySelector('input[name="quotationType"]:checked');
+
+      if (!name || !pickup || !delivery || !pickupFloor || !deliveryFloor || !description || !shiftingDate || !quoteType) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const [yyyy, mm, dd] = shiftingDate.split("-");
+      const formattedDate = `${dd}-${mm}-${yyyy}`;
+
+      const msg =
+        `📦 *Packers & Movers Quotation Request*\n` +
+        `👤 Name: ${name}\n` +
+        `🏠 Pickup: ${pickup} (Floor ${pickupFloor})\n` +
+        `🚚 Delivery: ${delivery} (Floor ${deliveryFloor})\n` +
+        `📅 Tentative Shifting Date: ${formattedDate}\n` +
+        `📄 Quotation Type: ${quoteType.value}\n\n` +
+        `📋 Household Goods Description:\n${description}\n\n` +
+        `✅ Please provide the quotation.`;
+
+      const waLink = `https://wa.me/9338888550?text=${encodeURIComponent(msg)}`;
+      window.open(waLink, '_blank');
+      document.getElementById("quoteForm").reset();
+    }
+  </script>
+</body>
+</html>
