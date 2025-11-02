@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="or">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Packers & Movers CRM (Firebase)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { box-sizing: border-box; }
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%; width:20px;height:20px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    .toast {
+      position:fixed; top:20px; right:20px; background:#10b981; color:#fff;
+      padding:12px 24px; border-radius:8px; z-index:1000; transform:translateX(100%);
+      transition: transform .3s ease;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.error { background:#ef4444; }
+  </style>
+
+  <!-- ===============================
+       Firebase SHIM (drop-in dataSdk)
+       =============================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // TODO: 🔁 ଏଠାରେ ନିଜ project ର config ରଖନ୍ତୁ (Firebase Console → Project settings → Your apps → Web)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvFWvRBBLXSxpgU2tLLCHB-iaDhhpPLBk",
+      authDomain: "a-to-z-packers-and-movers-crm.firebaseapp.com",
+      projectId: "a-to-z-packers-and-movers-crm",
+      storageBucket: "a-to-z-packers-and-movers-crm.firebasestorage.app",
+      messagingSenderId: "817932881323",
+      appId: "1:817932881323:web:bd00748dfde67e8c6d16ee"
+    };
+
+    // Init
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    signInAnonymously(auth).catch(console.error);
+
+    const recordsCol = collection(db, "records");
+    function normalizeForUI(data, id){ return { ...data, __backendId:id }; }
+
+    // dataSdk shim
+    window.dataSdk = {
+      async init(handler){
+        return new Promise((resolve)=>{
+          onAuthStateChanged(auth, (user)=>{
+            if(!user){ resolve({isOk:false}); return; }
+            onSnapshot(recordsCol, (snap)=>{
+              const list=[];
+              snap.forEach(d=> list.push(normalizeForUI(d.data(), d.id)));
+              if (handler && typeof handler.onDataChanged==="function") handler.onDataChanged(list);
+            });
+            resolve({isOk:true});
+          })
+        });
+      },
+      async create(data){
+        try{
+          if(!data.mobileNumber) return {isOk:false, error:"mobileNumber required"};
+          const now = serverTimestamp();
+          const payload = {
+            ...data,
+            __backendId: data.mobileNumber,
+            createdAt: data.createdAt || now,
+            updatedAt: now
+          };
+          await setDoc(doc(recordsCol, data.mobileNumber), payload, { merge:true });
+          return { isOk:true };
+        }catch(e){ console.error(e); return { isOk:false, error: e?.message || "unknown" }; }
+      },
+      async update(data){ return this.create(data); }
+    };
+
+    // Optional helper for instant search
+    window.__firebaseHelpers = {
+      async getByMobile(mobile){
+        const snap = await getDoc(doc(recordsCol, mobile));
+        return snap.exists()? snap.data(): null;
+      }
+    };
+  </script>
+</head>
+
+<body class="min-h-full bg-gray-50">
+  <div class="max-w-4xl mx-auto p-6">
+    <!-- Header -->
+    <header class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h1 id="company-title" class="text-3xl font-bold text-gray-900 mb-2">Packers & Movers CRM</h1>
+      <p class="text-gray-600">Complete Customer Journey Management System (Firebase ବର୍ସନ୍)</p>
+    </header>
+
+    <!-- Search Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Customer Search</h2>
+      <div class="flex gap-4">
+        <div class="flex-1">
+          <label for="search-mobile" class="block text-sm font-medium text-gray-700 mb-2">Search by Mobile Number</label>
+          <input type="tel" id="search-mobile" placeholder="Enter mobile number to search existing records"
+                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div class="flex items-end">
+          <button id="search-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <span>Search</span>
+            <div id="search-loading" class="loading-spinner hidden"></div>
+          </button>
+        </div>
+      </div>
+      <div id="search-results" class="mt-4 hidden">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p class="text-green-800 font-medium">Record Found! Data loaded below.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Form -->
+    <form id="crm-form" class="space-y-6">
+      <!-- Basic Information -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="lead-source" class="block text-sm font-medium text-gray-700 mb-2">Lead Source *</label>
+            <select id="lead-source" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Lead Source</option>
+              <option value="Google Ads">Google Ads</option>
+              <option value="Facebook">Facebook</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Reference">Reference</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="customer-name" class="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+            <input type="text" id="customer-name" required placeholder="Enter customer name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="mobile-number" class="block text-sm font-medium text-gray-700 mb-2">Customer Mobile Number * (Primary Key)</label>
+            <input type="tel" id="mobile-number" required placeholder="Enter mobile number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="work-date" class="block text-sm font-medium text-gray-700 mb-2">Work Date</label>
+            <input type="date" id="work-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="pickup-location" class="block text-sm font-medium text-gray-700 mb-2">Pickup Location</label>
+            <textarea id="pickup-location" rows="2" placeholder="Enter pickup address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label for="delivery-location" class="block text-sm font-medium text-gray-700 mb-2">Delivery Location</label>
+            <textarea id="delivery-location" rows="2" placeholder="Enter delivery address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quotation Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Quotation Section</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quotation Given?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="quotation-given" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="quotation-given" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label for="quotation-amount" class="block text-sm font-medium text-gray-700 mb-2">Quotation Amount</label>
+            <input type="text" id="quotation-amount" placeholder="Enter amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quotation PDF Uploaded?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="quotation-pdf" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="quotation-pdf" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Confirmation SMS Sent?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="confirmation-sms" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="confirmation-sms" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Execution Checklist</h2>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">One-Day-Before Staff & Party Discussion Completed?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="staff-discussion" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="staff-discussion" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Staff Uniform Checked?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="staff-uniform" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="staff-uniform" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Timely Arrival?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="timely-arrival" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="timely-arrival" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Packing Video Taken?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="packing-video" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="packing-video" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Packing Items Touch Wall or Floor Protection Done?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="protection-done" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="protection-done" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label for="packing-materials" class="block text-sm font-medium text-gray-700 mb-2">Packing Materials Used (Quantity/Percentage)</label>
+              <textarea id="packing-materials" rows="2" placeholder="Enter materials used with quantities" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Before Loading Item List Prepared?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="item-list-prepared" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="item-list-prepared" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">All Items Numbering?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="items-numbered" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="items-numbered" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">All Item List Signatures Completed?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="item-list-signed" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="item-list-signed" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Item List + Video Posted in Work WhatsApp Group?</label>
+              <div class="flex gap-4">
+                <label class="flex items-center"><input type="radio" name="item-list-posted" value="true" class="mr-2"><span>Yes</span></label>
+                <label class="flex items-center"><input type="radio" name="item-list-posted" value="false" class="mr-2"><span>No</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Status -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Payment Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">90% Payment Received at Loading Point?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="payment-90" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="payment-90" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">10% Payment Received at Unloading Point?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="payment-10" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="payment-10" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operations & Logistics -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Operations & Logistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="fuel-consumption" class="block text-sm font-medium text-gray-700 mb-2">Total Fuel Consumption</label>
+            <input type="text" id="fuel-consumption" placeholder="Enter fuel consumption details" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="special-requirement" class="block text-sm font-medium text-gray-700 mb-2">Any Special Requirement Happened?</label>
+            <textarea id="special-requirement" rows="2" placeholder="Describe any special requirements" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Storage Facility Required?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="storage-facility" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="storage-facility" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">All Vendors Payment Settled?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="vendors-payment" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="vendors-payment" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Planning Sheet Prepared?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="planning-sheet" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="planning-sheet" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Agreement Paper Sent to Party?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="agreement-paper" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="agreement-paper" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quotation Management -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Quotation Management</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Any Revise Quotation Done?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="revise-quotation" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="revise-quotation" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label for="final-amount" class="block text-sm font-medium text-gray-700 mb-2">Final Amount (If Revised)</label>
+            <input type="text" id="final-amount" placeholder="Enter final amount if quotation was revised" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="gst-type" class="block text-sm font-medium text-gray-700 mb-2">GST or Non-GST Quotation</label>
+            <select id="gst-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select GST Type</option>
+              <option value="GST">GST Quotation</option>
+              <option value="Non-GST">Non-GST Quotation</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">3 Quotations Given?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="three-quotations" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="three-quotations" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Management -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Customer Management</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="party-repeat-count" class="block text-sm font-medium text-gray-700 mb-2">How Many Times Party Repeated With Us?</label>
+            <input type="number" id="party-repeat-count" min="0" placeholder="Enter repeat count" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Party Blacklisted?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="party-blacklisted" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="party-blacklisted" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <label for="refunded-material-list" class="block text-sm font-medium text-gray-700 mb-2">Refunded Material List</label>
+            <textarea id="refunded-material-list" rows="3" placeholder="List any refunded materials with details" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label for="consignment-delivered-date" class="block text-sm font-medium text-gray-700 mb-2">Consignment Delivered Date</label>
+            <input type="date" id="consignment-delivered-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Review & Closure -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Review & Closure</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Google Review Received?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="google-review" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="google-review" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Physical Feedback Taken?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="physical-feedback" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="physical-feedback" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Follow-Up Number Forwarded to CRM?</label>
+            <div class="flex gap-4">
+              <label class="flex items-center"><input type="radio" name="follow-up-forwarded" value="true" class="mr-2"><span>Yes</span></label>
+              <label class="flex items-center"><input type="radio" name="follow-up-forwarded" value="false" class="mr-2"><span>No</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex flex-wrap gap-4">
+          <button type="submit" id="save-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <span>Save Record</span>
+            <div id="save-loading" class="loading-spinner hidden"></div>
+          </button>
+          <button type="button" id="whatsapp-btn" class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+            Send to WhatsApp
+          </button>
+          <button type="button" id="clear-btn" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            Clear Form
+          </button>
+        </div>
+        <div id="record-info" class="mt-4 text-sm text-gray-600 hidden">
+          <p><strong>Record ID:</strong> <span id="current-record-id"></span></p>
+          <p><strong>Last Updated:</strong> <span id="last-updated"></span></p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // --- Utility & App glue (same behavior as your original) ---
+    const defaultConfig = { company_name:"Packers & Movers CRM", whatsapp_number:"+91 9338888550" };
+    let currentRecords = [];
+    let currentRecord = null;
+
+    const dataHandler = { onDataChanged(data){ currentRecords = data; } };
+
+    async function initializeApp(){
+  // Silent init with small retries (no popup/toast on app open)
+  const MAX_RETRIES = 5;
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      if (window.dataSdk && typeof window.dataSdk.init === 'function') {
+        const result = await window.dataSdk.init(dataHandler);
+        if (result && result.isOk) { break; }
+      }
+    } catch (e) {
+      // swallow and retry
+    }
+    await new Promise(r => setTimeout(r, 400 * (i + 1))); // incremental backoff
+  }
+  // Title
+  document.getElementById('company-title').textContent = defaultConfig.company_name;
+}
+
+    function clearForm(){
+      document.getElementById('crm-form').reset();
+      document.getElementById('search-mobile').value='';
+      document.getElementById('search-results').classList.add('hidden');
+      document.getElementById('record-info').classList.add('hidden');
+      currentRecord = null;
+    }
+
+    function populateForm(record){
+      document.getElementById('lead-source').value = record.leadSource || '';
+      document.getElementById('customer-name').value = record.customerName || '';
+      document.getElementById('mobile-number').value = record.mobileNumber || '';
+      document.getElementById('pickup-location').value = record.pickupLocation || '';
+      document.getElementById('delivery-location').value = record.deliveryLocation || '';
+      document.getElementById('work-date').value = record.workDate || '';
+      document.getElementById('quotation-amount').value = record.quotationAmount || '';
+      document.getElementById('packing-materials').value = record.packingMaterials || '';
+      document.getElementById('fuel-consumption').value = record.totalFuelConsumption || '';
+      document.getElementById('special-requirement').value = record.specialRequirement || '';
+      document.getElementById('final-amount').value = record.finalAmount || '';
+      document.getElementById('gst-type').value = record.gstOrNonGst || '';
+      document.getElementById('party-repeat-count').value = record.partyRepeatCount || '';
+      document.getElementById('refunded-material-list').value = record.refundedMaterialList || '';
+      document.getElementById('consignment-delivered-date').value = record.consignmentDeliveredDate || '';
+
+      setRadioValue('quotation-given', record.quotationGiven);
+      setRadioValue('quotation-pdf', record.quotationPdfUploaded);
+      setRadioValue('confirmation-sms', record.confirmationSmsSent);
+      setRadioValue('staff-discussion', record.staffDiscussionCompleted);
+      setRadioValue('staff-uniform', record.staffUniformChecked);
+      setRadioValue('timely-arrival', record.timelyArrival);
+      setRadioValue('packing-video', record.packingVideoTaken);
+      setRadioValue('protection-done', record.protectionDone);
+      setRadioValue('item-list-prepared', record.itemListPrepared);
+      setRadioValue('items-numbered', record.itemsNumbered);
+      setRadioValue('item-list-signed', record.itemListSigned);
+      setRadioValue('item-list-posted', record.itemListPosted);
+      setRadioValue('payment-90', record.payment90Received);
+      setRadioValue('payment-10', record.payment10Received);
+      setRadioValue('google-review', record.googleReviewReceived);
+      setRadioValue('physical-feedback', record.physicalFeedbackTaken);
+      setRadioValue('follow-up-forwarded', record.followUpForwarded);
+      setRadioValue('storage-facility', record.storageFacilityRequired);
+      setRadioValue('vendors-payment', record.vendorsPaymentSettled);
+      setRadioValue('planning-sheet', record.planningSheetPrepared);
+      setRadioValue('agreement-paper', record.agreementPaperSent);
+      setRadioValue('revise-quotation', record.reviseQuotationDone);
+      setRadioValue('three-quotations', record.threeQuotationsGiven);
+      setRadioValue('party-blacklisted', record.partyBlacklisted);
+
+      document.getElementById('current-record-id').textContent = record.recordId || '(auto)';
+      document.getElementById('last-updated').textContent = record.updatedAt ? new Date(record.updatedAt.seconds? record.updatedAt.seconds*1000 : record.updatedAt).toLocaleString() : '-';
+      document.getElementById('record-info').classList.remove('hidden');
+
+      currentRecord = record;
+    }
+
+    function collectFormData(){
+      const mobileNumber = document.getElementById('mobile-number').value.trim();
+      if (!mobileNumber){ showToast("Mobile number is required", "error"); return null; }
+      const now = new Date().toISOString();
+      return {
+        recordId: currentRecord && currentRecord.recordId ? currentRecord.recordId : generateRecordId(),
+        leadSource: document.getElementById('lead-source').value,
+        customerName: document.getElementById('customer-name').value,
+        mobileNumber,
+        pickupLocation: document.getElementById('pickup-location').value,
+        deliveryLocation: document.getElementById('delivery-location').value,
+        workDate: document.getElementById('work-date').value,
+        quotationGiven: getRadioValue('quotation-given'),
+        quotationAmount: document.getElementById('quotation-amount').value,
+        quotationPdfUploaded: getRadioValue('quotation-pdf'),
+        confirmationSmsSent: getRadioValue('confirmation-sms'),
+        staffDiscussionCompleted: getRadioValue('staff-discussion'),
+        staffUniformChecked: getRadioValue('staff-uniform'),
+        timelyArrival: getRadioValue('timely-arrival'),
+        packingVideoTaken: getRadioValue('packing-video'),
+        protectionDone: getRadioValue('protection-done'),
+        packingMaterials: document.getElementById('packing-materials').value,
+        itemListPrepared: getRadioValue('item-list-prepared'),
+        itemsNumbered: getRadioValue('items-numbered'),
+        itemListSigned: getRadioValue('item-list-signed'),
+        itemListPosted: getRadioValue('item-list-posted'),
+        payment90Received: getRadioValue('payment-90'),
+        payment10Received: getRadioValue('payment-10'),
+        googleReviewReceived: getRadioValue('google-review'),
+        physicalFeedbackTaken: getRadioValue('physical-feedback'),
+        followUpForwarded: getRadioValue('follow-up-forwarded'),
+        totalFuelConsumption: document.getElementById('fuel-consumption').value,
+        specialRequirement: document.getElementById('special-requirement').value,
+        storageFacilityRequired: getRadioValue('storage-facility'),
+        vendorsPaymentSettled: getRadioValue('vendors-payment'),
+        planningSheetPrepared: getRadioValue('planning-sheet'),
+        agreementPaperSent: getRadioValue('agreement-paper'),
+        reviseQuotationDone: getRadioValue('revise-quotation'),
+        finalAmount: document.getElementById('final-amount').value,
+        gstOrNonGst: document.getElementById('gst-type').value,
+        threeQuotationsGiven: getRadioValue('three-quotations'),
+        partyRepeatCount: parseInt(document.getElementById('party-repeat-count').value) || 0,
+        partyBlacklisted: getRadioValue('party-blacklisted'),
+        refundedMaterialList: document.getElementById('refunded-material-list').value,
+        consignmentDeliveredDate: document.getElementById('consignment-delivered-date').value,
+        createdAt: currentRecord && currentRecord.createdAt ? currentRecord.createdAt : now,
+        updatedAt: now
+      };
+    }
+
+    function formatWhatsAppMessage(record){
+      const companyName = defaultConfig.company_name;
+      const fmt = (v)=> v===true? '✅ Yes' : v===false? '❌ No' : '⚪ Not Set';
+      return `*${companyName} - Customer Record*
+
+📋 *BASIC INFORMATION*
+Record ID: ${record.recordId}
+Lead Source: ${record.leadSource || 'Not specified'}
+Customer Name: ${record.customerName || 'Not specified'}
+Mobile Number: ${record.mobileNumber}
+Pickup Location: ${record.pickupLocation || 'Not specified'}
+Delivery Location: ${record.deliveryLocation || 'Not specified'}
+Work Date: ${record.workDate || 'Not specified'}
+
+💰 *QUOTATION SECTION*
+Quotation Given: ${fmt(record.quotationGiven)}
+Quotation Amount: ${record.quotationAmount || 'Not specified'}
+PDF Uploaded: ${fmt(record.quotationPdfUploaded)}
+SMS Sent: ${fmt(record.confirmationSmsSent)}
+
+⚡ *EXECUTION CHECKLIST*
+Staff Discussion: ${fmt(record.staffDiscussionCompleted)}
+Uniform Check: ${fmt(record.staffUniformChecked)}
+Timely Arrival: ${fmt(record.timelyArrival)}
+Packing Video: ${fmt(record.packingVideoTaken)}
+Protection Done: ${fmt(record.protectionDone)}
+Packing Materials: ${record.packingMaterials || 'Not specified'}
+Item List Prepared: ${fmt(record.itemListPrepared)}
+Items Numbered: ${fmt(record.itemsNumbered)}
+List Signed: ${fmt(record.itemListSigned)}
+Posted in Group: ${fmt(record.itemListPosted)}
+
+💳 *PAYMENT STATUS*
+90% Payment: ${fmt(record.payment90Received)}
+10% Payment: ${fmt(record.payment10Received)}
+
+🚛 *OPERATIONS & LOGISTICS*
+Fuel Consumption: ${record.totalFuelConsumption || 'Not specified'}
+Special Requirements: ${record.specialRequirement || 'None'}
+Storage Facility: ${fmt(record.storageFacilityRequired)}
+Vendors Payment: ${fmt(record.vendorsPaymentSettled)}
+Planning Sheet: ${fmt(record.planningSheetPrepared)}
+Agreement Paper: ${fmt(record.agreementPaperSent)}
+
+📊 *QUOTATION MANAGEMENT*
+Revise Quotation: ${fmt(record.reviseQuotationDone)}
+Final Amount: ${record.finalAmount || 'Not specified'}
+GST Type: ${record.gstOrNonGst || 'Not specified'}
+3 Quotations Given: ${fmt(record.threeQuotationsGiven)}
+
+👥 *CUSTOMER MANAGEMENT*
+Repeat Count: ${record.partyRepeatCount || 0} times
+Party Blacklisted: ${fmt(record.partyBlacklisted)}
+Refunded Materials: ${record.refundedMaterialList || 'None'}
+Delivery Date: ${record.consignmentDeliveredDate || 'Not specified'}
+
+⭐ *REVIEW & CLOSURE*
+Google Review: ${fmt(record.googleReviewReceived)}
+Physical Feedback: ${fmt(record.physicalFeedbackTaken)}
+Follow-up Forwarded: ${fmt(record.followUpForwarded)}
+
+📅 Created: ${new Date(record.createdAt).toLocaleString()}
+📅 Updated: ${new Date(record.updatedAt).toLocaleString()}`;
+    }
+
+    // Events
+    document.getElementById('search-btn').addEventListener('click', async ()=>{
+      const mobileNumber = document.getElementById('search-mobile').value.trim();
+      if (!mobileNumber){ showToast("Please enter a mobile number to search", "error"); return; }
+      const searchBtn=document.getElementById('search-btn');
+      const searchLoading=document.getElementById('search-loading');
+      searchBtn.disabled=true; searchLoading.classList.remove('hidden');
+      try{
+        let existingRecord = currentRecords.find(r=> r.mobileNumber === mobileNumber);
+        if (!existingRecord && window.__firebaseHelpers){
+          const r = await window.__firebaseHelpers.getByMobile(mobileNumber);
+          if (r) existingRecord = r;
+        }
+        if (existingRecord){
+          populateForm(existingRecord);
+          document.getElementById('search-results').classList.remove('hidden');
+          showToast("Record found and loaded successfully!");
+        }else{
+          document.getElementById('search-results').classList.add('hidden');
+          showToast("No record found for this mobile number", "error");
+        }
+      }catch(e){
+        showToast("Search failed. Please try again.", "error");
+      }finally{
+        searchBtn.disabled=false; searchLoading.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('mobile-number').addEventListener('blur', async ()=>{
+      const mobileNumber = document.getElementById('mobile-number').value.trim();
+      if (mobileNumber && currentRecords.length > 0){
+        const existingRecord = currentRecords.find(r=> r.mobileNumber === mobileNumber);
+        if (existingRecord && (!currentRecord || currentRecord.mobileNumber !== mobileNumber)){
+          populateForm(existingRecord);
+          showToast("Existing record auto-loaded!");
+        }
+      }
+    });
+
+    document.getElementById('crm-form').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if (currentRecords.length >= 999){
+        showToast("Maximum limit of 999 records reached. Please delete some records first.", "error");
+        return;
+      }
+      const formData = collectFormData();
+      if (!formData) return;
+      const saveBtn=document.getElementById('save-btn');
+      const saveLoading=document.getElementById('save-loading');
+      saveBtn.disabled=true; saveLoading.classList.remove('hidden');
+      try{
+        let result;
+        if (currentRecord && currentRecord.__backendId){
+          formData.__backendId = currentRecord.__backendId;
+          result = await window.dataSdk.update(formData);
+        } else {
+          result = await window.dataSdk.create(formData);
+        }
+        if (result.isOk){
+          showToast(currentRecord ? "Record updated successfully!" : "Record saved successfully!");
+          currentRecord = formData;
+          document.getElementById('current-record-id').textContent = formData.recordId;
+          document.getElementById('last-updated').textContent = new Date(formData.updatedAt).toLocaleString();
+          document.getElementById('record-info').classList.remove('hidden');
+        } else {
+          showToast("Failed to save record. " + (result.error || ""), "error");
+        }
+      }catch(error){
+        showToast("Save failed. Please try again.", "error");
+      }finally{
+        saveBtn.disabled=false; saveLoading.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('whatsapp-btn').addEventListener('click', ()=>{
+      const formData = collectFormData();
+      if (!formData) return;
+      const whatsappNumber = defaultConfig.whatsapp_number;
+      const message = formatWhatsAppMessage(formData);
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', ()=>{
+      clearForm();
+      showToast("Form cleared successfully!");
+    });
+
+    initializeApp();
+  </script>
+</body>
+</html>
