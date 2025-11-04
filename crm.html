@@ -1,0 +1,733 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A to Z Packers and Movers CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { box-sizing: border-box; }
+    .loading-spinner{ border:3px solid #f3f4f6; border-top:3px solid #3b82f6; border-radius:50%; width:20px; height:20px; animation:spin 1s linear infinite; }
+    @keyframes spin{ 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    .toast{ position:fixed; top:20px; right:20px; background:#10b981; color:#fff; padding:12px 24px; border-radius:8px; z-index:1000; transform:translateX(100%); transition:transform .3s ease; }
+    .toast.show{ transform:translateX(0); }
+    .toast.error{ background:#ef4444; }
+  </style>
+</head>
+<body class="min-h-full bg-gray-50">
+  <div class="max-w-4xl mx-auto p-6">
+
+    <!-- Header -->
+    <header class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h1 id="company-title" class="text-3xl font-bold text-gray-900 mb-2">A to Z Packers and Movers CRM</h1>
+      <p class="text-gray-600">Complete Customer Journey Management System</p>
+    </header>
+
+    <!-- Search Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Customer Search</h2>
+      <div class="flex gap-4">
+        <div class="flex-1">
+          <label for="search-mobile" class="block text-sm font-medium text-gray-700 mb-2">Search by Mobile Number</label>
+          <input type="tel" id="search-mobile" placeholder="Enter mobile number to search existing records" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="text-xs text-gray-500 mt-1">Tip: Type 10+ digits and press Search</p>
+        </div>
+        <div class="flex items-end">
+          <button id="search-btn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <span>Search</span><div id="search-loading" class="loading-spinner hidden"></div>
+          </button>
+        </div>
+      </div>
+      <div id="search-results" class="mt-4 hidden">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <p class="text-green-800 font-medium">Record Found! Data loaded below.</p>
+        </div>
+      </div>
+      <p id="search-msg" class="mt-2 text-sm text-gray-600"></p>
+    </div>
+
+    <!-- Main Form -->
+    <form id="crm-form" class="space-y-6">
+
+      <!-- Basic Information -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="lead-source" class="block text-sm font-medium text-gray-700 mb-2">Lead Source *</label>
+            <select id="lead-source" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Lead Source</option>
+              <option value="Google Ads">Google Ads</option>
+              <option value="Facebook">Facebook</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Reference">Reference</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="customer-name" class="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+            <input type="text" id="customer-name" required placeholder="Enter customer name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="mobile-number" class="block text-sm font-medium text-gray-700 mb-2">Customer Mobile Number * (Primary Key)</label>
+            <input type="tel" id="mobile-number" required placeholder="Enter mobile number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <p class="text-xs text-gray-500 mt-1">10+ digits. This becomes the unique Record ID.</p>
+          </div>
+          <div>
+            <label for="work-date" class="block text-sm font-medium text-gray-700 mb-2">Work Date</label>
+            <input type="date" id="work-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="pickup-location" class="block text-sm font-medium text-gray-700 mb-2">Pickup Location</label>
+            <textarea id="pickup-location" rows="2" placeholder="Enter pickup address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label for="delivery-location" class="block text-sm font-medium text-gray-700 mb-2">Delivery Location</label>
+            <textarea id="delivery-location" rows="2" placeholder="Enter delivery address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quotation Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Quotation Section</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quotation Given?</label>
+            <select id="quotation-given" name="quotation-given" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label for="quotation-amount" class="block text-sm font-medium text-gray-700 mb-2">Quotation Amount</label>
+            <input type="text" id="quotation-amount" placeholder="Enter amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Quotation PDF Uploaded?</label>
+            <select id="quotation-pdf" name="quotation-pdf" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Confirmation SMS Sent?</label>
+            <select id="confirmation-sms" name="confirmation-sms" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Section -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Execution Checklist</h2>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">One-Day-Before Staff & Party Discussion Completed?</label>
+            <select id="staff-discussion" name="staff-discussion" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div class="md:col-span-2">
+              <label for="evening-sms-yesno" class="block text-sm font-semibold text-gray-800 mb-2">Evening SMS for Workers?</label>
+              <select id="evening-sms-yesno" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3">
+                <option value="">Select</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+              <input type="text" id="evening-sms-workers" placeholder="Headline (timing & participants)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <p class="text-xs text-gray-500 mt-1">Short one-line message you will send to workers in the evening before execution.</p>
+            </div>
+            <div class="md:col-span-2">
+              <label for="vendor-participant-yesno" class="block text-sm font-semibold text-gray-800 mb-2">Vendor Participated?</label>
+              <select id="vendor-participant-yesno" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3">
+                <option value="">Select</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+              <input type="text" id="vendor-participant" placeholder="Vendor Name & Contact if Yes" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+</label>
+              <select id="staff-discussion" name="staff-discussion" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Staff Uniform Checked?</label>
+              <select id="staff-uniform" name="staff-uniform" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Timely Arrival?</label>
+              <select id="timely-arrival" name="timely-arrival" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Packing Video Taken?</label>
+              <select id="packing-video" name="packing-video" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Packing Items Touch Wall or Floor Protection Done?</label>
+              <select id="protection-done" name="protection-done" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label for="packing-materials" class="block text-sm font-medium text-gray-700 mb-2">Packing Materials Used (Quantity/Percentage)</label>
+              <textarea id="packing-materials" rows="2" placeholder="Enter materials used with quantities" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Before Loading Item List Prepared?</label>
+              <select id="item-list-prepared" name="item-list-prepared" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">All Items Numbering?</label>
+              <select id="items-numbered" name="items-numbered" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">All Item List Signatures Completed?</label>
+              <select id="item-list-signed" name="item-list-signed" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-3">Item List + Video Posted in Work WhatsApp Group?</label>
+              <select id="item-list-posted" name="item-list-posted" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Status -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Payment Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">90% Payment Received at Loading Point?</label>
+            <select id="payment-90" name="payment-90" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">10% Payment Received at Unloading Point?</label>
+            <select id="payment-10" name="payment-10" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operations & Logistics -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Operations & Logistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            
+          <div>
+            <label for="vehicle-type" class="block text-sm font-medium text-gray-700 mb-2">Vehicle Type Used</label>
+            <select id="vehicle-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Vehicle</option>
+              <option value="14 Feet Vehicle">14 Feet Vehicle</option>
+              <option value="17 Feet Vehicle">17 Feet Vehicle</option>
+              <option value="Pickup Vehicle">Pickup Vehicle</option>
+              <option value="19 Feet Vehicle">19 Feet Vehicle</option>
+            </select>
+          </div>
+          <div>
+            <label for="team-leader-name" class="block text-sm font-medium text-gray-700 mb-2">Team Leader Name</label>
+            <input type="text" id="team-leader-name" placeholder="Enter team leader name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+<label for="fuel-consumption" class="block text-sm font-medium text-gray-700 mb-2">Total Fuel Consumption</label>
+            <input type="text" id="fuel-consumption" placeholder="Enter fuel consumption details" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="special-requirement" class="block text-sm font-medium text-gray-700 mb-2">Any Special Requirement Happened?</label>
+            <textarea id="special-requirement" rows="2" placeholder="Describe any special requirements" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Storage Facility Required?</label>
+            <select id="storage-facility" name="storage-facility" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text sm font-medium text-gray-700 mb-3">All Vendors Payment Settled?</label>
+            <select id="vendors-payment" name="vendors-payment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Planning Sheet Prepared?</label>
+            <select id="planning-sheet" name="planning-sheet" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Agreement Paper Sent to Party?</label>
+            <select id="agreement-paper" name="agreement-paper" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quotation Management -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Quotation Management</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Any Revise Quotation Done?</label>
+            <select id="revise-quotation" name="revise-quotation" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label for="final-amount" class="block text-sm font-medium text-gray-700 mb-2">Final Amount (If Revised)</label>
+            <input type="text" id="final-amount" placeholder="Enter final amount if quotation was revised" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="gst-type" class="block text-sm font-medium text-gray-700 mb-2">GST or Non-GST Quotation</label>
+            <select id="gst-type" name="gst-type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select GST Type</option>
+              <option value="GST">GST Quotation</option>
+              <option value="Non-GST">Non-GST Quotation</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">3 Quotations Given?</label>
+            <select id="three-quotations" name="three-quotations" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Management -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Customer Management</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="party-repeat-count" class="block text-sm font-medium text-gray-700 mb-2">How Many Times Party Repeated With Us?</label>
+            <input type="number" id="party-repeat-count" min="0" placeholder="Enter repeat count" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Party Blacklisted?</label>
+            <select id="party-blacklisted" name="party-blacklisted" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div class="md:col-span-2">
+            <label for="refunded-material-list" class="block text-sm font-medium text-gray-700 mb-2">Refunded Material List</label>
+            <textarea id="refunded-material-list" rows="3" placeholder="List any refunded materials with details" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <label for="consignment-delivered-date" class="block text-sm font-medium text-gray-700 mb-2">Consignment Delivered Date</label>
+            <input type="date" id="consignment-delivered-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Review & Closure -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Review & Closure</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Google Review Received?</label>
+            <select id="google-review" name="google-review" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Physical Feedback Taken?</label>
+            <select id="physical-feedback" name="physical-feedback" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Follow-Up Number Forwarded to CRM?</label>
+            <select id="follow-up-forwarded" name="follow-up-forwarded" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+  <option value="">Select</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex flex-wrap gap-4">
+          <button type="submit" id="save-btn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <span>Save Record</span><div id="save-loading" class="loading-spinner hidden"></div>
+          </button>
+          <button type="button" id="whatsapp-btn" class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+            Send to WhatsApp (Boss)
+          </button>
+          <button type="button" id="clear-btn" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            Clear Form
+          </button>
+        </div>
+        <div id="record-info" class="mt-4 text-sm text-gray-600 hidden">
+          <p><strong>Record ID:</strong> <span id="current-record-id"></span></p>
+          <p><strong>Last Updated:</strong> <span id="last-updated"></span></p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- FIREBASE (Firestore only) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    // Project config (same as your previous working setup)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvFWvRBBLXSxpgU2tLLCHB-iaDhhpPLBk",
+      authDomain: "a-to-z-packers-and-movers-crm.firebaseapp.com",
+      projectId: "a-to-z-packers-and-movers-crm",
+      storageBucket: "a-to-z-packers-and-movers-crm.appspot.com",
+      messagingSenderId: "817932881323",
+      appId: "1:817932881323:web:bd00748dfde67e8c6d16ee"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Utils
+    const $ = (id)=>document.getElementById(id);
+    const digits = (s)=> (s||"").replace(/\D+/g,"");
+    const val = (id)=>{ const el=document.getElementById(id); return el? el.value: ''; };
+    function showToast(message, type='success'){
+      const t=document.createElement('div');
+      t.className='toast '+(type==='error'?'error':'');
+      t.textContent=message;
+      document.body.appendChild(t);
+      setTimeout(()=>t.classList.add('show'), 50);
+      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(), 300); }, 3000);
+    }
+    
+    const getRadio=(name)=>{
+      const sel = document.getElementById(name);
+      if (sel && sel.tagName === 'SELECT') {
+        const v = sel.value;
+        if (v === '') return null;
+        return v === 'true';
+      }
+      const r=document.querySelector(`input[name="${name}"]:checked`);
+      return r ? (r.value==='true') : null;
+    };
+    const setRadio=(name,val)=>{
+      if(val===null||val===undefined) return;
+      const sel = document.getElementById(name);
+      if (sel && sel.tagName === 'SELECT') {
+        sel.value = String(val);
+        return;
+      }
+      const r=document.querySelector(`input[name="${name}"][value="${val}"]`);
+      if(r) r.checked=true;
+    };
+    
+
+    function collectFormData(){
+      const mobile = digits($('mobile-number').value);
+      if(!mobile || mobile.length<10){ showToast("Mobile number is required (10+ digits).","error"); return null; }
+      const now = new Date();
+      return {
+        recordId: mobile, // use mobile as canonical id
+        leadSource: $('lead-source').value,
+        customerName: $('customer-name').value,
+        mobileNumber: mobile,
+        pickupLocation: $('pickup-location').value,
+        deliveryLocation: $('delivery-location').value,
+        workDate: $('work-date').value,
+        quotationGiven: getRadio('quotation-given'),
+        quotationAmount: $('quotation-amount').value,
+        quotationPdfUploaded: getRadio('quotation-pdf'),
+        confirmationSmsSent: getRadio('confirmation-sms'),
+        staffDiscussionCompleted: getRadio('staff-discussion'),
+        staffUniformChecked: getRadio('staff-uniform'),
+        timelyArrival: getRadio('timely-arrival'),
+        packingVideoTaken: getRadio('packing-video'),
+        protectionDone: getRadio('protection-done'),
+        packingMaterials: $('packing-materials').value,
+        itemListPrepared: getRadio('item-list-prepared'),
+        itemsNumbered: getRadio('items-numbered'),
+        itemListSigned: getRadio('item-list-signed'),
+        itemListPosted: getRadio('item-list-posted'),
+        googleReviewReceived: getRadio('google-review'),
+        physicalFeedbackTaken: getRadio('physical-feedback'),
+        followUpForwarded: getRadio('follow-up-forwarded'),
+        payment90Received: getRadio('payment-90'),
+        payment10Received: getRadio('payment-10'),
+        totalFuelConsumption: $('fuel-consumption').value,
+        specialRequirement: $('special-requirement').value,
+        storageFacilityRequired: getRadio('storage-facility'),
+        vendorsPaymentSettled: getRadio('vendors-payment'),
+        planningSheetPrepared: getRadio('planning-sheet'),
+        agreementPaperSent: getRadio('agreement-paper'),
+        reviseQuotationDone: getRadio('revise-quotation'),
+        finalAmount: $('final-amount').value,
+        vehicleTypeUsed: val('vehicle-type'),
+        teamLeaderName: val('team-leader-name'),
+        eveningSmsYes: getRadio('evening-sms-yesno'),
+        eveningSmsWorkers: val('evening-sms-workers'),
+        vendorParticipantYes: getRadio('vendor-participant-yesno'),
+        vendorParticipant: val('vendor-participant'),
+        gstOrNonGst: $('gst-type').value,
+        threeQuotationsGiven: getRadio('three-quotations'),
+        partyRepeatCount: parseInt($('party-repeat-count').value)||0,
+        partyBlacklisted: getRadio('party-blacklisted'),
+        refundedMaterialList: $('refunded-material-list').value,
+        consignmentDeliveredDate: $('consignment-delivered-date').value,
+        createdAt: new Date().toISOString(), // first write will merge; createdAt kept
+        updatedAt: serverTimestamp()
+      };
+    }
+
+    function fillForm(d){
+      $('lead-source').value = d.leadSource || '';
+      $('customer-name').value = d.customerName || '';
+      $('mobile-number').value = d.mobileNumber || '';
+      $('pickup-location').value = d.pickupLocation || '';
+      $('delivery-location').value = d.deliveryLocation || '';
+      $('work-date').value = d.workDate || '';
+      $('quotation-amount').value = d.quotationAmount || '';
+      $('packing-materials').value = d.packingMaterials || '';
+      $('fuel-consumption').value = d.totalFuelConsumption || '';
+      $('special-requirement').value = d.specialRequirement || '';
+      $('final-amount').value = d.finalAmount || '';
+      $('vehicle-type').value = d.vehicleTypeUsed || '';
+      $('team-leader-name').value = d.teamLeaderName || '';
+      setRadio('evening-sms-yesno', d.eveningSmsYes);
+      $('evening-sms-workers').value = d.eveningSmsWorkers || '';
+      setRadio('vendor-participant-yesno', d.vendorParticipantYes);
+      $('vendor-participant').value = d.vendorParticipant || '';
+      $('gst-type').value = d.gstOrNonGst || '';
+      $('party-repeat-count').value = d.partyRepeatCount || 0;
+      $('refunded-material-list').value = d.refundedMaterialList || '';
+      $('consignment-delivered-date').value = d.consignmentDeliveredDate || '';
+
+      setRadio('quotation-given', d.quotationGiven);
+      setRadio('quotation-pdf', d.quotationPdfUploaded);
+      setRadio('confirmation-sms', d.confirmationSmsSent);
+      setRadio('staff-discussion', d.staffDiscussionCompleted);
+      setRadio('staff-uniform', d.staffUniformChecked);
+      setRadio('timely-arrival', d.timelyArrival);
+      setRadio('packing-video', d.packingVideoTaken);
+      setRadio('party-blacklisted', d.partyBlacklisted);
+        setRadio('protection-done', d.protectionDone);
+      setRadio('item-list-prepared', d.itemListPrepared);
+      setRadio('items-numbered', d.itemsNumbered);
+      setRadio('item-list-signed', d.itemListSigned);
+      setRadio('item-list-posted', d.itemListPosted);
+      setRadio('payment-90', d.payment90Received);
+      setRadio('payment-10', d.payment10Received);
+      setRadio('google-review', d.googleReviewReceived);
+      setRadio('physical-feedback', d.physicalFeedbackTaken);
+      setRadio('follow-up-forwarded', d.followUpForwarded);
+      setRadio('storage-facility', d.storageFacilityRequired);
+      setRadio('vendors-payment', d.vendorsPaymentSettled);
+      setRadio('planning-sheet', d.planningSheetPrepared);
+      setRadio('agreement-paper', d.agreementPaperSent);
+      setRadio('revise-quotation', d.reviseQuotationDone);
+      setRadio('three-quotations', d.threeQuotationsGiven);
+    }
+
+    // Search (manual)
+    $('search-btn').addEventListener('click', async ()=>{
+      const raw = $('search-mobile').value;
+      const m = digits(raw);
+      if(!m || m.length<10){ $('search-msg').textContent="⚠️ Enter 10+ digits to search."; return; }
+      $('search-msg').textContent="";
+      $('search-btn').disabled = true; $('search-loading').classList.remove('hidden');
+      try{
+        const snap = await getDoc(doc(db,'records', m));
+        if(snap.exists()){
+          fillForm(snap.data());
+          $('search-results').classList.remove('hidden');
+          showToast("Record loaded");
+        } else {
+          $('search-results').classList.add('hidden');
+          showToast("No record found for this number","error");
+        }
+      }catch(e){
+        console.error(e); showToast("Search failed","error");
+      }finally{
+        $('search-btn').disabled = false; $('search-loading').classList.add('hidden');
+      }
+    });
+
+    // Auto-load on leaving mobile field
+    $('mobile-number').addEventListener('blur', async ()=>{
+      const m = digits($('mobile-number').value);
+      if(m && m.length>=10){
+        try{
+          const snap = await getDoc(doc(db,'records', m));
+          if(snap.exists()){ fillForm(snap.data()); showToast("Existing record auto-loaded!"); }
+        }catch{}
+      }
+    });
+
+    // Save
+    $('crm-form').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = collectFormData();
+      if(!data) return;
+      $('save-btn').disabled=true; $('save-loading').classList.remove('hidden');
+      try{
+        const ref = doc(db,'records', data.mobileNumber);
+        await setDoc(ref, data, {merge:true});
+        showToast("Record saved successfully!");
+        $('current-record-id').textContent = data.recordId;
+        $('last-updated').textContent = new Date().toLocaleString();
+        $('record-info').classList.remove('hidden');
+      }catch(e){
+        console.error(e); showToast("Failed to save record","error");
+      }finally{
+        $('save-btn').disabled=false; $('save-loading').classList.add('hidden');
+      }
+    });
+
+    // WhatsApp (to boss only)
+    function formatYesNo(v){ return v===true?'✅ Yes': v===false?'❌ No':'⚪ Not Set'; }
+    function buildWAText(){
+      const d = collectFormData(); if(!d) return null;
+      const lines = [
+        "*A to Z Packers & Movers CRM — Customer Record*",
+        "",
+        "📋 *BASIC*",
+        "Lead Source: " + (d.leadSource||'-'),
+        "Customer: " + (d.customerName||'-'),
+        "Mobile: " + d.mobileNumber,
+        "From: " + (d.pickupLocation||'-'),
+        "To: " + (d.deliveryLocation||'-'),
+        "Work Date: " + (d.workDate||'-'),
+        "",
+        "💰 *QUOTATION*",
+        "Given: " + formatYesNo(d.quotationGiven),
+        "Amount: " + (d.quotationAmount||'-'),
+        "PDF: " + formatYesNo(d.quotationPdfUploaded),
+        "SMS: " + formatYesNo(d.confirmationSmsSent),
+        "",
+        "⚙️ *EXECUTION*",
+        "Staff Discussion: " + formatYesNo(d.staffDiscussionCompleted),
+        "Uniform: " + formatYesNo(d.staffUniformChecked),
+        "Timely Arrival: " + formatYesNo(d.timelyArrival),
+        "Packing Video: " + formatYesNo(d.packingVideoTaken),
+        "Evening SMS: " + formatYesNo(d.eveningSmsYes),
+        "Evening SMS (Workers): " + (d.eveningSmsWorkers||"-"),
+        "Vendor Participated: " + formatYesNo(d.vendorParticipantYes),
+        "Vendor Participant: " + (d.vendorParticipant||"-"),
+        "Protection: " + formatYesNo(d.protectionDone),
+        "Materials: " + (d.packingMaterials||'-'),
+        "Item List Prepared: " + formatYesNo(d.itemListPrepared),
+        "Items Numbered: " + formatYesNo(d.itemsNumbered),
+        "List Signed: " + formatYesNo(d.itemListSigned),
+        "Posted in Group: " + formatYesNo(d.itemListPosted),
+        "",
+        "💳 *PAYMENT*",
+        "90% at Loading: " + formatYesNo(d.payment90Received),
+        "10% at Unloading: " + formatYesNo(d.payment10Received),
+        "",
+        "🚛 *OPS & LOGISTICS*",
+        "Fuel: " + (d.totalFuelConsumption||'-'),
+        "Special Requirement: " + (d.specialRequirement||'-'),
+        "Storage: " + formatYesNo(d.storageFacilityRequired),
+        "Vendors Payment: " + formatYesNo(d.vendorsPaymentSettled),
+        "Planning Sheet: " + formatYesNo(d.planningSheetPrepared),
+        "Agreement Paper: " + formatYesNo(d.agreementPaperSent),
+        "",
+        "📊 *QUOTE MGMT*",
+        "Revise Quote: " + formatYesNo(d.reviseQuotationDone),
+        "Final Amount: " + (d.finalAmount||'-'),
+        "GST Type: " + (d.gstOrNonGst||'-'),
+        "3 Quotes Given: " + formatYesNo(d.threeQuotationsGiven),
+        "",
+        "👥 *CUSTOMER*",
+        "Repeat Count: " + (d.partyRepeatCount||0),
+        "Blacklisted: " + formatYesNo(d.partyBlacklisted),
+        "Refunded Items: " + (d.refundedMaterialList||'-'),
+        "Delivery Date: " + (d.consignmentDeliveredDate||'-')
+      ];
+      return encodeURIComponent(lines.join("\n"));
+    }
+    $('whatsapp-btn').addEventListener('click', ()=>{
+      const text = buildWAText(); if(!text) return;
+      const boss = "919338888550"; // +91 93388 88550
+      const url = `https://wa.me/${boss}?text=${text}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    });
+
+    // Clear
+    $('clear-btn').addEventListener('click', ()=>{
+      $('crm-form').reset();
+      $('search-mobile').value = "";
+      $('search-results').classList.add('hidden');
+      $('record-info').classList.add('hidden');
+      showToast("Form cleared successfully!");
+    });
+  </script>
+</body>
+</html>
