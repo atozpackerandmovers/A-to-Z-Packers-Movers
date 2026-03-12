@@ -1,0 +1,1392 @@
+<!-- fixed_manual_amount_override_v3 -->
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A to Z Packers &amp; Movers - Quotation Generator</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Poppins', sans-serif; }
+    .gradient-header { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 50%, #1e3a5f 100%); }
+    .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .input-focus:focus { box-shadow: 0 0 0 3px rgba(45, 90, 135, 0.2); }
+    .btn-primary { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
+    .btn-primary:hover { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); }
+    .pdf-preview { background: #f8fafc; }
+    @page { size: A4; margin: 10mm; }
+@media print { .no-print { display: none !important; } }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full bg-gray-50 overflow-auto">
+  <div id="app" class="w-full min-h-full">
+   <!-- Header -->
+   <header class="gradient-header text-white py-4 px-4 shadow-lg">
+    <div class="max-w-6xl mx-auto">
+     <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center gap-3">
+       <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+        <span class="text-2xl">📦</span>
+       </div>
+       <div>
+        <h1 id="company-title" class="text-xl md:text-2xl font-bold">A to Z Packers &amp; Movers Pvt. Ltd.</h1>
+        <p class="text-xs md:text-sm text-blue-200">Professional Quotation Generator</p>
+       </div>
+      </div>
+      <div class="flex gap-2">
+       <button onclick="showView('form')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-white/20 hover:bg-white/30" data-view="form">New Quote</button> <button onclick="showView('history')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-white/10 hover:bg-white/20" data-view="history">History</button>
+      </div>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Form View -->
+    <div id="form-view" class="view">
+     <form id="quotation-form" class="space-y-6">
+      <!-- Customer Details Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">👤</span> Customer Details</h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label> <input type="text" id="customer_name" required class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="Enter customer name">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Party Mobile Number</label> <input type="tel" id="party_mobile" inputmode="numeric" pattern="[0-9+ ]{10,15}" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="Enter customer mobile number">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Service Type</label> <input type="text" id="service_type" value="Household Shifting" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">From Location *</label> <input type="text" id="from_location" required class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="e.g., Mumbai, Maharashtra">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">To Location *</label> <input type="text" id="to_location" required class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="e.g., Cuttack, Odisha">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Quotation Date</label> <input type="date" id="quotation_date" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Valid Till</label> <input type="date" id="valid_till" readonly class="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+        </div>
+       </div>
+      </div><!-- Pricing Input Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">💵</span> Amount Setup</h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle Type *</label> <select id="vehicle_type" required class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all bg-white"> <option value="Mini">Mini Vehicle</option> <option value="Heavy">Heavy Vehicle</option> </select>
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Distance (KM)</label> <input type="number" id="distance_km" min="1" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="Enter distance in KM for auto amount">
+        </div>
+       </div>
+       <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="price-preview" class="p-4 bg-blue-50 rounded-lg hidden">
+         <p class="text-sm text-blue-800">Auto Calculated Amount: <span id="preview-amount" class="font-bold">₹0</span></p>
+         <p class="text-xs text-blue-700 mt-1">This amount is calculated from vehicle type and distance.</p>
+        </div>
+        <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+         <label class="block text-sm font-medium text-gray-700 mb-1">Manual Amount Override (₹)</label>
+         <input type="number" id="manual_amount" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="Enter direct quotation amount">
+         <p class="text-xs text-amber-700 mt-1">Use this for out of Odisha or fixed-rate quotations. If filled, this amount will override the auto amount.</p>
+        </div>
+       </div>
+      </div><!-- Additional Charges Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">⚡</span> Additional Charges</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Electrification Required?</label> <select id="electrification_required" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all bg-white"> <option value="no">No</option> <option value="yes">Yes</option> </select>
+        </div>
+        <div id="electrification-amount-wrapper" class="hidden">
+         <label class="block text-sm font-medium text-gray-700 mb-1">Electrification Amount (₹)</label> <input type="number" id="electrification_amount" value="2000" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">GST Percentage</label> <select id="gst_percentage" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all bg-white"> <option value="0">0% (No GST)</option> <option value="12">12%</option> <option value="18">18%</option> </select>
+        </div>
+       </div>
+      </div><!-- Payment Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">💰</span> Payment Details</h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Booking Advance (₹)</label> <input type="number" id="booking_advance" value="500" min="0" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+       </div>
+      </div><!-- Items List Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">📋</span> Items to be Shifted <span class="text-xs text-gray-500 font-normal">(Optional)</span></h2>
+       <div id="items-container" class="space-y-3"></div><button type="button" onclick="addItem()" class="mt-3 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium hover:bg-indigo-100 transition-all flex items-center gap-2"> <span>+</span> Add Item </button>
+      </div><!-- Transit Details Card -->
+      <div class="bg-white rounded-xl card-shadow p-5">
+       <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600">🚚</span> Transit Details <span class="text-xs text-gray-500 font-normal">(Optional)</span></h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Transit Details Provided?</label> <select id="transit_provided" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all bg-white"> <option value="no">No</option> <option value="yes">Yes</option> </select>
+        </div>
+       </div>
+       <div id="transit-details-wrapper" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Estimated Transit Time</label> <input type="text" id="transit_time" placeholder="e.g., 3-5 Days" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Tracking</label> <input type="text" id="tracking" value="Online Tracking Available" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Type</label> <input type="text" id="delivery_type" value="Door-to-Door" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+       </div>
+      </div><!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+       <button type="button" onclick="previewQuotation()" class="px-8 py-3 bg-gray-600 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all shadow-lg"> 👁️ Preview Quotation </button> <button type="submit" class="px-8 py-3 btn-primary text-white rounded-xl font-semibold transition-all shadow-lg"> 📄 Generate &amp; Save PDF </button>
+      </div>
+     </form>
+    </div><!-- Preview View -->
+    <div id="preview-view" class="view hidden">
+     <div class="mb-4 flex flex-wrap gap-3 justify-center no-print">
+      <button onclick="showView('form')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all"> ← Back to Form </button> <button onclick="downloadPDF()" class="px-6 py-2 btn-primary text-white rounded-lg font-medium transition-all"> 📥 Download PDF </button> <button onclick="shareQuotation()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-all"> 📤 Share </button> <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"> 🖨️ Print </button>
+     </div>
+     <div id="pdf-preview-container" class="pdf-preview rounded-xl overflow-hidden card-shadow"></div>
+    </div><!-- History View -->
+    <div id="history-view" class="view hidden">
+     <div class="bg-white rounded-xl card-shadow p-5">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Quotation History</h2>
+      <div class="mb-4">
+       <input type="text" id="history-search" placeholder="Search by name, mobile or quotation no." class="w-full px-4 py-3 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+      <div id="history-list" class="space-y-3">
+       <p class="text-gray-500 text-center py-8">No quotations saved yet.</p>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer class="bg-gray-800 text-white py-4 px-4 mt-8 no-print">
+    <div class="max-w-6xl mx-auto text-center">
+     <p id="footer-tagline" class="text-amber-400 font-medium mb-1">"Move with Confidence – We Handle Your World with Care!"</p>
+     <p class="text-sm text-gray-400">© 2024 A to Z Packers &amp; Movers Pvt. Ltd. | ISO 9001:2015 Certified</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      company_name: "A to Z Packers & Movers Pvt. Ltd.",
+      tagline: "Move with Confidence – We Handle Your World with Care!"
+    };
+
+    // Application state
+    let quotations = [];
+    let currentPreviewData = null;
+    let lastGeneratedPdfBlob = null;
+    let lastGeneratedPdfName = 'quotation.pdf';
+    let itemCount = 0;
+    const LOCAL_HISTORY_KEY = 'atoz_quotation_history_v1';
+
+    function getLocalQuotations() {
+      try {
+        const raw = localStorage.getItem(LOCAL_HISTORY_KEY);
+        const data = raw ? JSON.parse(raw) : [];
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error('Failed to read local quotation history', e);
+        return [];
+      }
+    }
+
+    function setLocalQuotations(data) {
+      try {
+        localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.error('Failed to save local quotation history', e);
+      }
+    }
+
+    function mergeQuotations(primary = [], secondary = []) {
+      const map = new Map();
+      [...secondary, ...primary].forEach(q => {
+        if (!q) return;
+        const key = q.__backendId || q.local_id || q.quotation_number || String(Math.random());
+        map.set(key, q);
+      });
+      return Array.from(map.values());
+    }
+
+    function syncHistoryFromSources(remoteData = null) {
+      const localData = getLocalQuotations();
+      quotations = mergeQuotations(remoteData || quotations || [], localData);
+      renderHistory();
+    }
+
+    function saveQuotationToLocal(formData) {
+      const localData = getLocalQuotations();
+      const localId = formData.local_id || ('local_' + Date.now() + '_' + Math.floor(Math.random() * 10000));
+      const record = { ...formData, local_id: localId };
+      const existingIndex = localData.findIndex(q =>
+        (q.local_id && q.local_id === localId) ||
+        (q.quotation_number && q.quotation_number === formData.quotation_number)
+      );
+      if (existingIndex >= 0) {
+        localData[existingIndex] = record;
+      } else {
+        localData.unshift(record);
+      }
+      setLocalQuotations(localData);
+      syncHistoryFromSources();
+      return record;
+    }
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          document.getElementById('company-title').textContent = config.company_name || defaultConfig.company_name;
+          document.getElementById('footer-tagline').textContent = `"${config.tagline || defaultConfig.tagline}"`;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["company_name", config.company_name || defaultConfig.company_name],
+          ["tagline", config.tagline || defaultConfig.tagline]
+        ])
+      });
+    }
+
+    // Initialize Data SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        syncHistoryFromSources(data || []);
+      }
+    };
+
+    async function initDataSDK() {
+      syncHistoryFromSources([]);
+      if (window.dataSdk) {
+        try {
+          const result = await window.dataSdk.init(dataHandler);
+          if (!result.isOk) {
+            console.error("Failed to initialize data SDK");
+            syncHistoryFromSources([]);
+          }
+        } catch (e) {
+          console.error("Data SDK init error", e);
+          syncHistoryFromSources([]);
+        }
+      }
+    }
+
+    initDataSDK();
+
+    // Set default date values
+    function setDefaultDates() {
+      const today = new Date();
+      const validTill = new Date(today);
+      validTill.setMonth(validTill.getMonth() + 1);
+      
+      document.getElementById('quotation_date').value = today.toISOString().split('T')[0];
+      document.getElementById('valid_till').value = validTill.toISOString().split('T')[0];
+    }
+
+    // Update valid till date when quotation date changes
+    document.getElementById('quotation_date').addEventListener('change', (e) => {
+      const quotationDate = new Date(e.target.value);
+      const validTill = new Date(quotationDate);
+      validTill.setMonth(validTill.getMonth() + 1);
+      document.getElementById('valid_till').value = validTill.toISOString().split('T')[0];
+    });
+
+    // Toggle electrification amount visibility
+    document.getElementById('electrification_required').addEventListener('change', (e) => {
+      const wrapper = document.getElementById('electrification-amount-wrapper');
+      if (e.target.value === 'yes') {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
+      updatePricePreview();
+    });
+
+    // Toggle transit details visibility
+    document.getElementById('transit_provided').addEventListener('change', (e) => {
+      const wrapper = document.getElementById('transit-details-wrapper');
+      if (e.target.value === 'yes') {
+        wrapper.classList.remove('hidden');
+      } else {
+        wrapper.classList.add('hidden');
+      }
+    });
+
+    // Calculate base amount based on vehicle type and distance
+    function calculateBaseAmount(vehicleType, distance) {
+      if (vehicleType === 'Mini') {
+        if (distance <= 200) {
+          return (distance * 34) + 9000;
+        } else {
+          return (distance * 34) + 10000;
+        }
+      } else {
+        if (distance <= 200) {
+          return (distance * 45) + 11500;
+        } else {
+          return (distance * 45) + 12500;
+        }
+      }
+    }
+
+    // Update price preview
+    function updatePricePreview() {
+      const vehicleType = document.getElementById('vehicle_type').value;
+      const distance = parseInt(document.getElementById('distance_km').value) || 0;
+      const manualAmount = parseInt(document.getElementById('manual_amount').value) || 0;
+      const electrificationRequired = document.getElementById('electrification_required').value === 'yes';
+      const electrificationAmount = electrificationRequired ? (parseInt(document.getElementById('electrification_amount').value) || 0) : 0;
+      const gstPercentage = parseInt(document.getElementById('gst_percentage').value) || 0;
+      const pricePreview = document.getElementById('price-preview');
+      const previewAmount = document.getElementById('preview-amount');
+
+      if (manualAmount > 0) {
+        const subtotal = manualAmount + electrificationAmount;
+        const gstAmount = Math.round(subtotal * gstPercentage / 100);
+        const total = subtotal + gstAmount;
+        previewAmount.textContent = `₹${total.toLocaleString('en-IN')}`;
+        pricePreview.classList.remove('hidden');
+        pricePreview.querySelector('p').innerHTML = `Manual Amount Total: <span id="preview-amount" class="font-bold">₹${total.toLocaleString('en-IN')}</span>`;
+        return;
+      }
+
+      if (distance > 0) {
+        const baseAmount = calculateBaseAmount(vehicleType, distance);
+        const subtotal = baseAmount + electrificationAmount;
+        const gstAmount = Math.round(subtotal * gstPercentage / 100);
+        const total = subtotal + gstAmount;
+        pricePreview.querySelector('p').innerHTML = `Auto Calculated Amount: <span id="preview-amount" class="font-bold">₹${total.toLocaleString('en-IN')}</span>`;
+        pricePreview.classList.remove('hidden');
+      } else {
+        pricePreview.classList.add('hidden');
+      }
+    }
+
+    // Add event listeners for price preview updates
+    ['vehicle_type', 'distance_km', 'manual_amount', 'gst_percentage', 'electrification_amount'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updatePricePreview);
+      document.getElementById(id).addEventListener('input', updatePricePreview);
+    });
+
+    // Add item row
+    function addItem() {
+      const container = document.getElementById('items-container');
+      const itemId = itemCount++;
+      
+      const itemRow = document.createElement('div');
+      itemRow.className = 'flex gap-3 items-center';
+      itemRow.id = `item-row-${itemId}`;
+      itemRow.innerHTML = `
+        <input type="text" placeholder="Item name" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all item-name">
+        <input type="number" placeholder="Qty" min="1" value="1" class="w-20 px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all item-qty">
+        <button type="button" onclick="removeItem(${itemId})" class="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-all">✕</button>
+      `;
+      container.appendChild(itemRow);
+    }
+
+    // Remove item row
+    function removeItem(id) {
+      const row = document.getElementById(`item-row-${id}`);
+      if (row) row.remove();
+    }
+
+    // Get items from form
+    function getItems() {
+      const items = [];
+      const rows = document.querySelectorAll('#items-container > div');
+      rows.forEach(row => {
+        const name = row.querySelector('.item-name').value.trim();
+        const qty = parseInt(row.querySelector('.item-qty').value) || 1;
+        if (name) {
+          items.push({ name, qty });
+        }
+      });
+      return items;
+    }
+
+    // Generate quotation number
+    function generateQuotationNumber() {
+      const date = new Date();
+      const year = date.getFullYear().toString().slice(-2);
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      return `AZP${year}${month}${random}`;
+    }
+
+    // Format currency
+    
+
+    const PAYMENT_QR_CONFIG = {
+      companyName: 'A to Z Packers & Movers',
+      phone: '9338888550',
+      upiId: 'paytmqr5cq01d@ptys'
+    };
+
+    function buildUpiPaymentString(amount = 0) {
+      const params = new URLSearchParams({
+        pa: PAYMENT_QR_CONFIG.upiId,
+        pn: PAYMENT_QR_CONFIG.companyName,
+        cu: 'INR'
+      });
+      if (Number(amount) > 0) params.set('am', String(Number(amount)));
+      return `upi://pay?${params.toString()}`;
+    }
+
+    async function generatePaymentQRDataURL(amount = 0, size = 220) {
+      if (!window.QRCode || !QRCode.toDataURL) {
+        throw new Error('QR library failed to load.');
+      }
+      return await QRCode.toDataURL(buildUpiPaymentString(amount), {
+        width: size,
+        margin: 1,
+        color: { dark: '#000000', light: '#FFFFFF' }
+      });
+    }
+
+    async function renderPreviewPaymentQR(data) {
+      const img = document.getElementById('payment-qr-preview-image');
+      if (!img) return;
+      try {
+        img.src = await generatePaymentQRDataURL(data?.total_amount || 0, 220);
+        img.style.display = 'block';
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+function formatCurrency(amount) {
+      return '₹' + Number(amount || 0).toLocaleString('en-IN');
+    }
+
+    function getEffectiveBaseAmount(vehicleType, distance, manualAmount) {
+      if (manualAmount > 0) return manualAmount;
+      if (distance > 0) return calculateBaseAmount(vehicleType, distance);
+      return 0;
+    }
+
+    function isUsingManualAmount() {
+      return (parseInt(document.getElementById('manual_amount').value) || 0) > 0;
+    }
+
+    // Format date for display
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // Get form data
+    function getFormData() {
+      const vehicleType = document.getElementById('vehicle_type').value;
+      const distance = parseInt(document.getElementById('distance_km').value) || 0;
+      const manualAmount = parseInt(document.getElementById('manual_amount').value) || 0;
+      const electrificationRequired = document.getElementById('electrification_required').value === 'yes';
+      const electrificationAmount = electrificationRequired ? (parseInt(document.getElementById('electrification_amount').value) || 0) : 0;
+      const gstPercentage = parseInt(document.getElementById('gst_percentage').value) || 0;
+      const bookingAdvance = parseInt(document.getElementById('booking_advance').value) || 0;
+      
+      const baseAmount = getEffectiveBaseAmount(vehicleType, distance, manualAmount);
+      const subtotal = baseAmount + electrificationAmount;
+      const gstAmount = Math.round(subtotal * gstPercentage / 100);
+      const totalAmount = subtotal + gstAmount;
+      const balanceAmount = totalAmount - bookingAdvance;
+      
+      const items = getItems();
+      const transitProvided = document.getElementById('transit_provided').value === 'yes';
+      
+      return {
+        quotation_number: generateQuotationNumber(),
+        customer_name: document.getElementById('customer_name').value.trim(),
+        party_mobile: document.getElementById('party_mobile').value.trim(),
+        from_location: document.getElementById('from_location').value.trim(),
+        to_location: document.getElementById('to_location').value.trim(),
+        service_type: document.getElementById('service_type').value.trim(),
+        quotation_date: document.getElementById('quotation_date').value,
+        valid_till: document.getElementById('valid_till').value,
+        vehicle_type: vehicleType,
+        distance_km: distance,
+        manual_amount: manualAmount,
+        amount_mode: manualAmount > 0 ? 'manual' : 'distance',
+        base_amount: baseAmount,
+        electrification_required: electrificationRequired,
+        electrification_amount: electrificationAmount,
+        gst_percentage: gstPercentage,
+        gst_amount: gstAmount,
+        total_amount: totalAmount,
+        booking_advance: bookingAdvance,
+        balance_amount: balanceAmount,
+        items: items,
+        items_json: JSON.stringify(items),
+        transit_provided: transitProvided,
+        transit_time: transitProvided ? document.getElementById('transit_time').value.trim() : '',
+        tracking: transitProvided ? document.getElementById('tracking').value.trim() : '',
+        delivery_type: transitProvided ? document.getElementById('delivery_type').value.trim() : '',
+        created_at: new Date().toISOString()
+      };
+    }
+
+    // Generate HTML preview
+    function generatePreviewHTML(data) {
+      const config = window.elementSdk?.config || defaultConfig;
+      const companyName = config.company_name || defaultConfig.company_name;
+      const tagline = config.tagline || defaultConfig.tagline;
+      
+      let itemsSection = '';
+      if (data.items && data.items.length > 0) {
+        itemsSection = `
+          <div style="margin-bottom: 20px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">ITEM LIST</div>
+            <div style="width: 100%; border: 1px solid #ddd; padding: 12px 14px; line-height: 1.8; white-space: pre-line;">
+              ${data.items.map(item => item.name).join('<br>')}
+            </div>
+          </div>
+        `;
+      }
+      
+      let transitSection = '';
+      if (data.transit_provided) {
+        transitSection = `
+          <div style="margin-bottom: 20px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">TRANSIT DETAILS</div>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500; width: 200px;">Estimated Transit Time</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.transit_time || 'To be confirmed'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">Tracking</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.tracking}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">Delivery Type</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.delivery_type}</td>
+              </tr>
+            </table>
+          </div>
+        `;
+      }
+      
+      return `
+        <div style="font-family: 'Poppins', Arial, sans-serif; max-width: 800px; margin: 0 auto; background: white; padding: 30px; box-sizing: border-box;">
+          <!-- Header -->
+          <div style="text-align: center; border: 1px solid #d9d9d9; padding: 22px 24px 18px 24px; margin-bottom: 25px; border-radius: 4px;">
+            <h1 style="margin: 0; color: #1e3a5f; font-size: 30px; font-weight: 700; line-height: 1.2;">${companyName}</h1>
+            <div style="margin: 6px 0 14px 0; color: #1e3a5f; font-size: 17px; font-weight: 700; letter-spacing: 1px;">QUOTATION</div>
+            <div style="color: #4b5563; font-size: 12px; line-height: 1.7;">
+              <div>Address: 211 Deula Sahi, Tulasipur, Cuttack</div>
+              <div>Phone No.: +91-933-8888-550</div>
+              <div>GSTIN: 21BBTPS3094R2ZN</div>
+              <div>State: 21-Odisha</div>
+            </div>
+          </div>
+          
+          <!-- Quotation Details -->
+          <div style="display: flex; justify-content: space-between; margin-bottom: 25px; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-size: 13px;">Quotation No:</td>
+                  <td style="padding: 8px 0; font-weight: 600; color: #1e3a5f; font-size: 13px;">${data.quotation_number}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-size: 13px;">Date:</td>
+                  <td style="padding: 8px 0; font-weight: 500; font-size: 13px;">${formatDate(data.quotation_date)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-size: 13px;">Valid Till:</td>
+                  <td style="padding: 8px 0; font-weight: 500; font-size: 13px;">${formatDate(data.valid_till)}</td>
+                </tr>
+              </table>
+            </div>
+            <div style="flex: 1; min-width: 200px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+              <p style="margin: 0 0 5px 0; color: #666; font-size: 12px;">CUSTOMER:</p>
+              <p style="margin: 0; font-weight: 600; color: #1e3a5f; font-size: 16px;">${data.customer_name}</p>
+              ${data.party_mobile ? `<p style="margin: 6px 0 0 0; color: #4b5563; font-size: 13px;">Mobile: ${data.party_mobile}</p>` : ''}
+            </div>
+          </div>
+          
+          <!-- Service Details -->
+          <div style="margin-bottom: 20px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">SERVICE DETAILS</div>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500; width: 200px;">Service Type</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.service_type}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">From Location</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.from_location}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">To Location</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${data.to_location}</td>
+              </tr>
+              
+              
+            </table>
+          </div>
+          
+          ${itemsSection}
+          
+          ${transitSection}
+          
+          <!-- Pricing Details -->
+          <div style="margin-bottom: 20px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">PRICING DETAILS</div>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; table-layout: fixed;">
+              <tr>
+                <td style="padding: 10px 12px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500; width: 72%;">Base Amount (Transport + Packing + Loading/Unloading)</td>
+                <td style="padding: 10px 18px 10px 10px; border: 1px solid #ddd; text-align: right; width: 28%; white-space: nowrap; overflow: hidden; font-weight: 600; color: #1e3a5f;">${formatCurrency(data.base_amount)}</td>
+              </tr>
+              ${data.electrification_required ? `
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">Electrification Charges</td>
+                <td style="padding: 10px 18px 10px 10px; border: 1px solid #ddd; text-align: right; white-space: nowrap; overflow: hidden; font-weight: 600; color: #1e3a5f;">${formatCurrency(data.electrification_amount)}</td>
+              </tr>
+              ` : ''}
+              ${data.gst_percentage > 0 ? `
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500;">GST (${data.gst_percentage}%)</td>
+                <td style="padding: 10px 18px 10px 10px; border: 1px solid #ddd; text-align: right; white-space: nowrap; overflow: hidden; font-weight: 600; color: #1e3a5f;">${formatCurrency(data.gst_amount)}</td>
+              </tr>
+              ` : ''}
+              <tr style="background: #d97706;">
+                <td style="padding: 12px; border: 1px solid #d97706; font-weight: 700; color: white;">TOTAL AMOUNT</td>
+                <td style="padding: 12px 18px 12px 10px; border: 1px solid #d97706; text-align: right; font-weight: 700; color: white; font-size: 15px; white-space: nowrap; overflow: hidden;">${formatCurrency(data.total_amount)}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Payment Details -->
+          <div style="margin-bottom: 25px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">PAYMENT DETAILS</div>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; table-layout: fixed;">
+              <tr>
+                <td style="padding: 10px 12px; border: 1px solid #ddd; background: #f8f9fa; font-weight: 500; width: 72%;">Booking Advance</td>
+                <td style="padding: 10px 18px 10px 10px; border: 1px solid #ddd; text-align: right; width: 28%; white-space: nowrap; overflow: hidden; font-weight: 600; color: #1e3a5f;">${formatCurrency(data.booking_advance)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; background: #e8f5e9; font-weight: 600; color: #2e7d32;">Balance at Loading & Unloading</td>
+                <td style="padding: 10px 18px 10px 10px; border: 1px solid #ddd; text-align: right; font-weight: 700; color: #2e7d32; white-space: nowrap; overflow: hidden;">${formatCurrency(data.balance_amount)}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <!-- Terms & Conditions -->
+          <div style="margin-bottom: 25px; background: #fff8e1; padding: 15px; border-radius: 8px; border-left: 4px solid #d97706;">
+            <h4 style="margin: 0 0 10px 0; color: #1e3a5f; font-size: 13px;">Terms & Conditions:</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 11px; line-height: 1.8;">
+              <li>Our packers and movers terms are: 90% payment at the loading point, 5% after unloading is completed, and the remaining 5% during the electrification work. Subject to electrification being included in the quotation.</li>
+              <li>OR: 100% payment at loading point ONLY for sharing/partly basis consignment.</li>
+              <li>All payment transactions should be made online.</li>
+              <li>Extra items may result in additional charges.</li>
+              <li>We will refund your full payment if the AC cannot be installed or uninstalled due to unsuitable conditions. However, if extra effort is needed at the location either during removal or installation, additional charges may apply depending on the situation.</li>
+            </ul>
+          </div>
+          
+          <!-- Payment QR Code -->
+          <div style="margin-bottom: 25px;">
+            <div style="background: #1e3a5f; color: white; padding: 8px 15px; font-weight: 600; border-radius: 5px 5px 0 0;">PAYMENT QR CODE</div>
+            <div style="border: 1px solid #d9d9d9; border-top: none; background: #ffffff; border-radius: 0 0 10px 10px; padding: 18px 16px; text-align: center;">
+              <div style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 12px;">Scan &amp; Pay via UPI</div>
+              <div style="display: inline-block; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+                <img id="payment-qr-preview-image" alt="Payment QR Code" style="width: 145px; height: 145px; display: none; object-fit: contain;" />
+              </div>
+              <div style="margin-top: 12px; color: #4b5563; font-size: 12px; line-height: 1.7;">
+                <div><strong>Company Name:</strong> A to Z Packers &amp; Movers</div>
+                <div><strong>Phone:</strong> 9338888550</div>
+                <div><strong>UPI ID:</strong> paytmqr5cq01d@ptys</div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Footer -->
+          <div style="text-align: center; padding-top: 20px; border-top: 2px solid #eee;">
+            <p style="margin: 0; color: #d97706; font-weight: 600; font-size: 14px;">"${tagline}"</p>
+            <p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">Thank you for choosing ${companyName}</p>
+            <p style="margin: 5px 0 0 0; color: #999; font-size: 10px;">For queries, contact us at: www.atozpackersmovers.in</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Preview quotation
+
+    function validateAmountInputs() {
+      const distance = parseInt(document.getElementById('distance_km').value) || 0;
+      const manualAmount = parseInt(document.getElementById('manual_amount').value) || 0;
+      if (distance <= 0 && manualAmount <= 0) {
+        showToast('Please enter either distance for auto calculation or a manual amount.', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    function previewQuotation() {
+      const form = document.getElementById('quotation-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      if (!validateAmountInputs()) return;
+      
+      currentPreviewData = getFormData();
+      const previewHTML = generatePreviewHTML(currentPreviewData);
+      document.getElementById('pdf-preview-container').innerHTML = previewHTML;
+      renderPreviewPaymentQR(currentPreviewData);
+      showView('preview');
+    }
+
+    async function shareQuotation() {
+      if (!currentPreviewData) {
+        showToast('Please preview or generate the quotation first.', 'error');
+        return;
+      }
+
+      try {
+        if (!lastGeneratedPdfBlob) {
+          const ok = await downloadPDF(true);
+          if (!ok || !lastGeneratedPdfBlob) return;
+        }
+
+        const shareFile = new File([lastGeneratedPdfBlob], lastGeneratedPdfName || 'quotation.pdf', { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+          await navigator.share({
+            title: `Quotation - ${currentPreviewData.customer_name || 'Customer'}`,
+            text: 'Please find attached your quotation from A to Z Packers & Movers.',
+            files: [shareFile]
+          });
+          return;
+        }
+
+        if (navigator.share) {
+          const tempUrl = URL.createObjectURL(lastGeneratedPdfBlob);
+          await navigator.share({
+            title: `Quotation - ${currentPreviewData.customer_name || 'Customer'}`,
+            text: 'Please find your quotation from A to Z Packers & Movers.',
+            url: tempUrl
+          }).catch(() => {});
+          setTimeout(() => URL.revokeObjectURL(tempUrl), 10000);
+          return;
+        }
+
+        showToast('Sharing is not supported on this device. Please use Download PDF.', 'error');
+      } catch (error) {
+        console.error(error);
+        showToast('Unable to share the quotation right now.', 'error');
+      }
+    }
+
+    // Download PDF
+    async function downloadPDF(prepareOnly = false) {
+      if (!currentPreviewData) {
+        showToast('No quotation data available for PDF.', 'error');
+        return false;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        showToast('PDF library failed to load. Please reopen the file and try again.', 'error');
+        return false;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+
+      const config = window.elementSdk?.config || defaultConfig;
+      const companyName = config.company_name || defaultConfig.company_name;
+      const tagline = config.tagline || defaultConfig.tagline;
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 15;
+      let y = margin;
+
+      // Helper functions
+      const addText = (text, x, size, style = 'normal', color = [0, 0, 0]) => {
+        doc.setFontSize(size);
+        doc.setFont('helvetica', style);
+        doc.setTextColor(...color);
+        doc.text(text, x, y);
+      };
+
+      const drawLine = (x1, y1, x2, y2, color = [200, 200, 200]) => {
+        doc.setDrawColor(...color);
+        doc.setLineWidth(0.5);
+        doc.line(x1, y1, x2, y2);
+      };
+
+      // Check page overflow
+      const checkPageBreak = (height) => {
+        if (y + height > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Header
+      doc.setDrawColor(217, 217, 217);
+      doc.setLineWidth(0.6);
+      doc.rect(margin, y, pageWidth - margin * 2, 34, 'S');
+
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 58, 95);
+      doc.text(companyName, pageWidth / 2, y + 8, { align: 'center' });
+
+      doc.setFontSize(12);
+      doc.text('QUOTATION', pageWidth / 2, y + 15, { align: 'center' });
+
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(75, 85, 99);
+      doc.text('Address: 211 Deula Sahi, Tulasipur, Cuttack', pageWidth / 2, y + 21, { align: 'center' });
+      doc.text('Phone No.: +91-933-8888-550', pageWidth / 2, y + 25.5, { align: 'center' });
+      doc.text('GSTIN: 21BBTPS3094R2ZN | State: 21-Odisha', pageWidth / 2, y + 30, { align: 'center' });
+
+      y += 38;
+
+      // Customer Details Section
+      doc.setFillColor(30, 58, 95);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('CUSTOMER DETAILS', margin + 5, y + 5.5);
+      y += 8;
+
+      const details = [
+        ['Customer Name', currentPreviewData.customer_name],
+        ['Party Mobile Number', currentPreviewData.party_mobile || ''],
+        ['From', currentPreviewData.from_location],
+        ['To', currentPreviewData.to_location],
+        ['Service Type', currentPreviewData.service_type],
+        ['Quotation Date', formatDate(currentPreviewData.quotation_date)],
+        ['Quotation Valid Till', formatDate(currentPreviewData.valid_till)]
+      ];
+
+      details.forEach((detail, i) => {
+        doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 249 : 255, i % 2 === 0 ? 250 : 255);
+        doc.rect(margin, y, 50, 8, 'F');
+        doc.rect(margin + 50, y, pageWidth - margin * 2 - 50, 8, 'F');
+        doc.setDrawColor(220, 220, 220);
+        doc.rect(margin, y, 50, 8, 'S');
+        doc.rect(margin + 50, y, pageWidth - margin * 2 - 50, 8, 'S');
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(60, 60, 60);
+        doc.text(detail[0], margin + 3, y + 5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(String(detail[1] || ''), margin + 53, y + 5);
+        y += 8;
+      });
+
+      y += 5;
+
+      // Items Section (if any)
+      if (currentPreviewData.items && currentPreviewData.items.length > 0) {
+        checkPageBreak(currentPreviewData.items.length * 7 + 20);
+
+        doc.setFillColor(30, 58, 95);
+        doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('ITEMS TO BE SHIFTED', margin + 5, y + 5.5);
+        y += 10;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+
+        currentPreviewData.items.forEach(item => {
+          const itemText = item.name || item.summary || '';
+          const lines = doc.splitTextToSize(itemText, pageWidth - margin * 2 - 10);
+          checkPageBreak(lines.length * 5 + 2);
+          doc.text(lines, margin + 5, y);
+          y += lines.length * 5;
+        });
+
+        y += 4;
+      }
+
+      // Transit Details
+      if (currentPreviewData.transit_provided && currentPreviewData.transit_time) {
+        checkPageBreak(30);
+        doc.setFillColor(30, 58, 95);
+        doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('TRANSIT DETAILS', margin + 5, y + 5.5);
+        y += 8;
+
+        const transitDetails = [
+          ['Estimated Transit Time', currentPreviewData.transit_time],
+          ['Tracking Available', currentPreviewData.tracking || 'N/A'],
+          ['Delivery Type', currentPreviewData.delivery_type || 'N/A']
+        ];
+
+        transitDetails.forEach((detail, i) => {
+          doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 249 : 255, i % 2 === 0 ? 250 : 255);
+          doc.rect(margin, y, 50, 8, 'F');
+          doc.rect(margin + 50, y, pageWidth - margin * 2 - 50, 8, 'F');
+          doc.setDrawColor(220, 220, 220);
+          doc.rect(margin, y, 50, 8, 'S');
+          doc.rect(margin + 50, y, pageWidth - margin * 2 - 50, 8, 'S');
+
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(60, 60, 60);
+          doc.text(detail[0], margin + 3, y + 5);
+
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(detail[1] || ''), margin + 53, y + 5);
+          y += 8;
+        });
+
+        y += 5;
+      }
+
+      // Amount Section
+      checkPageBreak(50);
+      doc.setFillColor(30, 58, 95);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('QUOTATION AMOUNT', margin + 5, y + 5.5);
+      y += 8;
+
+      const amounts = [
+        ['Base Amount (Transport + Packing + Loading/Unloading)', formatCurrency(currentPreviewData.base_amount)],
+        ['Electrification', formatCurrency(currentPreviewData.electrification_amount)],
+        ['GST Amount', formatCurrency(currentPreviewData.gst_amount)],
+        ['Total Amount', formatCurrency(currentPreviewData.total_amount)],
+        ['Advance', formatCurrency(currentPreviewData.booking_advance)],
+        ['Balance', formatCurrency(currentPreviewData.balance_amount)]
+      ];
+
+      amounts.forEach((amount, i) => {
+        doc.setFillColor(i === amounts.length - 1 ? 254 : 248, i === amounts.length - 1 ? 243 : 249, i === amounts.length - 1 ? 199 : 250);
+        const labelColWidth = 115;
+        const valueColWidth = pageWidth - margin * 2 - labelColWidth;
+        doc.rect(margin, y, labelColWidth, 8, 'F');
+        doc.rect(margin + labelColWidth, y, valueColWidth, 8, 'F');
+        doc.setDrawColor(220, 220, 220);
+        doc.rect(margin, y, labelColWidth, 8, 'S');
+        doc.rect(margin + labelColWidth, y, valueColWidth, 8, 'S');
+
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', i >= amounts.length - 2 ? 'bold' : 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text(amount[0], margin + 3, y + 5);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(i === amounts.length - 1 ? 217 : 30, i === amounts.length - 1 ? 119 : 58, i === amounts.length - 1 ? 6 : 95);
+        doc.text(amount[1], pageWidth - margin - 6, y + 5, { align: 'right' });
+        y += 8;
+      });
+
+      y += 15;
+
+      
+      // Description
+      checkPageBreak(24);
+      doc.setFillColor(30, 58, 95);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('DESCRIPTION', margin + 5, y + 5.5);
+      y += 10;
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      let descLines = doc.splitTextToSize('Including packing, loading, unloading and transportation services.', pageWidth - margin * 2 - 8);
+      doc.text(descLines, margin + 4, y);
+      y += descLines.length * 5 + 6;
+
+      // Estimate Amount In Words
+      checkPageBreak(16);
+      doc.setFillColor(30, 58, 95);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('ESTIMATE AMOUNT IN WORDS', margin + 5, y + 5.5);
+      y += 10;
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text('To be filled according to final quotation amount.', margin + 4, y);
+      y += 8;
+
+      // Terms & Conditions
+      checkPageBreak(52);
+      doc.setFillColor(30, 58, 95);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('TERMS & CONDITIONS', margin + 5, y + 5.5);
+      y += 10;
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      const terms = [
+        '90% payment at the loading point, 5% after unloading is completed, and the remaining 5% during the electrification work. Subject to electrification being included in the quotation.',
+        'OR: 100% payment at loading point only for sharing / partly basis consignment.',
+        'All payment transactions should be made online.',
+        'Extra items may result in additional charges.',
+        'We will refund your full payment if the AC cannot be installed or uninstalled due to unsuitable conditions. However, if extra effort is needed at the location either during removal or installation, additional charges may apply depending on the situation.'
+      ];
+      terms.forEach(term => {
+        const lines = doc.splitTextToSize('• ' + term, pageWidth - margin * 2 - 8);
+        checkPageBreak(lines.length * 5 + 2);
+        doc.text(lines, margin + 4, y);
+        y += lines.length * 5;
+      });
+      y += 6;
+
+      // Payment QR Code
+      try {
+        checkPageBreak(68);
+        doc.setFillColor(30, 58, 95);
+        doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('PAYMENT QR CODE', margin + 5, y + 5.5);
+        y += 10;
+
+        const qrBoxWidth = pageWidth - margin * 2;
+        const qrBoxHeight = 52;
+        doc.setDrawColor(217, 217, 217);
+        doc.roundedRect(margin, y, qrBoxWidth, qrBoxHeight, 3, 3, 'S');
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 58, 95);
+        doc.text('Scan & Pay via UPI', pageWidth / 2, y + 7, { align: 'center' });
+
+        const qrDataUrl = await generatePaymentQRDataURL(currentPreviewData.total_amount || 0, 220);
+        doc.addImage(qrDataUrl, 'PNG', pageWidth / 2 - 18, y + 11, 36, 36);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(75, 85, 99);
+        doc.text('Company Name: A to Z Packers & Movers', pageWidth / 2, y + 49, { align: 'center' });
+        doc.text('Phone: 9338888550', pageWidth / 2, y + 53, { align: 'center' });
+        doc.text('UPI ID: paytmqr5cq01d@ptys', pageWidth / 2, y + 57, { align: 'center' });
+
+        y += qrBoxHeight + 6;
+      } catch (error) {
+        console.error(error);
+      }
+
+
+      // Footer
+      checkPageBreak(20);
+      drawLine(margin, y, pageWidth - margin, y);
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 58, 95);
+      doc.text(companyName, pageWidth / 2, y, { align: 'center' });
+      y += 5;
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(tagline, pageWidth / 2, y, { align: 'center' });
+      y += 4;
+      doc.setTextColor(150, 150, 150);
+      doc.text('For queries, contact us at: www.atozpackersmovers.in', pageWidth / 2, y, { align: 'center' });
+
+      // Save PDF
+      const fileName = `Quotation_${(currentPreviewData.customer_name || 'Customer').replace(/\s+/g, '_')}_${currentPreviewData.quotation_number}.pdf`;
+      lastGeneratedPdfBlob = doc.output('blob');
+      lastGeneratedPdfName = fileName;
+      if (!prepareOnly) {
+        doc.save(fileName);
+      }
+      return true;
+    }
+
+    // Form submission
+    document.getElementById('quotation-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (quotations.length >= 999) {
+        showToast('Maximum quotation limit reached. Please delete some old quotations.', 'error');
+        return;
+      }
+
+      if (!validateAmountInputs()) return;
+
+      const formData = getFormData();
+      currentPreviewData = formData;
+
+      // Always save locally first so history never gets lost
+      saveQuotationToLocal(formData);
+
+      let remoteSaved = false;
+
+      // Save to Firebase Firestore
+      if (window.saveQuotationToFirebase) {
+        try {
+          const firebaseId = await window.saveQuotationToFirebase(formData);
+          remoteSaved = true;
+
+          const locals = getLocalQuotations();
+          const latestIndex = locals.findIndex(q => q.local_id === formData.local_id || q.quotation_number === formData.quotation_number);
+          if (latestIndex >= 0) {
+            locals[latestIndex].__backendId = firebaseId;
+            setLocalQuotations(locals);
+          }
+
+          const remote = await window.loadQuotationsFromFirebase();
+          syncHistoryFromSources(remote);
+          showToast('Quotation saved successfully!', 'success');
+        } catch (err) {
+          console.error('Firebase save failed:', err);
+          showToast('Saved in local history. Firebase save failed.', 'error');
+        }
+      }
+
+      const pdfOk = await downloadPDF();
+      if (!pdfOk) {
+        showToast('Quotation saved in history, but PDF could not be generated.', 'error');
+        return;
+      }
+
+      if (!remoteSaved && !window.dataSdk) {
+        showToast('Quotation saved and PDF generated!', 'success');
+      }
+
+      resetForm();
+      renderHistory();
+    });
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50 transition-all transform ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Reset form
+    function resetForm() {
+      document.getElementById('quotation-form').reset();
+      document.getElementById('items-container').innerHTML = '';
+      document.getElementById('electrification-amount-wrapper').classList.add('hidden');
+      document.getElementById('transit-details-wrapper').classList.add('hidden');
+      document.getElementById('price-preview').classList.add('hidden');
+      document.getElementById('manual_amount').value = '';
+      itemCount = 0;
+      setDefaultDates();
+    }
+
+    // View navigation
+    function showView(viewName) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`${viewName}-view`).classList.remove('hidden');
+      
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.view === viewName) {
+          btn.classList.add('bg-white/20');
+          btn.classList.remove('bg-white/10');
+        } else {
+          btn.classList.remove('bg-white/20');
+          btn.classList.add('bg-white/10');
+        }
+      });
+      
+      if (viewName === 'history') {
+        renderHistory();
+      }
+    }
+
+    function getFilteredQuotations() {
+      const searchEl = document.getElementById('history-search');
+      const term = (searchEl && searchEl.value ? searchEl.value : '').trim().toLowerCase();
+      if (!term) return [...quotations];
+      return (quotations || []).filter(q => {
+        const haystack = [
+          q.quotation_number,
+          q.customer_name,
+          q.party_mobile,
+          q.from_location,
+          q.to_location,
+          q.service_type
+        ].map(v => (v == null ? '' : String(v).toLowerCase())).join(' ');
+        return haystack.includes(term);
+      });
+    }
+
+    // Render history
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+
+      if (quotations.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No quotations saved yet.</p>';
+        return;
+      }
+
+      const sortedQuotations = getFilteredQuotations().sort((a, b) => 
+        new Date(b.created_at || 0) - new Date(a.created_at || 0)
+      );
+
+      container.innerHTML = sortedQuotations.map(q => {
+        const quoteId = q.__backendId || q.local_id || q.quotation_number;
+        return `
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
+          <div class="flex flex-wrap justify-between items-start gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">${q.quotation_number || 'Draft'}</span>
+                <span class="text-sm text-gray-500">${q.quotation_date ? formatDate(q.quotation_date) : ''}</span>
+              </div>
+              <h3 class="font-semibold text-gray-800 mt-2">${q.customer_name || ''}</h3>
+              <p class="text-sm text-gray-600">${q.from_location || ''} → ${q.to_location || ''}</p>
+              <p class="text-sm font-medium text-amber-600 mt-1">${typeof q.total_amount === 'number' ? formatCurrency(q.total_amount) : (q.total_amount || '')}</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="viewQuotation('${quoteId}')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-all">View</button>
+              <button onclick="editQuotation('${quoteId}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-all">Edit</button>
+              <button onclick="deleteQuotation('${quoteId}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100 transition-all">Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    // View quotation from history
+    function findQuotationById(id) {
+      return quotations.find(q => (q.__backendId === id) || (q.local_id === id) || (q.quotation_number === id));
+    }
+
+    function viewQuotation(id) {
+      const quotation = findQuotationById(id);
+      if (quotation) {
+        currentPreviewData = {
+          ...quotation,
+          items: quotation.items ? quotation.items : (quotation.items_json ? JSON.parse(quotation.items_json) : [])
+        };
+        const previewHTML = generatePreviewHTML(currentPreviewData);
+        document.getElementById('pdf-preview-container').innerHTML = previewHTML;
+        showView('preview');
+      }
+    }
+
+    function editQuotation(id) {
+      const quotation = findQuotationById(id);
+      if (!quotation) return;
+
+      document.getElementById('customer_name').value = quotation.customer_name || '';
+      document.getElementById('service_type').value = quotation.service_type || 'Household Shifting';
+      document.getElementById('from_location').value = quotation.from_location || '';
+      document.getElementById('to_location').value = quotation.to_location || '';
+      document.getElementById('quotation_date').value = quotation.quotation_date || '';
+      document.getElementById('valid_till').value = quotation.valid_till || '';
+      document.getElementById('vehicle_type').value = quotation.vehicle_type || 'Mini';
+      document.getElementById('distance_km').value = quotation.distance_km || '';
+      document.getElementById('manual_amount').value = quotation.manual_amount || '';
+      document.getElementById('electrification_required').value = quotation.electrification_required ? 'yes' : 'no';
+      document.getElementById('electrification_amount').value = quotation.electrification_amount || 2000;
+      document.getElementById('gst_percentage').value = quotation.gst_percentage || 0;
+      document.getElementById('booking_advance').value = quotation.booking_advance || 500;
+      document.getElementById('transit_provided').value = quotation.transit_provided ? 'yes' : 'no';
+      document.getElementById('transit_time').value = quotation.transit_time || '';
+      document.getElementById('tracking').value = quotation.tracking || 'Online Tracking Available';
+      document.getElementById('delivery_type').value = quotation.delivery_type || 'Door-to-Door';
+
+      document.getElementById('items-container').innerHTML = '';
+      itemCount = 0;
+      const items = quotation.items ? quotation.items : (quotation.items_json ? JSON.parse(quotation.items_json) : []);
+      items.forEach(item => {
+        addItem();
+        const row = document.querySelector('#items-container > div:last-child');
+        row.querySelector('.item-name').value = item.name || '';
+        row.querySelector('.item-qty').value = item.qty || 1;
+      });
+
+      document.getElementById('electrification-amount-wrapper').classList.toggle('hidden', !(quotation.electrification_required));
+      document.getElementById('transit-details-wrapper').classList.toggle('hidden', !(quotation.transit_provided));
+      updatePricePreview();
+      showView('form');
+      showToast('Quotation loaded into form for editing.', 'success');
+    }
+
+    // Delete quotation
+    async function deleteQuotation(id) {
+      const quotation = findQuotationById(id);
+      if (!quotation) return;
+
+      const filteredLocal = getLocalQuotations().filter(q => !((q.local_id && q.local_id === id) || (q.quotation_number && q.quotation_number === id)));
+      setLocalQuotations(filteredLocal);
+
+      if (quotation.__backendId && window.deleteQuotationFromFirebase) {
+        try {
+          await window.deleteQuotationFromFirebase(quotation.__backendId);
+        } catch (e) {
+          console.error('Firebase delete error', e);
+        }
+      }
+
+      syncHistoryFromSources((quotations || []).filter(q => !((q.__backendId === id) || (q.local_id === id) || (q.quotation_number === id))));
+      showToast('Quotation deleted successfully!', 'success');
+    }
+
+    // Initialize
+    setDefaultDates();
+    syncHistoryFromSources();
+    const historySearchInput = document.getElementById('history-search');
+    if (historySearchInput) {
+      historySearchInput.addEventListener('input', renderHistory);
+    }
+  </script>
+ 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14",
+    authDomain: "az-packers-quotation.firebaseapp.com",
+    projectId: "az-packers-quotation",
+    storageBucket: "az-packers-quotation.firebasestorage.app",
+    messagingSenderId: "682004383688",
+    appId: "1:682004383688:web:b795a19579dba9a612a2fd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.firebaseApp = app;
+</script>
+
+</body>
+</html>
