@@ -30,7 +30,7 @@
     .planning-mobile-jump { display:none; }
     .azp-header-wrap { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
     .azp-nav-grid { display:grid; grid-template-columns:repeat(3, minmax(110px, 1fr)); gap:12px; width:min(560px, 100%); }
-    .azp-nav-bottom { grid-column:1 / span 3; display:grid; grid-template-columns:repeat(3, minmax(100px, 1fr)); gap:12px; }
+    .azp-nav-bottom { grid-column:1 / span 3; display:grid; grid-template-columns:repeat(4, minmax(100px, 1fr)); gap:12px; }
     .azp-nav-grid .nav-btn { min-height:58px; display:flex; align-items:center; justify-content:center; text-align:center; white-space:normal; line-height:1.2; border-radius:16px; padding:12px 14px; font-size:15px; font-weight:700; }
     @media (max-width: 1279px) {
       .planning-source-panel { position:relative !important; top:auto !important; max-height:none !important; }
@@ -41,7 +41,7 @@
       .azp-header-wrap { align-items:flex-start; }
       .azp-brand-block { width:100%; }
       .azp-nav-grid { width:100%; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:8px; }
-      .azp-nav-bottom { grid-column:1 / span 3; grid-template-columns:repeat(3, 1fr); gap:10px; }
+      .azp-nav-bottom { grid-column:1 / span 3; grid-template-columns:repeat(2, 1fr); gap:10px; }
       .azp-nav-grid .nav-btn { min-height:64px; font-size:16px; padding:10px 8px; }
       #company-title { font-size:1.35rem !important; line-height:1.25 !important; }
     }
@@ -74,6 +74,7 @@
         <button onclick="showView('item-list')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="item-list">Item List</button>
         <button onclick="showView('planning-sheet')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="planning-sheet">Planning Sheet</button>
         <button onclick="showView('agreement-sheet')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="agreement-sheet">Agreement</button>
+        <button onclick="showView('database')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="database">Database</button>
        </div>
       </div>
      </div>
@@ -287,6 +288,7 @@
                     </div>
                   </div>
                   <div><label class="planning-label">Shifting Date</label><input id="plan_shifting_date" class="planning-input" type="date"></div>
+                  <div><label class="planning-label">Work Start Date</label><input id="plan_work_start_date" class="planning-input" type="date"></div>
                   <div><label class="planning-label">Confirmation SMS</label><select id="plan_confirmation_sms" class="planning-input bg-white"><option value="Yes">Yes</option><option value="No">No</option><option value="Pending">Pending</option></select></div>
                 </div>
               </section>
@@ -414,6 +416,7 @@
                 <h3 class="planning-section-title mb-4">Service & Execution Details</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label class="planning-label">Start Date</label><input id="agr_start_date" class="planning-input" type="date"></div>
+                  <div><label class="planning-label">Work Start Date</label><input id="agr_work_start_date" class="planning-input" type="date"></div>
                   <div><label class="planning-label">End Date</label><input id="agr_end_date" class="planning-input" type="date"></div>
                   <div><label class="planning-label">Pickup Floor / Lift</label><input id="agr_pickup_floor" class="planning-input" type="text" placeholder="Ground Floor / Lift: Yes"></div>
                   <div><label class="planning-label">Delivery Floor / Lift</label><input id="agr_delivery_floor" class="planning-input" type="text" placeholder="1st Floor / Lift: No"></div>
@@ -479,6 +482,59 @@ A/c Name: A To Z Packers And Movers</textarea></div>
     </div>
 
    
+
+    <!-- Database View -->
+    <div id="database-view" class="view hidden">
+      <div class="planning-shell rounded-3xl p-4 md:p-6">
+        <div class="planning-card p-5 md:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div>
+              <h2 class="text-2xl md:text-3xl font-extrabold text-emerald-700">Marketing Database</h2>
+              <p class="text-gray-500 mt-1">Copy Planning Sheet data or enter manually. Records save permanently in Firebase.</p>
+            </div>
+            <span id="marketing-db-count" class="planning-pill">0 records</span>
+          </div>
+
+          <section class="mb-6">
+            <h3 class="planning-section-title mb-4">Database Fields</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="planning-label">Party Name</label><input id="mkt_party_name" class="planning-input" type="text" placeholder="Customer / Party name"></div>
+              <div><label class="planning-label">Party Contact Number</label><input id="mkt_party_contact" class="planning-input" type="tel" placeholder="Mobile number"></div>
+              <div><label class="planning-label">From Location</label><input id="mkt_from_location" class="planning-input" type="text" placeholder="From location"></div>
+              <div><label class="planning-label">To Location</label><input id="mkt_to_location" class="planning-input" type="text" placeholder="To location"></div>
+              <div><label class="planning-label">Work Start Date</label><input id="mkt_work_start_date" class="planning-input" type="date"></div>
+              <div><label class="planning-label">Total Amount (₹)</label><input id="mkt_total_amount" class="planning-input" type="number" min="0" placeholder="Total amount"></div>
+              <div><label class="planning-label">Planning ID</label><input id="mkt_planning_id" class="planning-input" type="text" placeholder="Planning ID"></div>
+              <div><label class="planning-label">Quotation ID</label><input id="mkt_quotation_id" class="planning-input" type="text" placeholder="Quotation ID"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+              <button type="button" onclick="syncMarketingDatabaseFromPlanning()" class="px-5 py-3 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg">Copy Planning Data</button>
+              <button type="button" onclick="saveManualMarketingRecord()" class="px-5 py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg">Save Database Record</button>
+              <button type="button" onclick="clearMarketingFields()" class="px-5 py-3 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-all">Clear</button>
+            </div>
+          </section>
+
+          <section>
+            <h3 class="planning-section-title mb-4">Saved Database Records</h3>
+            <input type="text" id="marketing-db-search" placeholder="Search party name, contact number, from, to, amount" class="planning-input mb-4">
+            <div id="marketing-db-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <p class="text-gray-500 text-center py-8 md:col-span-2">No database records yet.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Preview View -->
+    <div id="database-preview-view" class="view hidden">
+      <div class="mb-4 flex flex-wrap gap-3 justify-center no-print">
+        <button onclick="showView('database')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">← Back to Database</button>
+        <button onclick="shareCurrentMarketingRecord()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-all">📤 Share</button>
+      </div>
+      <div id="database-preview-container" class="pdf-preview rounded-xl overflow-hidden card-shadow p-3"></div>
+    </div>
+
     <!-- Sales View -->
     <div id="sales-view" class="view hidden">
       <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
@@ -4916,6 +4972,561 @@ function formatCurrency(amount) {
       updatedAt: serverTimestamp()
     }, { merge: true }).catch(console.error);
   });
+</script>
+
+
+
+
+<script type="module">
+  // AZP Marketing Database Firebase Fields Patch v3
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+  const AZP_MARKETING_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14",
+    authDomain: "az-packers-quotation.firebaseapp.com",
+    projectId: "az-packers-quotation",
+    storageBucket: "az-packers-quotation.firebasestorage.app",
+    messagingSenderId: "682004383688",
+    appId: "1:682004383688:web:b795a19579dba9a612a2fd"
+  };
+  const azpMarketingApp = getApps().length ? getApp() : initializeApp(AZP_MARKETING_FIREBASE_CONFIG);
+  const azpMarketingDb = getFirestore(azpMarketingApp);
+
+  let azpMarketingRecords = [];
+  let azpCurrentMarketingRecord = null;
+
+  function val(id) {
+    const el = document.getElementById(id);
+    return el ? String(el.value || '').trim() : '';
+  }
+
+  function setVal(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value || '';
+  }
+
+  function money(v) {
+    const n = Number(String(v || '0').replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function safeId(value) {
+    return String(value || ('MDB_' + Date.now() + '_' + Math.floor(Math.random() * 999999)))
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .slice(0, 160);
+  }
+
+  function recordId(rec) {
+    return safeId(rec.databaseId || rec.planningId || rec.quotationId || (rec.customerName + '_' + rec.customerMobile + '_' + rec.totalAmount));
+  }
+
+  function normalizePlanning(p) {
+    return {
+      recordType: 'marketingDatabase',
+      databaseId: safeId('MDB_' + (p.planningId || p.planning_id || p.planning_no || p.plan_no || p.firebaseId || p.id || Date.now())),
+      customerName: p.customerName || p.customer_name || p.plan_customer_name || p.party_name || p.name || '',
+      customerMobile: p.customerMobile || p.partyMobile || p.party_mobile || p.contactNumber || p.contact_number || p.plan_party_mobile || p.mobile || '',
+      fromLocation: p.fromLocation || p.from_location || p.plan_from_location || p.from || '',
+      toLocation: p.toLocation || p.to_location || p.plan_to_location || p.to || '',
+      totalAmount: money(p.totalAmount || p.total_amount || p.totalPrice || p.total_price || p.plan_total_price || p.grand_total || p.amount),
+      planningId: p.planningId || p.planning_id || p.planning_no || p.plan_no || p.id || p.firebaseId || '',
+      quotationId: p.quotationId || p.quotation_id || p.quotation_no || p.quotation_number || p.linked_quotation_no || p.plan_linked_quotation_no || '',
+      workStartDate: p.workStartDate || p.work_start_date || p.plan_work_start_date || p.shifting_date || p.plan_shifting_date || '',
+      createdAtText: p.createdAtText || p.created_at || new Date().toISOString(),
+      updatedAtText: new Date().toISOString()
+    };
+  }
+
+  async function getPlanningRecords() {
+    const snap = await getDocs(collection(azpMarketingDb, 'planningSheets'));
+    const firebaseRows = snap.docs.filter(d => d.id !== '_setup').map(d => ({ firebaseId: d.id, ...d.data() }));
+    const localRows = [];
+    ['planningSheets', 'savedPlanningSheets', 'azpPlanningSheets', 'planning_sheets'].forEach(k => {
+      try {
+        const data = JSON.parse(localStorage.getItem(k) || '[]');
+        if (Array.isArray(data)) localRows.push(...data);
+      } catch(e) {}
+    });
+    ['planningSheets', 'savedPlanningSheets', 'azpPlanningSheets'].forEach(k => {
+      if (Array.isArray(window[k])) localRows.push(...window[k]);
+    });
+    return [...firebaseRows, ...localRows];
+  }
+
+  async function fetchMarketingDatabase() {
+    const snap = await getDocs(collection(azpMarketingDb, 'marketingDatabase'));
+    azpMarketingRecords = snap.docs
+      .filter(d => d.id !== '_setup')
+      .map(d => ({ id: d.id, ...d.data() }));
+    renderMarketingDatabase();
+  }
+
+  window.saveManualMarketingRecord = async function() {
+    const rec = {
+      recordType: 'marketingDatabase',
+      databaseId: safeId('MDB_' + (val('mkt_planning_id') || val('mkt_party_contact') || Date.now())),
+      customerName: val('mkt_party_name'),
+      customerMobile: val('mkt_party_contact'),
+      fromLocation: val('mkt_from_location'),
+      toLocation: val('mkt_to_location'),
+      totalAmount: money(val('mkt_total_amount')),
+      planningId: val('mkt_planning_id'),
+      quotationId: val('mkt_quotation_id'),
+      workStartDate: val('mkt_work_start_date') || val('plan_work_start_date') || val('plan_shifting_date') || '',
+      createdAtText: new Date().toISOString(),
+      updatedAtText: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    if (!rec.customerName && !rec.customerMobile) {
+      alert('Please enter Party Name or Contact Number.');
+      return;
+    }
+
+    const id = recordId(rec);
+    await setDoc(doc(azpMarketingDb, 'marketingDatabase', id), rec, { merge: true });
+    await fetchMarketingDatabase();
+    alert('Database record saved in Firebase.');
+  };
+
+  window.clearMarketingFields = function() {
+    ['mkt_party_name','mkt_party_contact','mkt_from_location','mkt_to_location','mkt_work_start_date','mkt_total_amount','mkt_planning_id','mkt_quotation_id'].forEach(id => setVal(id, ''));
+  };
+
+  window.syncMarketingDatabaseFromPlanning = async function() {
+    try {
+      const planningRows = await getPlanningRecords();
+
+      if (!planningRows.length) {
+        alert('No Planning Sheet records found in Firebase.');
+        return;
+      }
+
+      let savedCount = 0;
+      for (const p of planningRows) {
+        const rec = normalizePlanning(p);
+        if (!rec.customerName && !rec.customerMobile && !rec.fromLocation && !rec.toLocation) continue;
+        const id = recordId(rec);
+        await setDoc(doc(azpMarketingDb, 'marketingDatabase', id), {
+          ...rec,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp()
+        }, { merge: true });
+        savedCount++;
+      }
+
+      await setDoc(doc(azpMarketingDb, 'marketingDatabase', '_setup'), {
+        status: 'Ready',
+        collectionName: 'marketingDatabase',
+        fields: {
+          customerName: 'Party Name',
+          customerMobile: 'Party Contact Number',
+          fromLocation: 'From Location',
+          toLocation: 'To Location',
+          totalAmount: 'Total Amount',
+          planningId: 'Planning ID',
+          quotationId: 'Quotation ID'
+        },
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      await fetchMarketingDatabase();
+      alert(savedCount + ' planning records copied to Marketing Database.');
+    } catch (error) {
+      console.error('Marketing Database copy failed:', error);
+      alert('Marketing Database copy failed. Please check Firestore rules: marketingDatabase and planningSheets.');
+    }
+  };
+
+  window.renderMarketingDatabase = function() {
+    const list = document.getElementById('marketing-db-list');
+    const badge = document.getElementById('marketing-db-count');
+    if (!list) return;
+
+    const q = (document.getElementById('marketing-db-search')?.value || '').toLowerCase();
+    const filtered = azpMarketingRecords.filter(r => {
+      const hay = [r.customerName, r.customerMobile, r.fromLocation, r.toLocation, r.totalAmount, r.planningId, r.quotationId].join(' ').toLowerCase();
+      return !q || hay.includes(q);
+    });
+
+    if (badge) badge.textContent = filtered.length + ' records';
+
+    if (!filtered.length) {
+      list.innerHTML = '<p class="text-gray-500 text-center py-8 md:col-span-2">No database records yet.</p>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((r, index) => `
+      <div class="bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <span class="planning-pill">${r.planningId || r.databaseId || 'MDB-' + (index + 1)}</span>
+          <span class="text-xs text-gray-500">${String(r.createdAtText || '').slice(0, 10)}</span>
+        </div>
+        <h3 class="text-lg font-extrabold text-gray-800 mb-2">${r.customerName || 'No Name'}</h3>
+        <p class="text-gray-600 text-sm">📱 ${r.customerMobile || '-'}</p>
+        <p class="text-gray-600 text-sm mt-1">📍 ${r.fromLocation || '-'} → ${r.toLocation || '-'}</p>
+        <p class="text-emerald-700 font-extrabold mt-2">💰 Rs. ${Number(r.totalAmount || 0).toLocaleString('en-IN')}</p>
+        <div class="grid grid-cols-2 gap-2 mt-4">
+          <button type="button" onclick="viewMarketingRecord('${recordId(r)}')" class="px-4 py-2 bg-gray-700 text-white rounded-xl font-bold">👁 View</button>
+          <button type="button" onclick="shareMarketingRecord('${recordId(r)}')" class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold">📤 Share</button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  window.viewMarketingRecord = function(id) {
+    const rec = azpMarketingRecords.find(r => recordId(r) === id || r.id === id);
+    if (!rec) return;
+    azpCurrentMarketingRecord = rec;
+
+    const box = document.getElementById('database-preview-container');
+    if (box) {
+      box.innerHTML = `
+        <div class="max-w-2xl mx-auto bg-white rounded-3xl border-4 border-emerald-700 p-6">
+          <h2 class="text-2xl font-extrabold text-emerald-700 mb-4">Marketing Database Record</h2>
+          <div class="space-y-3 text-gray-800">
+            <p><b>Party Name:</b> ${rec.customerName || '-'}</p>
+            <p><b>Party Contact Number:</b> ${rec.customerMobile || '-'}</p>
+            <p><b>From Location:</b> ${rec.fromLocation || '-'}</p>
+            <p><b>To Location:</b> ${rec.toLocation || '-'}</p>
+            <p><b>Total Amount:</b> Rs. ${Number(rec.totalAmount || 0).toLocaleString('en-IN')}</p>
+            <p><b>Planning ID:</b> ${rec.planningId || '-'}</p>
+            <p><b>Quotation ID:</b> ${rec.quotationId || '-'}</p>
+          </div>
+        </div>`;
+    }
+    if (typeof window.showView === 'function') window.showView('database-preview');
+  };
+
+  window.shareMarketingRecord = async function(id) {
+    const rec = azpMarketingRecords.find(r => recordId(r) === id || r.id === id);
+    if (!rec) return;
+    azpCurrentMarketingRecord = rec;
+    await shareCurrentMarketingRecord();
+  };
+
+  window.shareCurrentMarketingRecord = async function() {
+    const rec = azpCurrentMarketingRecord;
+    if (!rec) return;
+
+    const msg =
+`📋 A TO Z Packers & Movers
+
+👤 Customer: ${rec.customerName || '-'}
+📱 Mobile: ${rec.customerMobile || '-'}
+📍 From: ${rec.fromLocation || '-'}
+📍 To: ${rec.toLocation || '-'}
+💰 Amount: ₹${Number(rec.totalAmount || 0).toLocaleString('en-IN')}
+
+Planning ID: ${rec.planningId || '-'}
+Quotation ID: ${rec.quotationId || '-'}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: msg });
+        return;
+      } catch(e) {}
+    }
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('marketing-db-search')?.addEventListener('input', renderMarketingDatabase);
+    fetchMarketingDatabase().catch(console.error);
+    setDoc(doc(azpMarketingDb, 'marketingDatabase', '_setup'), {
+      status: 'Ready',
+      collectionName: 'marketingDatabase',
+      fields: {
+        customerName: 'Party Name',
+        customerMobile: 'Party Contact Number',
+        fromLocation: 'From Location',
+        toLocation: 'To Location',
+        totalAmount: 'Total Amount',
+        planningId: 'Planning ID',
+        quotationId: 'Quotation ID'
+      },
+      updatedAt: serverTimestamp()
+    }, { merge: true }).catch(console.error);
+  });
+</script>
+
+
+<script>
+/* AZP Work Start Date Patch */
+(function(){
+  function val(id){
+    const el = document.getElementById(id);
+    return el ? (el.value || '') : '';
+  }
+  function setVal(id, value){
+    const el = document.getElementById(id);
+    if (el) el.value = value || '';
+  }
+  function bestWorkDate(){
+    return val('plan_work_start_date') || val('plan_shifting_date') || val('agr_work_start_date') || val('agr_start_date') || '';
+  }
+
+  // Fill Agreement Work Start Date from Planning fields whenever Agreement is opened or previewed
+  function syncWorkDateToAgreement(){
+    if (!val('agr_work_start_date')) setVal('agr_work_start_date', bestWorkDate());
+  }
+
+  // Fill Database Work Start Date from Planning/Agreement fields
+  function syncWorkDateToDatabase(){
+    if (!val('mkt_work_start_date')) setVal('mkt_work_start_date', bestWorkDate());
+  }
+
+  // Wrap existing view switch
+  const oldShowView = window.showView;
+  window.showView = function(viewName){
+    const result = typeof oldShowView === 'function' ? oldShowView.apply(this, arguments) : undefined;
+    setTimeout(function(){
+      if (viewName === 'agreement-sheet' || viewName === 'agreement-sheet-preview') syncWorkDateToAgreement();
+      if (viewName === 'database' || viewName === 'database-preview') syncWorkDateToDatabase();
+    }, 50);
+    return result;
+  };
+
+  // Wrap Agreement functions
+  ['previewAgreementSheet','saveAgreementToDevice','shareAgreementPDF'].forEach(function(fnName){
+    const oldFn = window[fnName];
+    window[fnName] = function(){
+      syncWorkDateToAgreement();
+      return typeof oldFn === 'function' ? oldFn.apply(this, arguments) : undefined;
+    };
+  });
+
+  // Wrap Marketing Database save/copy functions
+  ['syncMarketingDatabaseFromPlanning','saveManualMarketingRecord'].forEach(function(fnName){
+    const oldFn = window[fnName];
+    window[fnName] = function(){
+      // Always show the value in the textbox immediately
+      setVal('mkt_party_name', val('mkt_party_name') || val('plan_customer_name'));
+      setVal('mkt_party_contact', val('mkt_party_contact') || val('plan_party_mobile'));
+      setVal('mkt_from_location', val('mkt_from_location') || val('plan_from_location'));
+      setVal('mkt_to_location', val('mkt_to_location') || val('plan_to_location'));
+      setVal('mkt_total_amount', val('mkt_total_amount') || val('plan_total_price'));
+      setVal('mkt_planning_id', val('mkt_planning_id') || val('plan_backend_id'));
+      setVal('mkt_quotation_id', val('mkt_quotation_id') || val('plan_linked_quotation_no'));
+      syncWorkDateToDatabase();
+      return typeof oldFn === 'function' ? oldFn.apply(this, arguments) : undefined;
+    };
+  });
+
+  // Wrap render/view/share database if possible to include Work Start Date in visible/share data
+  const oldShareCurrentMarketingRecord = window.shareCurrentMarketingRecord;
+  window.shareCurrentMarketingRecord = async function(){
+    if (window.azpCurrentMarketingRecord && !window.azpCurrentMarketingRecord.workStartDate) {
+      window.azpCurrentMarketingRecord.workStartDate = val('mkt_work_start_date') || bestWorkDate();
+    }
+    return typeof oldShareCurrentMarketingRecord === 'function' ? await oldShareCurrentMarketingRecord.apply(this, arguments) : undefined;
+  };
+
+  // Add workStartDate into manual save record by mirroring value to window before module scripts read values
+  document.addEventListener('input', function(e){
+    if (e.target && (e.target.id === 'plan_work_start_date' || e.target.id === 'agr_work_start_date')) {
+      syncWorkDateToAgreement();
+      syncWorkDateToDatabase();
+    }
+  });
+
+  window.azpGetWorkStartDate = bestWorkDate;
+})();
+</script>
+
+
+<script type="module">
+  // AZP Database Auto-Fill From Planning Sheet Patch v5
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy, limit, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+  const AZP_DB_FILL_CONFIG = {
+    apiKey: "AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14",
+    authDomain: "az-packers-quotation.firebaseapp.com",
+    projectId: "az-packers-quotation",
+    storageBucket: "az-packers-quotation.firebasestorage.app",
+    messagingSenderId: "682004383688",
+    appId: "1:682004383688:web:b795a19579dba9a612a2fd"
+  };
+  const azpDbFillApp = getApps().length ? getApp() : initializeApp(AZP_DB_FILL_CONFIG);
+  const azpDbFillDb = getFirestore(azpDbFillApp);
+
+  function gv(id) {
+    const el = document.getElementById(id);
+    return el ? String(el.value || '').trim() : '';
+  }
+
+  function sv(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = value || '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  function money(v) {
+    const n = Number(String(v || '0').replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function safeId(v) {
+    return String(v || ('MDB_' + Date.now()))
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .slice(0, 160);
+  }
+
+  function normalizePlanning(p) {
+    p = p || {};
+    return {
+      customerName: p.customerName || p.customer_name || p.plan_customer_name || p.partyName || p.party_name || p.name || '',
+      customerMobile: p.customerMobile || p.customer_mobile || p.partyMobile || p.party_mobile || p.contactNumber || p.contact_number || p.plan_party_mobile || p.mobile || '',
+      fromLocation: p.fromLocation || p.from_location || p.plan_from_location || p.from || '',
+      toLocation: p.toLocation || p.to_location || p.plan_to_location || p.to || '',
+      workStartDate: p.workStartDate || p.work_start_date || p.plan_work_start_date || p.shiftingDate || p.shifting_date || p.plan_shifting_date || '',
+      totalAmount: p.totalAmount || p.total_amount || p.totalPrice || p.total_price || p.plan_total_price || p.grand_total || p.amount || 0,
+      planningId: p.planningId || p.planning_id || p.planningNo || p.planning_no || p.plan_no || p.id || p.firebaseId || '',
+      quotationId: p.quotationId || p.quotation_id || p.quotationNo || p.quotation_no || p.quotation_number || p.linked_quotation_no || p.plan_linked_quotation_no || ''
+    };
+  }
+
+  function currentPlanningFormData() {
+    return {
+      customerName: gv('plan_customer_name'),
+      customerMobile: gv('plan_party_mobile'),
+      fromLocation: gv('plan_from_location'),
+      toLocation: gv('plan_to_location'),
+      workStartDate: gv('plan_work_start_date') || gv('plan_shifting_date'),
+      totalAmount: gv('plan_total_price'),
+      planningId: gv('plan_backend_id'),
+      quotationId: gv('plan_linked_quotation_no')
+    };
+  }
+
+  function fillDatabaseFields(rec) {
+    rec = normalizePlanning(rec);
+    sv('mkt_party_name', rec.customerName);
+    sv('mkt_party_contact', rec.customerMobile);
+    sv('mkt_from_location', rec.fromLocation);
+    sv('mkt_to_location', rec.toLocation);
+    sv('mkt_work_start_date', rec.workStartDate);
+    sv('mkt_total_amount', rec.totalAmount ? String(rec.totalAmount) : '');
+    sv('mkt_planning_id', rec.planningId);
+    sv('mkt_quotation_id', rec.quotationId);
+    return rec;
+  }
+
+  async function latestPlanningFromFirebase() {
+    const col = collection(azpDbFillDb, 'planningSheets');
+    let snap;
+    try {
+      snap = await getDocs(query(col, orderBy('updatedAt', 'desc'), limit(1)));
+    } catch (e) {
+      snap = await getDocs(col);
+    }
+    const rows = snap.docs
+      .filter(d => d.id !== '_setup')
+      .map(d => ({ firebaseId: d.id, ...d.data() }));
+    return rows[0] || null;
+  }
+
+  function latestPlanningFromLocal() {
+    const rows = [];
+    ['planningSheets','savedPlanningSheets','azpPlanningSheets','planning_sheets'].forEach(k => {
+      try {
+        const data = JSON.parse(localStorage.getItem(k) || '[]');
+        if (Array.isArray(data)) rows.push(...data);
+      } catch(e) {}
+    });
+    ['planningSheets','savedPlanningSheets','azpPlanningSheets'].forEach(k => {
+      if (Array.isArray(window[k])) rows.push(...window[k]);
+    });
+    return rows[rows.length - 1] || null;
+  }
+
+  async function saveDatabaseRecordFromFields() {
+    const rec = {
+      recordType: 'marketingDatabase',
+      databaseId: safeId('MDB_' + (gv('mkt_planning_id') || gv('mkt_party_contact') || Date.now())),
+      customerName: gv('mkt_party_name'),
+      customerMobile: gv('mkt_party_contact'),
+      fromLocation: gv('mkt_from_location'),
+      toLocation: gv('mkt_to_location'),
+      workStartDate: gv('mkt_work_start_date'),
+      totalAmount: money(gv('mkt_total_amount')),
+      planningId: gv('mkt_planning_id'),
+      quotationId: gv('mkt_quotation_id'),
+      createdAtText: new Date().toISOString(),
+      updatedAtText: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    const id = safeId(rec.databaseId || rec.planningId || rec.customerMobile);
+    await setDoc(doc(azpDbFillDb, 'marketingDatabase', id), rec, { merge: true });
+    return rec;
+  }
+
+  window.copyPlanningDataToDatabaseFields = async function() {
+    // 1. First try current Planning Sheet form visible/hidden values
+    let rec = currentPlanningFormData();
+    const hasCurrent = rec.customerName || rec.customerMobile || rec.fromLocation || rec.toLocation || rec.totalAmount;
+
+    // 2. If current form is blank, try latest local saved planning
+    if (!hasCurrent) {
+      rec = latestPlanningFromLocal() || rec;
+    }
+
+    // 3. If still blank, try latest Firebase planningSheets record
+    const normalized = normalizePlanning(rec);
+    if (!normalized.customerName && !normalized.customerMobile && !normalized.fromLocation && !normalized.toLocation) {
+      const fb = await latestPlanningFromFirebase();
+      if (fb) rec = fb;
+    }
+
+    const finalRec = fillDatabaseFields(rec);
+
+    if (!finalRec.customerName && !finalRec.customerMobile && !finalRec.fromLocation && !finalRec.toLocation) {
+      alert('Planning Sheet data not found. Please first save Planning Sheet, then open Database and click Copy Planning Data.');
+      return null;
+    }
+
+    return finalRec;
+  };
+
+  // Override the green button function: fill text boxes immediately, then save to Firebase.
+  window.syncMarketingDatabaseFromPlanning = async function() {
+    try {
+      await window.copyPlanningDataToDatabaseFields();
+      await saveDatabaseRecordFromFields();
+      alert('Planning data copied into text boxes and saved in Firebase.');
+      if (typeof window.renderMarketingDatabase === 'function') window.renderMarketingDatabase();
+    } catch (e) {
+      console.error(e);
+      alert('Copy failed. Check Firestore rules for planningSheets and marketingDatabase.');
+    }
+  };
+
+  // Keep blue save button working from the visible text boxes.
+  window.saveManualMarketingRecord = async function() {
+    try {
+      if (!gv('mkt_party_name') && !gv('mkt_party_contact')) {
+        alert('Please enter Party Name or Contact Number.');
+        return;
+      }
+      await saveDatabaseRecordFromFields();
+      alert('Database record saved in Firebase.');
+      if (typeof window.renderMarketingDatabase === 'function') window.renderMarketingDatabase();
+    } catch (e) {
+      console.error(e);
+      alert('Database save failed. Check Firestore rules for marketingDatabase.');
+    }
+  };
+
+  window.clearMarketingFields = function() {
+    ['mkt_party_name','mkt_party_contact','mkt_from_location','mkt_to_location','mkt_work_start_date','mkt_total_amount','mkt_planning_id','mkt_quotation_id'].forEach(id => sv(id, ''));
+  };
 </script>
 
 </body>
