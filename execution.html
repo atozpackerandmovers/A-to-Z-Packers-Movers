@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A TO Z Execution Management</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} body{font-family:'DM Sans',sans-serif;background:#f1f5f9}.module-tab.active{background:#1e3a5f;color:#fff}.module-tab:not(.active):hover{background:#e2e8f0;color:#0f172a}.card-stat{transition:transform .2s}.card-stat:hover{transform:translateY(-2px)}.form-overlay{display:none}.form-overlay.show{display:flex}.toast{animation:slideIn .3s ease}@keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}.hide-scroll::-webkit-scrollbar{width:5px;height:5px}.hide-scroll::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:999px}.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}.mobile-bottom{display:none}@media(max-width:768px){.app-shell{display:block!important}.sidebar{width:100%!important;position:relative!important;top:auto!important;z-index:30}.side-nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:row;overflow:visible;gap:8px;padding-bottom:8px}.module-tab{justify-content:center;text-align:center;min-height:58px;flex-direction:column;font-size:12px!important;padding:8px 4px!important}.main-content{width:100%!important}.desktop-title{display:none}.content-pad{padding:14px!important}.mobile-bottom{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #e2e8f0;padding:6px;z-index:40}.mobile-bottom button{font-size:11px;border-radius:12px;padding:8px 4px;font-weight:800}.with-bottom-pad{padding-bottom:82px!important}.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.record-card{display:block!important}.record-actions{margin-top:12px;justify-content:stretch!important}.record-actions button{flex:1}}
+  </style>
+
+  <style id="azp-mobile-drawer-patch">
+    .mobile-menu-btn{display:none}.mobile-drawer-overlay{display:none}
+    @media(max-width:768px){
+      .sidebar{width:100%!important;position:sticky!important;top:0!important;z-index:50!important;display:block!important;min-height:auto!important}
+      .sidebar>.p-4{display:grid!important;grid-template-columns:1fr auto!important;align-items:center!important;gap:12px!important;padding:18px 16px!important}
+      .sidebar>.p-4 h1{font-size:22px!important;line-height:1.1!important}.sidebar>.p-4 p{font-size:13px!important}.sidebar>.p-4 #firebase-status{grid-column:1/2;margin-top:6px!important;width:max-content}.mobile-menu-btn{display:inline-flex!important;grid-column:2/3;grid-row:1/3;align-items:center;justify-content:center;width:48px;height:48px;border-radius:16px;background:#1e3a5f;color:#fff;font-weight:900;border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+      .mobile-menu-btn svg{width:26px;height:26px}
+      .side-nav{display:flex!important;position:fixed!important;top:0!important;left:0!important;width:min(84vw,340px)!important;height:100vh!important;background:#0f172a!important;z-index:80!important;padding:18px 12px 24px!important;overflow-y:auto!important;box-shadow:20px 0 50px rgba(0,0,0,.35)!important;transform:translateX(-105%)!important;transition:transform .25s ease!important;grid-template-columns:none!important;grid-auto-flow:row!important;gap:7px!important;flex-direction:column!important}
+      .side-nav:before{content:'☰  All Sections';display:block;color:#fff;font-weight:900;font-size:18px;padding:8px 10px 14px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:8px}
+      body.azp-menu-open .side-nav{transform:translateX(0)!important}
+      body.azp-menu-open .mobile-drawer-overlay{display:block!important;position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:70;backdrop-filter:blur(2px)}
+      .side-nav .module-tab{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;text-align:left!important;min-height:48px!important;font-size:14px!important;padding:11px 12px!important;border-radius:14px!important;color:#e2e8f0!important;background:transparent!important}
+      .side-nav .module-tab.active{background:#1e3a5f!important;color:#fff!important}.side-nav .module-tab i{width:18px!important;height:18px!important;flex:0 0 18px}.main-content{width:100%!important}.content-pad{padding:14px!important}.with-bottom-pad{padding-bottom:82px!important}
+      .mobile-bottom{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #e2e8f0;padding:6px;z-index:40}.mobile-bottom button{font-size:11px;border-radius:12px;padding:8px 4px;font-weight:800}
+    }
+  </style>
+
+  <style id="azp-drawer-clarity-fix">
+    @media(max-width:768px){
+      body.azp-menu-open .sidebar{z-index:110!important;}
+      body.azp-menu-open .side-nav{z-index:130!important;filter:none!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+      body.azp-menu-open .mobile-drawer-overlay{z-index:60!important;background:rgba(15,23,42,.42)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+      .side-nav{background:#0f172a!important;filter:none!important;opacity:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+      .side-nav .module-tab,.side-nav:before{filter:none!important;opacity:1!important;text-shadow:none!important;}
+      .azp-drawer-close{position:sticky;top:0;margin:-8px 0 8px auto;width:44px;height:44px;border-radius:14px;background:#1e3a5f;color:#fff;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);z-index:2;}
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full">
+  <div class="app-shell flex w-full" style="min-height:100vh">
+    <aside class="sidebar w-60 bg-slate-900 text-white flex-shrink-0 flex flex-col">
+      <div class="p-4 border-b border-slate-700">
+        <h1 class="font-extrabold text-lg">A TO Z Execution</h1>
+        <p class="text-xs opacity-70 mt-1">Packers & Movers Management</p>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" type="button" aria-label="Open sections menu"><i data-lucide="menu"></i></button>
+        <div id="firebase-status" class="mt-3 chip bg-amber-100 text-amber-800">Connecting...</div>
+      </div>
+      <nav class="side-nav flex-1 p-2 space-y-1 hide-scroll" id="nav-menu"><button type="button" id="azp-drawer-close" class="azp-drawer-close">×</button></nav>
+    </aside>
+
+    <main class="main-content flex-1 bg-slate-50 overflow-y-auto with-bottom-pad">
+      <header class="bg-white border-b px-6 py-4 flex items-center justify-between gap-3 sticky top-0 z-20">
+        <div>
+          <h2 id="page-heading" class="font-bold text-lg text-slate-800">Dashboard</h2>
+          <p id="page-subtitle" class="text-xs text-slate-500">Execution transparency dashboard</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="import-planning-btn" class="hidden px-3 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 font-bold">Import Planning</button>
+          <button id="add-btn" class="hidden px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 items-center gap-1 font-bold"><i data-lucide="plus" style="width:14px;height:14px"></i><span>Add New</span></button>
+        </div>
+      </header>
+
+      <div class="content-pad p-6" id="content-area">
+        <section id="mod-dashboard">
+          <div class="stat-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Total Jobs</p><p id="count-jobs" class="text-2xl font-extrabold text-slate-800 mt-1">0</p></div>
+            <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Attendance Today</p><p id="count-attendance" class="text-2xl font-extrabold text-slate-800 mt-1">0</p></div>
+            <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Pending Payment</p><p id="count-pending" class="text-2xl font-extrabold text-orange-600 mt-1">₹0</p></div>
+            <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Total Expense</p><p id="count-expense" class="text-2xl font-extrabold text-red-600 mt-1">₹0</p></div>
+            <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Net Profit</p><p id="count-profit" class="text-2xl font-extrabold text-emerald-600 mt-1">₹0</p></div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden"><div class="p-4 border-b flex justify-between"><h3 class="font-bold text-slate-700">Recent Jobs</h3><span id="recent-job-count" class="chip bg-blue-100 text-blue-700">0</span></div><div id="recent-jobs" class="divide-y max-h-96 overflow-y-auto hide-scroll"><p class="p-4 text-sm text-slate-400 text-center">No jobs yet</p></div></div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden"><div class="p-4 border-b"><h3 class="font-bold text-slate-700">Quick Role Use</h3></div><div class="p-4 grid grid-cols-1 gap-3 text-sm"><div class="p-3 rounded-xl bg-slate-50"><b>Admin:</b> full control, payment, profit/loss, reports.</div><div class="p-3 rounded-xl bg-slate-50"><b>Driver:</b> job status, fuel, meter, route update.</div><div class="p-3 rounded-xl bg-slate-50"><b>Worker:</b> attendance, work status, fooding, remarks.</div><div class="p-3 rounded-xl bg-slate-50"><b>Vendor:</b> assigned work, bill and payment status.</div></div></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="mobile-drawer-overlay" class="mobile-drawer-overlay"></div>
+  <div class="mobile-bottom" id="mobile-bottom"></div>
+
+  <div id="form-overlay" class="form-overlay fixed inset-0 bg-black/50 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto">
+      <div class="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+        <h3 id="form-title" class="font-bold text-slate-800">Add Record</h3>
+        <button id="form-close" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+      </div>
+      <form id="record-form" class="p-5 space-y-3"><div id="form-fields"></div><div class="flex gap-2 pt-3"><button type="submit" id="form-submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg text-sm font-bold hover:bg-blue-700">Save</button><button type="button" id="form-cancel" class="px-4 py-3 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200">Cancel</button></div></form>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-4 right-4 z-[60] hidden"><div class="toast bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-bold"></div></div>
+
+  <script type="module">
+    import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',
+      authDomain: 'az-packers-quotation.firebaseapp.com',
+      projectId: 'az-packers-quotation',
+      storageBucket: 'az-packers-quotation.firebasestorage.app',
+      messagingSenderId: '682004383688',
+      appId: '1:682004383688:web:b795a19579dba9a612a2fd'
+    };
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const MAIN_COLLECTION = 'azpExecutionRecords';
+    let allData = [];
+    let currentModule = 'dashboard';
+    let unsubscribe = null;
+
+    const money = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
+    const safeId = s => String(s || ('EXE_' + Date.now())).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,90);
+    const todayISO = () => new Date().toISOString().split('T')[0];
+
+    const modules = {
+      dashboard:{label:'Dashboard',subtitle:'Execution transparency dashboard',icon:'layout-dashboard',collection:null},
+      startup:{label:'Start Up',subtitle:'Master setup, default vehicles/staff and system health',icon:'settings',collection:null},
+      vehicleMaster:{label:'Vehicle Master',subtitle:'Permanent vehicle list and document alerts',icon:'bus',collection:'vehicleMaster', fields:[['vehicle_number','Vehicle Number','text'],['vehicle_type','Vehicle Type','select',['Pickup','Mini','407','10 ft','14 ft','17 ft','18 ft','Container']],['rc_number','RC Number','text'],['assigned_driver','Assigned Driver','masterSelect','driverMaster'],['insurance_expiry','Insurance Expiry','date'],['pollution_expiry','Pollution Expiry','date'],['fitness_expiry','Fitness Expiry','date'],['permit_expiry','Permit Expiry','date'],['current_km','Current KM','number'],['next_service_due_km','Next Service Due KM','number'],['status','Status','select',['Active','Inactive','Maintenance']],['remarks','Remarks','textarea']]},
+      driverMaster:{label:'Driver Master',subtitle:'Permanent driver list for dropdown use',icon:'id-card',collection:'driverMaster', fields:[['driver_name','Driver Name','text'],['mobile','Mobile Number','tel'],['license_number','License Number','text'],['assigned_vehicle','Assigned Vehicle','masterSelect','vehicleMaster'],['joining_date','Joining Date','date'],['status','Status','select',['Active','Inactive','Blacklist']],['remarks','Remarks','textarea']]},
+      workerMaster:{label:'Worker Master',subtitle:'Permanent worker list for attendance and duty',icon:'user-round',collection:'workerMaster', fields:[['worker_name','Worker Name','text'],['mobile','Mobile Number','tel'],['department','Department','select',['Packing','Loading','Unloading','Office','Other']],['joining_date','Joining Date','date'],['status','Status','select',['Active','Inactive','Blacklist']],['remarks','Remarks','textarea']]},
+      jobs:{label:'Jobs',subtitle:'Execution job control',icon:'truck',collection:'jobs', fields:[
+        ['job_id','Job ID','text'],['customer_name','Customer Name','text'],['mobile','Mobile','tel'],['from_location','From','text'],['to_location','To','text'],['work_date','Date','date'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['vehicle_type','Vehicle Type','select',['Pickup','Mini','407','10 ft','14 ft','17 ft','18 ft','Container']],['driver','Driver','masterSelect','driverMaster'],['workers','Workers','text'],['team_leader','Team Leader','masterSelect','workerMaster'],['total_amount','Total Amount (₹)','number'],['advance_received','Advance (₹)','number'],['loading_payment','Loading Payment (₹)','number'],['unloading_payment','Unloading Payment (₹)','number'],['payment_status','Payment Status','select',['Pending','Partial','Paid']],['status','Job Status','select',['Assigned','Reached Pickup','Loading','In Transit','Reached Destination','Unloading','Completed','Cancelled']],['remarks','Remarks','textarea']
+      ]},
+      payments:{label:'Party Payment',subtitle:'Customer payment tracking',icon:'indian-rupee',collection:'payments', fields:[['job_id','Job ID','text'],['customer_name','Customer Name','text'],['total_amount','Total Amount (₹)','number'],['advance_received','Advance (₹)','number'],['loading_payment','Loading Payment (₹)','number'],['unloading_payment','Unloading Payment (₹)','number'],['payment_mode','Payment Mode','select',['Cash','UPI','Bank Transfer','Online','Cheque']],['payment_status','Payment Status','select',['Pending','Partial','Paid']],['remarks','Remarks','textarea']]},
+      driver:{label:'Driver',subtitle:'Driver duty and meter details',icon:'steering-wheel',collection:'driver', fields:[['driver_name','Driver Name','masterSelect','driverMaster'],['mobile','Mobile','tel'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['job_id','Job ID','text'],['meter_start','Meter Start','number'],['meter_end','Meter End','number'],['driver_cost','Driver Bata/Cost (₹)','number'],['duty_date','Duty Date','date'],['status','Status','select',['Assigned','Reached Pickup','Loading Started','Vehicle Started','Reached Destination','Completed']],['remarks','Remarks','textarea']]},
+      workers:{label:'Workers',subtitle:'Worker task and work status',icon:'users',collection:'workers', fields:[['worker_name','Worker Name','masterSelect','workerMaster'],['mobile','Mobile','tel'],['job_id','Job ID','text'],['team_leader','Team Leader','masterSelect','workerMaster'],['work_date','Work Date','date'],['worker_cost','Worker Cost (₹)','number'],['status','Status','select',['Assigned','Present','Work Started','Packing Done','Loading Done','Unloading Done','Completed']],['remarks','Remarks','textarea']]},
+      attendance:{label:'Attendance',subtitle:'Daily attendance record from master staff list',icon:'clock',collection:'attendance', fields:[['employee_name','Employee Name','masterSelect','employeeMaster'],['role','Role','select',['Driver','Worker','Office','Vendor']],['date','Date','date'],['check_in','Check In','time'],['check_out','Check Out','time'],['attendance_status','Status','select',['Present','Absent','Half Day','Leave']],['remarks','Remarks','textarea']]},
+      fuel:{label:'Fuel',subtitle:'Vehicle fuel and meter expense',icon:'fuel',collection:'fuel', fields:[['date','Date','date'],['job_id','Job ID','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver','Driver','masterSelect','driverMaster'],['fuel_litre','Fuel Litres','number'],['fuel_cost','Fuel Cost (₹)','number'],['meter_reading','Meter Reading','number'],['remarks','Remarks','textarea']]},
+      materialStock:{label:'Material Stock',subtitle:'Godown stock, purchase and available balance',icon:'warehouse',collection:'materialStock', fields:[['date','Date','date'],['item_name','Material Item','select',['Lamination','Bubble Sheet','Fabric Sheet','Cartons','Cello Tape','Rope','Stretch Film','Thermocol','Blue Foam','Corrugated Sheet','Other']],['opening_stock','Opening Stock','number'],['purchase_qty','Purchase Qty','number'],['purchase_cost','Purchase Cost (₹)','number'],['used_qty','Used Qty','number'],['reorder_level','Reorder Level','number'],['remarks','Remarks','textarea']]},
+      material:{label:'Material Issue',subtitle:'Job-wise packing material issue with team leader and route',icon:'package',collection:'material', fields:[['date','Issue Date','date'],['job_id','Job ID','text'],['customer_name','Customer Name','text'],['team_leader','Team Leader Name','masterSelect','employeeMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['from_location','From Location','text'],['to_location','To Location','text'],['work_type','Work Type','select',['Household Shifting','Office Shifting','Bike Transport','Car Transport','Packing Only','Loading/Unloading','Storage','Other']],['issued_by','Issued By','text'],['received_by','Received By (Team Leader)','masterSelect','employeeMaster'],['lamination','Lamination','number'],['bubble_sheet','Bubble Sheet','number'],['fabric_sheet','Fabric Sheet','number'],['cartons','Cartons','number'],['cello_tape','Cello Tape','number'],['rope','Rope','number'],['stretch_film','Stretch Film','number'],['material_cost','Material Cost (₹)','number'],['remarks','Remarks','textarea']]},
+      fooding:{label:'Fooding',subtitle:'Team fooding expense',icon:'utensils',collection:'fooding', fields:[['date','Date','date'],['job_id','Job ID','text'],['team','Team/Names','text'],['persons','No. of Persons','number'],['amount','Amount (₹)','number'],['remarks','Remarks','textarea']]},
+      vendors:{label:'Vendors',subtitle:'All Odisha / All India vendor directory + job allotment',icon:'handshake',collection:'vendors', fields:[['vendor_name','Vendor Name','text'],['contact_number','Contact Number','tel'],['whatsapp_number','WhatsApp Number','tel'],['vendor_city','Vendor City','text'],['vendor_state','Vendor State','text'],['coverage_type','Coverage Type','select',['All Odisha','All India','City Wise','State Wise','Route Wise']],['service_area','Service Area / Cities Covered','textarea'],['service_type','Service Type','text'],['source_type','Source Type','select',['Online Third Party','Local Vendor','Own Network','Reference']],['job_id','Job ID (only if allotted)','text'],['payment_due','Vendor Cost / Payment Due (₹)','number'],['payment_status','Payment Status','select',['Pending','Partial','Paid']],['vendor_status','Vendor Status','select',['Active','Preferred','Blacklist','Inactive']],['vendor_rating','Vendor Rating (1-5)','number'],['remarks','Remarks','textarea']]},
+      repairing:{label:'Repairing',subtitle:'Vehicle repairing expense and maintenance report',icon:'wrench',collection:'repairing', fields:[['job_id','Job ID (optional)','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['repair_date','Repair Date','date'],['garage_name','Garage Name','text'],['garage_mobile','Garage Mobile Number','tel'],['repair_status','Repair Status','select',['Emergency','Routine Service','Breakdown']],['repair_type','Repair Type','select',['Engine','Tyre','Battery','Brake','Clutch','Electrical','AC','Body Work','Other']],['vehicle_km_reading','Vehicle KM Reading','number'],['next_service_due_km','Next Service Due KM','number'],['description','Description','textarea'],['amount','Amount (₹)','number'],['bill_available','Bill Available','select',['Yes','No']],['approved_by','Approved By','select',['Manoj Kumar Swain','Office Staff']],['remarks','Remarks','textarea']]},
+      documents:{label:'Vehicle Docs',subtitle:'Insurance, fitness, permit expiry',icon:'file-text',collection:'documents', fields:[['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['insurance_expiry','Insurance Expiry','date'],['pollution_expiry','Pollution Expiry','date'],['fitness_expiry','Fitness Expiry','date'],['permit_expiry','Permit Expiry','date'],['remarks','Remarks','textarea']]},
+      payroll:{label:'Salary',subtitle:'Salary, advance, bonus and deduction with master employee dropdown',icon:'banknote',collection:'payroll', fields:[['employee_name','Employee','masterSelect','employeeMaster'],['role','Role','select',['Driver','Worker','Office','Vendor']],['month','Month','month'],['salary','Salary (₹)','number'],['advance','Advance (₹)','number'],['deduction','Deduction (₹)','number'],['bonus','Bonus (₹)','number'],['net_salary','Net Salary (₹)','number'],['remarks','Remarks','textarea']]},
+      bonus:{label:'Bonus',subtitle:'Extra bonus and reward',icon:'gift',collection:'bonus', fields:[['employee_name','Employee Name','masterSelect','employeeMaster'],['role','Role','select',['Driver','Worker','Office','Vendor']],['reason','Reason','text'],['amount','Amount (₹)','number'],['date','Date','date']]},
+      gps:{label:'Vehicle GPS',subtitle:'Location update tracking',icon:'map-pin',collection:'gps', fields:[['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['current_location','Current Location','text'],['last_updated','Last Updated Date','date'],['remarks','Remarks','textarea']]},
+      list:{label:'Black/White',subtitle:'Blacklist and whitelist control',icon:'shield-alert',collection:'list', fields:[['name','Name','text'],['mobile','Mobile','tel'],['role','Role','select',['Driver','Worker','Vendor','Customer','Other']],['status','Status','select',['Blacklist','Whitelist']],['reason','Reason','textarea'],['date','Date','date']]},
+      feedback:{label:'Feedback',subtitle:'Customer feedback and review',icon:'star',collection:'feedback', fields:[['customer_name','Customer','text'],['mobile','Mobile','tel'],['job_id','Job ID','text'],['rating','Rating (1-5)','number'],['feedback','Feedback','textarea'],['review_collected','Review Collected','select',['Yes','No','Pending']],['date','Date','date']]},
+      profit:{label:'Profit & Loss',subtitle:'Auto profit/loss by Job ID from payment and expense sections',icon:'trending-up',collection:'profit', fields:[['job_id','Job ID','text'],['customer_name','Customer Name','text'],['misc_expense','Extra/Misc Expense (₹)','number'],['misc_income','Extra Income (₹)','number'],['remarks','Remarks','textarea']]}
+    };
+
+    function buildSections(){
+      const nav = document.getElementById('nav-menu');
+      const bottom = document.getElementById('mobile-bottom');
+      nav.innerHTML = ''; bottom.innerHTML = '';
+      Object.entries(modules).forEach(([key,m])=>{
+        const b = document.createElement('button'); b.className = 'module-tab w-full text-left px-3 py-2 rounded text-sm flex items-center gap-2 ' + (key==='dashboard'?'active':''); b.dataset.module=key; b.innerHTML=`<i data-lucide="${m.icon}" style="width:16px;height:16px"></i><span>${m.label}</span>`; nav.appendChild(b);
+        if(!document.getElementById('mod-'+key) && key!=='dashboard'){
+          const s=document.createElement('section');s.id='mod-'+key;s.className='hidden';s.innerHTML=`<div id="${key}-list" class="space-y-3"></div><p id="${key}-empty" class="text-center text-slate-400 py-8">No ${m.label} records</p>`;document.getElementById('content-area').appendChild(s);
+        }
+      });
+      [['dashboard','Home'],['jobs','Jobs'],['payments','Pay'],['profit','P/L']].forEach(([k,l])=>{const b=document.createElement('button');b.dataset.module=k;b.className='bg-slate-100 text-slate-700';b.innerHTML=l;bottom.appendChild(b);});
+      lucide.createIcons();
+    }
+
+    function setStatus(text, ok){ const el=document.getElementById('firebase-status'); el.textContent=text; el.className='mt-3 chip '+(ok?'bg-emerald-100 text-emerald-800':'bg-red-100 text-red-800'); }
+    function showToast(msg,isError){const toast=document.getElementById('toast');const inner=toast.querySelector('.toast');inner.textContent=msg;inner.className='toast px-4 py-2 rounded-lg shadow-lg text-sm text-white font-bold '+(isError?'bg-red-600':'bg-green-600');toast.classList.remove('hidden');setTimeout(()=>toast.classList.add('hidden'),2600)}
+
+
+    function closeMobileMenu(){ document.body.classList.remove('azp-menu-open'); }
+    function openMobileMenu(){ document.body.classList.add('azp-menu-open'); }
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', (e)=>{ e.stopPropagation(); document.body.classList.toggle('azp-menu-open'); });
+    document.getElementById('mobile-drawer-overlay')?.addEventListener('click', closeMobileMenu);
+
+    document.addEventListener('click', e=>{
+      const btn=e.target.closest('[data-module]'); if(!btn) return;
+      const key=btn.dataset.module; if(!modules[key]) return; currentModule=key;
+      document.querySelectorAll('.module-tab').forEach(t=>t.classList.toggle('active',t.dataset.module===key));
+      document.querySelectorAll('#mobile-bottom button').forEach(t=>t.classList.toggle('bg-slate-900',t.dataset.module===key));
+      document.querySelectorAll('#mobile-bottom button').forEach(t=>t.classList.toggle('text-white',t.dataset.module===key));
+      document.getElementById('page-heading').textContent=modules[key].label; document.getElementById('page-subtitle').textContent=modules[key].subtitle || '';
+      document.querySelectorAll('[id^="mod-"]').forEach(s=>s.classList.add('hidden')); document.getElementById('mod-'+key).classList.remove('hidden');
+      const addBtn=document.getElementById('add-btn'); addBtn.classList.toggle('hidden',key==='dashboard'); addBtn.classList.toggle('flex',key!=='dashboard');
+      document.getElementById('import-planning-btn').classList.toggle('hidden',key!=='jobs');
+      if(window.innerWidth<=768) closeMobileMenu();
+    });
+
+    document.getElementById('add-btn').addEventListener('click',()=>openForm()); document.getElementById('form-close').addEventListener('click',closeForm); document.getElementById('form-cancel').addEventListener('click',closeForm);
+
+    const defaultDrivers = ['Mahesh','Santosh','Somnath','Sanjay','Ajay'];
+    const defaultWorkers = ['Deepak','Hemant','Babul','Binod','Sillu','Surendra'];
+    const defaultVehicles = ['OD-02-BY-8855','OD-33-AR-8855','OD-05-AP-9537','OD-05-BD-8855','OD-05-BS-8855'];
+    function uniqueOptions(list){ return [...new Set(list.map(v=>String(v||'').trim()).filter(Boolean))]; }
+    function getMasterOptions(source){
+      if(source==='vehicleMaster'){
+        return uniqueOptions([...defaultVehicles, ...allData.filter(r=>r.collection==='vehicleMaster'||r.module==='vehicleMaster').map(r=>r.vehicle_number), ...allData.map(r=>r.vehicle_number)]);
+      }
+      if(source==='driverMaster'){
+        return uniqueOptions([...defaultDrivers, ...allData.filter(r=>r.collection==='driverMaster'||r.module==='driverMaster').map(r=>r.driver_name), ...allData.map(r=>r.driver_name||r.driver)]);
+      }
+      if(source==='workerMaster'){
+        return uniqueOptions([...defaultWorkers, ...allData.filter(r=>r.collection==='workerMaster'||r.module==='workerMaster').map(r=>r.worker_name), ...allData.map(r=>r.worker_name||r.team_leader)]);
+      }
+      if(source==='employeeMaster'){
+        return uniqueOptions([...defaultDrivers, ...defaultWorkers, ...allData.flatMap(r=>[r.employee_name,r.driver_name,r.driver,r.worker_name,r.team_leader,r.received_by])]);
+      }
+      return [];
+    }
+    function selectHtml(key, val, opts){
+      return `<select id="field-${key}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="">Select...</option>${(opts||[]).map(o=>`<option value="${String(o).replace(/"/g,'&quot;')}" ${String(val)===String(o)?'selected':''}>${o}</option>`).join('')}</select>`;
+    }
+
+    function openForm(record){
+      const mod=modules[currentModule]; if(!mod.fields)return;
+      document.getElementById('form-title').textContent=(record?'Edit ':'Add ')+mod.label;
+      const c=document.getElementById('form-fields'); c.innerHTML='';
+      mod.fields.forEach(([key,label,type,opts])=>{
+        const wrap=document.createElement('div');
+        const val=record?.[key]||'';
+        let input='';
+        if(type==='select') input=selectHtml(key,val,opts);
+        else if(type==='masterSelect') input=selectHtml(key,val,getMasterOptions(opts));
+        else if(type==='textarea') input=`<textarea id="field-${key}" rows="3" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">${val}</textarea>`;
+        else input=`<input id="field-${key}" type="${type||'text'}" value="${String(val).replace(/"/g,'&quot;')}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+        wrap.innerHTML=`<label class="block text-xs font-bold text-slate-600 mb-1">${label}</label>${input}`;
+        c.appendChild(wrap);
+      });
+      setTimeout(()=>{
+        const jobInput=document.getElementById('field-job_id');
+        if(jobInput){
+          jobInput.addEventListener('change',()=>{
+            const job=allData.find(r=>r.module==='jobs' && String(r.job_id||'').trim()===String(jobInput.value||'').trim());
+            if(job){
+              const fill = (id,value)=>{ const el=document.getElementById('field-'+id); if(el && !el.value) el.value=value||''; };
+              fill('customer_name',job.customer_name); fill('from_location',job.from_location); fill('to_location',job.to_location);
+              fill('driver_name',job.driver); fill('driver',job.driver); fill('team_leader',job.team_leader);
+              fill('vehicle_number',job.vehicle_number);
+            }
+          });
+        }
+      },0);
+      document.getElementById('record-form').dataset.editId=record?.id||'';
+      document.getElementById('form-overlay').classList.add('show'); lucide.createIcons();
+    }
+    function closeForm(){document.getElementById('form-overlay').classList.remove('show')}
+
+    document.getElementById('record-form').addEventListener('submit', async e=>{ e.preventDefault(); const mod=modules[currentModule]; const editId=e.currentTarget.dataset.editId; const data={ module:currentModule, collection:mod.collection, updatedAt:serverTimestamp() };
+      mod.fields.forEach(([key])=>{ data[key]=document.getElementById('field-'+key)?.value||''; });
+      if(currentModule==='payments'){ const total=+data.total_amount||0, adv=+data.advance_received||0, load=+data.loading_payment||0, unload=+data.unloading_payment||0; data.pending_amount=Math.max(total-adv-load-unload,0); data.payment_status=data.pending_amount<=0?'Paid':(adv+load+unload>0?'Partial':'Pending'); }
+      if(currentModule==='payroll'){ data.net_salary=(+data.salary||0)+(+data.bonus||0)-(+data.advance||0)-(+data.deduction||0); }
+      if(currentModule==='profit'){ const exp=['fuel_expense','worker_expense','driver_expense','fooding_expense','material_expense','vendor_expense','repairing_expense','misc_expense'].reduce((a,k)=>a+(+data[k]||0),0); data.total_expense=exp; data.net_profit=(+data.revenue||0)-exp; }
+      if(!editId) data.createdAt=serverTimestamp(); const id=editId||safeId((data.job_id||data.customer_name||data.employee_name||data.vehicle_number||currentModule)+'_'+Date.now());
+      const btn=document.getElementById('form-submit'); btn.disabled=true; btn.textContent='Saving...'; try{ await setDoc(doc(db,MAIN_COLLECTION,id),data,{merge:true}); showToast('Saved successfully'); closeForm(); }catch(err){ console.error(err); showToast('Firebase rules / connection issue',true); } btn.disabled=false; btn.textContent='Save'; });
+
+    window._edit = id => { const rec=allData.find(r=>r.id===id); if(rec){ currentModule=rec.module; openForm(rec); }};
+    window._del = async id => { if(!confirm('Delete this record?')) return; try{ await deleteDoc(doc(db,MAIN_COLLECTION,id)); showToast('Deleted'); }catch(err){ showToast('Delete failed - rules issue',true); }};
+
+    function recordLine(r, fields){return fields.map(([k,l])=>`<span class="text-xs text-slate-500">${l}: <b class="text-slate-700">${r[k]||'—'}</b></span>`).join(' · ')}
+    function renderList(key){ const mod=modules[key]; if(!mod.collection)return; const rows=allData.filter(r=>r.module===key || r.collection===mod.collection); const list=document.getElementById(key+'-list'), empty=document.getElementById(key+'-empty'); if(!list)return; if(!rows.length){list.innerHTML='';empty?.classList.remove('hidden');return;} empty?.classList.add('hidden');
+      list.innerHTML=rows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)).map(r=>{ const extra = key==='profit'?`<div class="mt-2 chip ${(+r.net_profit||0)>=0?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">Net: ${money(r.net_profit)}</div>`: key==='payments'?`<div class="mt-2 chip ${(+r.pending_amount||0)<=0?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">Pending: ${money(r.pending_amount)}</div>`:''; return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${extra}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''); }
+
+    function renderDashboard(){ const jobs=allData.filter(r=>r.module==='jobs'); const payments=allData.filter(r=>r.module==='payments'); const attendance=allData.filter(r=>r.module==='attendance'&&r.date===todayISO()); const profit=allData.filter(r=>r.module==='profit'); const pending=payments.reduce((a,r)=>a+(+r.pending_amount||0),0) + jobs.reduce((a,r)=>a+Math.max((+r.total_amount||0)-(+r.advance_received||0)-(+r.loading_payment||0)-(+r.unloading_payment||0),0),0); const exp=profit.reduce((a,r)=>a+(+r.total_expense||0),0); const net=profit.reduce((a,r)=>a+(+r.net_profit||0),0);
+      document.getElementById('count-jobs').textContent=jobs.length; document.getElementById('count-attendance').textContent=attendance.length; document.getElementById('count-pending').textContent=money(pending); document.getElementById('count-expense').textContent=money(exp); document.getElementById('count-profit').textContent=money(net); document.getElementById('recent-job-count').textContent=jobs.length;
+      const recent=document.getElementById('recent-jobs'); recent.innerHTML=jobs.length?jobs.slice(-8).reverse().map(j=>`<div class="p-3 flex items-center justify-between gap-3"><div><p class="text-sm font-bold text-slate-800">${j.customer_name||'N/A'} — ${j.from_location||''} → ${j.to_location||''}</p><p class="text-xs text-slate-400">${j.work_date||''} | ${j.vehicle_number||''} | ${j.driver||''}</p></div><span class="chip ${j.status==='Completed'?'bg-emerald-100 text-emerald-700':'bg-yellow-100 text-yellow-700'}">${j.status||'N/A'}</span></div>`).join(''):'<p class="p-4 text-sm text-slate-400 text-center">No jobs yet</p>'; }
+    function renderAll(){ renderDashboard(); Object.keys(modules).forEach(renderList); lucide.createIcons(); }
+
+    document.getElementById('import-planning-btn').addEventListener('click',importPlanning);
+    async function importPlanning(){ const sources=['planningSheets','planning_sheets','azpPlanningSheets','planningSheet']; let count=0; for(const col of sources){ try{ const snap=await getDocs(collection(db,col)); for(const d of snap.docs){ const p=d.data(); const id=safeId('PLAN_'+d.id); const exists=allData.some(r=>r.id===id); if(exists) continue; await setDoc(doc(db,MAIN_COLLECTION,id),{module:'jobs',collection:'jobs',job_id:p.planningId||p.planning_id||p.planning_no||p.plan_no||d.id,customer_name:p.customerName||p.customer_name||p.plan_customer_name||p.partyName||'',mobile:p.mobile||p.party_mobile||p.contact||'',from_location:p.fromLocation||p.from_location||p.plan_from_location||'',to_location:p.toLocation||p.to_location||p.plan_to_location||'',work_date:p.workDate||p.work_start_date||p.shiftingDate||p.plan_shifting_date||'',vehicle_number:p.vehicleNumber||p.vehicle_number||p.plan_vehicle_number||'',vehicle_type:p.vehicleType||p.vehicle_size||p.plan_vehicle_size||'',team_leader:p.teamLeader||p.team_leader||p.plan_team_leader||'',total_amount:p.totalPrice||p.total_price||p.plan_total_price||'',advance_received:p.advancePrice||p.advance_price||p.plan_advance_price||'',payment_status:'Pending',status:'Assigned',importedFrom:col,createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true}); count++; } }catch(err){ console.warn('Planning import skipped',col,err.message); } } showToast(count?`Imported ${count} planning jobs`:'No new planning sheet found'); }
+
+    buildSections();
+    try{ unsubscribe=onSnapshot(query(collection(db,MAIN_COLLECTION)), snap=>{ allData=snap.docs.map(d=>{const v=d.data(); return {id:d.id,...v,updatedAtMs:v.updatedAt?.toMillis?.()||0};}); setStatus('Firebase Connected',true); renderAll(); }, err=>{ console.error(err); setStatus('Rules Issue',false); showToast('Firebase rules issue. Check Firestore rules.',true); }); }catch(err){ setStatus('Connection Failed',false); console.error(err); }
+  </script>
+</body>
+</html>
