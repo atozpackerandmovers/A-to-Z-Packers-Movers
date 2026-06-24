@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A TO Z Driver & Worker App</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box} html,body{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch} body{font-family:'DM Sans',sans-serif;background:#eef2f7;color:#0f172a}.glass{background:rgba(255,255,255,.88);backdrop-filter:blur(16px)}.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:900}.navbtn.active{background:#0f172a;color:#fff;box-shadow:0 12px 28px rgba(15,23,42,.22)}.card{background:white;border:1px solid #e2e8f0;border-radius:24px;box-shadow:0 16px 38px rgba(15,23,42,.08)}.field{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:12px 13px;font-size:14px;outline:none;background:#fff}.field:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.13)}.btn{border-radius:15px;padding:12px 14px;font-weight:900;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:7px}.toast{animation:slideIn .25s ease}@keyframes slideIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}.safe-area{padding-bottom:180px}.bottom-nav{display:none}@media(max-width:780px){.safe-area{padding-bottom:220px!important}.desktop-nav{display:none}.bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid #e2e8f0;padding:7px;gap:5px}.bottom-nav button{font-size:10px;border-radius:13px;padding:8px 3px;font-weight:900}.grid-auto{grid-template-columns:1fr!important}.card{border-radius:20px}.top-title{font-size:22px!important}.hide-mobile{display:none!important}} 
+    .azp-proof-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+    .azp-proof-item{border-radius:16px;padding:10px 12px;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e2e8f0}
+    .azp-proof-pending{background:linear-gradient(90deg,#fff7ed,#fee2e2);color:#991b1b;animation:azpBlinkPending 1s ease-in-out infinite}
+    .azp-proof-approved{background:linear-gradient(90deg,#dcfce7,#ccfbf1);color:#065f46}
+    .azp-proof-waiting{background:linear-gradient(90deg,#eff6ff,#eef2ff);color:#1d4ed8}
+    @keyframes azpBlinkPending{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.62;transform:scale(.99)}}
+    .azp-marquee{overflow:hidden;white-space:nowrap;border-radius:16px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:900;padding:10px 0;margin-top:12px}
+    .azp-marquee span{display:inline-block;padding-left:100%;animation:azpMarquee 22s linear infinite}
+    @keyframes azpMarquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+    .azp-impact{background:#f8fafc;border:1px solid #e2e8f0;border-radius:18px;padding:12px;margin-top:12px;font-size:13px;font-weight:900;color:#334155}
+    @media print{.no-print{display:none!important}body{background:#fff}.card{box-shadow:none}}
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white px-4 py-5 sticky top-0 z-40 no-print">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="top-title text-2xl md:text-3xl font-black tracking-tight">A TO Z Driver & Worker Branch</h1>
+        <p class="text-white/75 text-sm mt-1">Connected with Execution Software • Firebase Permanent Storage</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="firebaseStatus" class="chip bg-amber-100 text-amber-900">Connecting...</span>
+        <button onclick="logout()" class="btn bg-white/10 hover:bg-white/20 text-white">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 py-5 safe-area">
+    <section id="loginPanel" class="card p-5 md:p-7 max-w-xl mx-auto mt-6">
+      <div class="text-center mb-5">
+        <div class="w-16 h-16 rounded-3xl bg-slate-900 text-white grid place-items-center mx-auto text-3xl">👷</div>
+        <h2 class="text-2xl font-black mt-3">Staff Login</h2>
+        <p class="text-slate-500 text-sm mt-1">Select role and name. Staff will see only their own related work.</p>
+      </div>
+      <div class="grid grid-cols-1 gap-3">
+        <label><span class="font-bold text-sm">Role</span><select id="loginRole" class="field mt-1"><option>Driver</option><option>Worker</option><option>Admin Preview</option></select></label>
+        <label><span class="font-bold text-sm">Name</span><select id="loginName" class="field mt-1"></select></label>
+        <label><span class="font-bold text-sm">Mobile / PIN optional</span><input id="loginMobile" class="field mt-1" placeholder="Optional mobile or PIN"></label>
+        <button onclick="login()" class="btn bg-blue-700 hover:bg-blue-800 text-white w-full mt-2">Open My Dashboard</button>
+      </div>
+    </section>
+
+    <section id="appPanel" class="hidden">
+      <div class="card p-4 md:p-5 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-black text-blue-700 uppercase tracking-wide">Logged In</p>
+            <h2 id="staffTitle" class="text-xl md:text-2xl font-black">Staff</h2>
+            <p id="accessNote" class="text-sm text-slate-500 mt-1"></p>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+            <div class="rounded-2xl bg-blue-50 p-3"><p class="text-xs text-blue-700 font-black">Jobs</p><p id="statJobs" class="text-xl font-black">0</p></div>
+            <div class="rounded-2xl bg-emerald-50 p-3"><p class="text-xs text-emerald-700 font-black">Present</p><p id="statPresent" class="text-xl font-black">0</p></div>
+            <div class="rounded-2xl bg-orange-50 p-3"><p class="text-xs text-orange-700 font-black">Pending ₹</p><p id="statPending" class="text-xl font-black">0</p></div>
+            <div class="rounded-2xl bg-purple-50 p-3"><p class="text-xs text-purple-700 font-black">Score</p><p id="statScore" class="text-xl font-black">100%</p></div>
+          </div>
+        </div>
+      </div>
+
+      <nav id="desktopNav" class="desktop-nav grid grid-cols-3 md:grid-cols-6 lg:grid-cols-9 gap-2 mb-4 no-print"></nav>
+      <div id="content"></div>
+    </section>
+  </main>
+
+  <div id="bottomNav" class="bottom-nav no-print"></div>
+  <div id="toast" class="fixed top-4 right-4 z-[80] hidden"><div class="toast rounded-xl bg-emerald-600 text-white px-4 py-3 text-sm font-black shadow-xl"></div></div>
+
+  <script type="module">
+    import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, serverTimestamp, query } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
+
+    const firebaseConfig={apiKey:'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',authDomain:'az-packers-quotation.firebaseapp.com',projectId:'az-packers-quotation',storageBucket:'az-packers-quotation.firebasestorage.app',messagingSenderId:'682004383688',appId:'1:682004383688:web:b795a19579dba9a612a2fd'};
+    const app=getApps().length?getApp():initializeApp(firebaseConfig); const db=getFirestore(app);
+    const MAIN='azpExecutionRecords'; const STAFF_UPDATES='azpStaffUpdates';
+    const defaultDrivers=['Mahesh','Santosh','Somnath','Sanjay','Ajay'];
+    const defaultWorkers=['Deepak','Hemant','Babul','Binod','Sillu','Surendra','Trilochan','Sukadeb','New Boy'];
+    const companyRules=[
+      'Pre-night customer call is mandatory before dispatch.',
+      'Vehicle must reach pickup location on time and update status from mobile.',
+      'Packing, loading, unloading video, item list, bill copy and payment screenshot must be sent in the official WhatsApp group. Office will mark Received / Not Received in Execution Software.',
+      'Payment screenshot must be collected before unloading as per office instruction.',
+      'Uniform is compulsory for professional work and customer trust.',
+      'No argument with customer. Any issue must be reported to office immediately.',
+      'Extra worker, extra item, extra floor or route change must be updated before work.',
+      'Driver must check vehicle documents, fuel, tyre, meter and repair issue before start.'
+    ];
+    let all=[],currentUser=null,currentTab='dashboard',unsub=null;
+    const today=()=>new Date().toISOString().slice(0,10); const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+    const sid=s=>String(s||('SW_'+Date.now()+'_'+Math.random().toString(36).slice(2))).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120);
+    const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    const lower=s=>String(s||'').trim().toLowerCase();
+    const compact=s=>lower(s).replace(/\s+/g,'');
+    const sameName=(a,b)=>compact(a) && compact(a)===compact(b);
+    const hasName=(value,name)=>{
+      const v=compact(value), n=compact(name);
+      if(!v||!n) return false;
+      if(v===n) return true;
+      return String(value||'').toLowerCase().split(/[,/|;\n]+/).some(part=>compact(part)===n) || v.includes(n);
+    };
+    const byModule=m=>all.filter(r=>r.module===m||r.collection===m);
+    const isJobRecord=r=>['jobs','planningSheets','planningSheet','planning-sheet','planning_sheet'].some(m=>r.module===m||r.collection===m) || String(r.job_id||r.planning_no||'').toUpperCase().startsWith('PLN');
+    const isMine=r=>{
+      if(!currentUser) return false;
+      if(currentUser.role==='Admin Preview') return true;
+      const n=currentUser.name;
+      const mobile=String(currentUser.mobile||'').replace(/\D/g,'');
+      const role=currentUser.role;
+      const mobileMatch=mobile && [r.mobile,r.driver_mobile,r.driver_contact,r.assigned_driver_mobile,r.team_leader_contact,r.worker_mobile,r.employee_mobile,r.contact,r.party_mobile].some(x=>String(x||'').replace(/\D/g,'')===mobile);
+      if(mobileMatch) return true;
+      if(role==='Driver'){
+        return [
+          r.driver, r.driver_name, r.assigned_driver, r.assigned_driver_name, r.driverName,
+          r.team_leader, r.team_leader_name, r.plan_team_leader, r.vehicle_driver, r.employee_name,
+          r.done_by_driver, r.staff_name
+        ].some(x=>hasName(x,n));
+      }
+      return [
+        r.worker_name, r.workers, r.assigned_workers, r.assigned_worker_names, r.workerNames,
+        r.team, r.team_members, r.team_leader, r.team_leader_name, r.received_by, r.employee_name,
+        r.staff_name
+      ].some(x=>hasName(x,n));
+    };
+    const myJobs=()=>all.filter(r=>isJobRecord(r)&&isMine(r)).sort((a,b)=>String(b.work_date||b.shifting_date||b.date||'').localeCompare(String(a.work_date||a.shifting_date||a.date||'')));
+    const myRecords=m=>byModule(m).filter(isMine).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+    const toast=(msg,err=false)=>{const t=document.getElementById('toast'),i=t.querySelector('div');i.textContent=msg;i.className='toast rounded-xl text-white px-4 py-3 text-sm font-black shadow-xl '+(err?'bg-red-600':'bg-emerald-600');t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2800)};
+    const status=(txt,ok)=>{let e=document.getElementById('firebaseStatus');e.textContent=txt;e.className='chip '+(ok?'bg-emerald-100 text-emerald-900':'bg-red-100 text-red-900')};
+
+    const tabs=[
+      ['dashboard','Home','layout-dashboard'],['jobs','Planning Sheet','clipboard-list'],['attendance','Attendance','clock'],['fooding','Fooding','utensils'],['extra','Extra Work','plus-circle'],['uniform','Uniform','shirt'],['bill','Bill/Payment','receipt-indian-rupee'],['salary','Salary','banknote'],['bonus','Bonus','gift'],['level','Black/White Level','shield-alert'],['vehicle','Vehicle Docs','file-text'],['repairing','Repairing','wrench'],['rules','Rules','book-open']
+    ];
+    function allowedTabs(){ if(!currentUser)return []; if(currentUser.role==='Worker') return tabs.filter(t=>!['vehicle','repairing'].includes(t[0])); return tabs; }
+    function namesForRole(role){ const masters=role==='Driver'?byModule('driverMaster').map(r=>r.driver_name):byModule('workerMaster').map(r=>r.worker_name); return [...new Set([...(role==='Driver'?defaultDrivers:defaultWorkers),...masters].filter(Boolean))]; }
+    window.refreshNames=()=>{let role=document.getElementById('loginRole').value; let names=role==='Admin Preview'?['Manoj Kumar Swain','Office Admin']:namesForRole(role); document.getElementById('loginName').innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');};
+    document.getElementById('loginRole').addEventListener('change',window.refreshNames);
+    window.login=()=>{currentUser={role:document.getElementById('loginRole').value,name:document.getElementById('loginName').value,mobile:document.getElementById('loginMobile').value};localStorage.setItem('azp_staff_login',JSON.stringify(currentUser));document.getElementById('loginPanel').classList.add('hidden');document.getElementById('appPanel').classList.remove('hidden');currentTab='dashboard';buildNav();render();};
+    window.logout=()=>{localStorage.removeItem('azp_staff_login');location.reload();};
+    window.switchTab=t=>{currentTab=t;buildNav();render();};
+    function buildNav(){ const nav=document.getElementById('desktopNav'),bot=document.getElementById('bottomNav'); let list=allowedTabs(); nav.innerHTML=list.map(([k,l,ic])=>`<button onclick="switchTab('${k}')" class="navbtn ${currentTab===k?'active':'bg-white text-slate-700'} border border-slate-200 rounded-2xl px-3 py-3 font-black text-xs flex flex-col items-center gap-1"><i data-lucide="${ic}" style="width:17px;height:17px"></i>${l}</button>`).join(''); bot.innerHTML=list.slice(0,5).map(([k,l])=>`<button onclick="switchTab('${k}')" class="${currentTab===k?'bg-slate-900 text-white':'bg-slate-100 text-slate-700'}">${l.split('/')[0]}</button>`).join(''); setTimeout(()=>lucide.createIcons(),20); }
+    function render(){ if(!currentUser)return; document.getElementById('staffTitle').textContent=`${currentUser.name} — ${currentUser.role}`; document.getElementById('accessNote').textContent=currentUser.role==='Admin Preview'?'Admin preview can see all staff branch records.':'This device shows only assigned/related records for this staff.'; const jobs=myJobs(), att=myRecords('attendance').filter(r=>r.date===today()&&r.attendance_status==='Present'), pays=myRecords('payroll'), bl=myRecords('list')[0]; let pending=jobs.reduce((a,r)=>a+Math.max((+r.total_amount||0)-(+r.advance_received||0)-(+r.loading_payment||0)-(+r.unloading_payment||0),0),0); document.getElementById('statJobs').textContent=jobs.length; document.getElementById('statPresent').textContent=att.length; document.getElementById('statPending').textContent=money(pending); {
+      const st=String(bl?.status||bl?.black_white_status||bl?.blacklist_status||'').toLowerCase();
+      const pct=bl?.percentage_level || bl?.score || (st.includes('black')?'0':(st.includes('white')?'100':'80'));
+      document.getElementById('statScore').textContent=pct+'%';
+    } ({dashboard, jobs:renderJobs, attendance, fooding, extra, uniform, bill, salary, bonus, level, vehicle, repairing, rules}[currentTab]||dashboard)(); }
+    const empty=txt=>`<div class="card p-6 text-center text-slate-500 font-bold">${txt}</div>`;
+    const jobCard=j=>`<div class="card p-4"><div class="flex flex-wrap justify-between gap-2"><div><p class="text-xs font-black text-blue-700">${esc(j.job_id||j.id||'JOB')}</p><h3 class="font-black text-lg">${esc(j.customer_name||'Customer')}</h3><p class="text-sm text-slate-500">${esc(j.from_location||'')} → ${esc(j.to_location||'')}</p></div><span class="chip ${j.status==='Completed'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-900'}">${esc(j.status||'Assigned')}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm"><div class="bg-slate-50 rounded-2xl p-3"><b>Date</b><br>${esc(j.work_date||j.shifting_date||j.date||'-')}</div><div class="bg-slate-50 rounded-2xl p-3"><b>Vehicle</b><br>${esc(j.vehicle_number||'-')}</div><div class="bg-slate-50 rounded-2xl p-3"><b>Driver</b><br>${esc(j.driver||j.driver_name||j.assigned_driver||j.team_leader||j.team_leader_name||'-')}</div><div class="bg-slate-50 rounded-2xl p-3"><b>Amount</b><br>${money(j.total_amount)}</div></div><div class="mt-3"><p class="text-xs font-black text-slate-500 uppercase">WhatsApp Proof Approval</p>${proofChecklist(j)}</div><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 no-print"><button class="btn bg-blue-600 text-white" onclick="updateJob('${j.id}','Reached Pickup')">Reached</button><button class="btn bg-orange-600 text-white" onclick="updateJob('${j.id}','Loading')">Loading</button><button class="btn bg-purple-600 text-white" onclick="updateJob('${j.id}','In Transit')">Transit</button><button class="btn bg-emerald-600 text-white" onclick="updateJob('${j.id}','Completed')">Complete</button></div></div>`;
+    const proofItems=[
+      ['packing_video','📹 Packing Video'],['item_list','📋 Item List'],['loading_video','🚚 Loading Video'],['payment_screenshot','💰 Payment Screenshot'],['unloading_video','📦 Unloading Video'],['bill_copy','🧾 Bill Copy']
+    ];
+    const proofKeys=(k)=>[k,k+'_status',k+'_received',k+'_approved',k.replace(/_/g,'')+'_status'];
+    function proofValue(job,k){
+      const values=proofKeys(k).map(x=>job[x]).filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
+      const related=all.filter(r=>['proof','proofStatus','jobUploads','uploads'].includes(r.module)||['proof','proofStatus','jobUploads','uploads'].includes(r.collection)).filter(r=>String(r.job_id||r.planning_no||'')===String(job.job_id||job.planning_no||job.id||''));
+      related.forEach(r=>proofKeys(k).forEach(x=>{if(r[x]!==undefined&&r[x]!==null) values.push(r[x]);}));
+      const v=String(values[values.length-1]||'').toLowerCase();
+      if(['approved','received','yes','done','ok','true'].some(x=>v.includes(x))) return 'Approved';
+      if(['reject','not received','no','false'].some(x=>v.includes(x))) return 'Pending';
+      return 'Pending';
+    }
+    function proofChecklist(job={}){return `<div class="azp-proof-grid">${proofItems.map(([k,l])=>{const st=proofValue(job,k); const ok=st==='Approved'; return `<div class="azp-proof-item ${ok?'azp-proof-approved':'azp-proof-pending'}"><span>${l}</span><span>${ok?'🟢 Approved':'🔴 Pending - WhatsApp me bhejiye'}</span></div>`;}).join('')}</div>`;}
+    function whatsappInstruction(){return `<div class="card p-4 mb-4 border-l-4 border-l-blue-600"><h3 class="font-black text-lg">WhatsApp Proof Checklist</h3><p class="text-sm text-slate-600 mt-1">Video, item list, bill copy aur payment screenshot official WhatsApp group me bhejna hai. Company Execution Software me approve karegi; approve hone ke baad yahan green dikhega.</p></div>`;}
+    function dashboard(){ const jobs=myJobs().slice(0,3); const first=jobs[0]||{}; document.getElementById('content').innerHTML=`<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 grid-auto"><div class="card p-5"><h3 class="font-black text-xl mb-3">Today Work</h3>${jobs.length?jobs.map(jobCard).join('<div class="h-3"></div>'):empty('No assigned job found.')}</div><div class="card p-5"><h3 class="font-black text-xl mb-3">Required Proof Checklist</h3><p class="text-sm text-slate-500 font-bold">Pending items blink karenge. Company approve karegi to green ho jayega.</p>${proofChecklist(first)}</div></div>`; }
+    function renderJobs(){ const jobs=myJobs(); document.getElementById('content').innerHTML=`${whatsappInstruction()}<div class="space-y-4">${jobs.length?jobs.map(jobCard).join(''):empty('No planning/job record assigned to you yet.')}</div>`; }
+    window.updateJob=async(id,st)=>{await setDoc(doc(db,MAIN,id),{status:st,updatedBy:currentUser.name,updatedAt:serverTimestamp()},{merge:true});toast('Job status updated: '+st)};
+    function formBlock(mod,title,...fields){ document.getElementById('content').innerHTML=`<div class="card p-5 max-w-2xl"><h3 class="font-black text-xl mb-4">${title}</h3><div class="grid grid-cols-1 gap-3">${fields.map(f=>input(f)).join('')}<button onclick="saveForm('${mod}')" class="btn bg-blue-700 text-white">Save Permanent Record</button></div></div><div class="mt-4 space-y-3">${myRecords(mod).slice(0,10).map(recordMini).join('')||''}</div>`; }
+    const input=([k,l,t='text',opts])=>`<label><span class="font-bold text-sm">${l}</span>${t==='select'?`<select id="f_${k}" class="field mt-1">${opts.map(o=>`<option>${o}</option>`).join('')}</select>`:t==='textarea'?`<textarea id="f_${k}" class="field mt-1" rows="3"></textarea>`:`<input id="f_${k}" type="${t}" class="field mt-1" ${t==='date'?`value="${today()}"`:''}>`}</label>`;
+    window.saveForm=async(mod)=>{const data={module:mod,collection:mod,role:currentUser.role,employee_name:currentUser.name,driver_name:currentUser.role==='Driver'?currentUser.name:'',worker_name:currentUser.role==='Worker'?currentUser.name:'',updatedAt:serverTimestamp(),createdAt:serverTimestamp()}; document.querySelectorAll('[id^="f_"]').forEach(e=>data[e.id.slice(2)]=e.value); await setDoc(doc(db,MAIN,sid(mod+'_'+currentUser.name+'_'+Date.now())),data,{merge:true}); toast('Saved permanently');};
+    window.submitSimple=async(mod,obj)=>{await setDoc(doc(db,MAIN,sid(mod+'_'+currentUser.name+'_'+Date.now())),{module:mod,collection:mod,employee_name:currentUser.name,driver_name:currentUser.role==='Driver'?currentUser.name:'',worker_name:currentUser.role==='Worker'?currentUser.name:'',role:currentUser.role,...obj,updatedAt:serverTimestamp(),createdAt:serverTimestamp()},{merge:true});toast('Status saved permanently')};
+
+    function staffMoneySettings(){
+      const payrollRows = myRecords('payroll').filter(r=>String(r.employee_name||r.driver_name||r.worker_name||'').trim().toLowerCase()===String(currentUser?.name||'').trim().toLowerCase());
+      const latestPayroll = payrollRows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0))[0] || {};
+      const salary = Number(latestPayroll.salary || latestPayroll.monthly_salary || (String(currentUser?.name||'').trim().toLowerCase()==='mahesh'?20000:0));
+      const fooding = Number(latestPayroll.fooding_per_day || latestPayroll.fooding || latestPayroll.fooding_amount || (currentUser?.role==='Driver'?250:150));
+      const salaryDay = salary ? Math.round(salary/30) : 300;
+      return {salary, fooding, salaryDay, totalDay: salaryDay + fooding};
+    }
+    function deductionBoxHtml(){
+      const d = staffMoneySettings();
+      return `<div class="azp-impact space-y-2">
+        <div class="text-emerald-700 font-black">🟢 Monthly Salary: ${money(d.salary)}</div>
+        <div class="text-red-700 font-black">🔴 Salary Deduction: ${money(d.salaryDay)}/day</div>
+        <div class="text-orange-700 font-black">🟠 Fooding Deduction: ${money(d.fooding)}/day</div>
+        <div class="text-rose-800 font-black text-lg">🔴 Total Estimated Deduction: ${money(d.totalDay)}/day</div>
+        <div class="text-slate-600 text-sm font-bold">* Final deduction company approval ke hisab se hoga.</div>
+      </div>`;
+    }
+
+    const recordMini=r=>`<div class="card p-3"><p class="font-black">${esc(r.date||r.month||r.proof_type||r.reason||r.status||r.vehicle_number||r.job_id||'Record')}</p><p class="text-sm text-slate-500">${esc(r.remarks||r.description||r.reason||r.attendance_status||'')}</p></div>`;
+    function attendance(){
+      const rows=myRecords('attendance').slice(0,10);
+      document.getElementById('content').innerHTML=`<div class="card p-5 max-w-2xl"><h3 class="font-black text-xl mb-4">Attendance / Leave Request</h3><label><span class="font-bold text-sm">Date</span><input id="f_date" type="date" class="field mt-1" value="${today()}"></label><label class="block mt-3"><span class="font-bold text-sm">Attendance Choice</span><select id="f_attendance_status" onchange="toggleLeaveFields()" class="field mt-1"><option>Present</option><option>Absent</option><option>Leave</option></select></label><div id="leaveFields" class="hidden mt-3 rounded-2xl border border-orange-200 bg-orange-50 p-3"><div class="grid grid-cols-1 md:grid-cols-2 gap-3"><label><span class="font-bold text-sm">Leave From Date *</span><input id="f_leave_from_date" type="date" class="field mt-1"></label><label><span class="font-bold text-sm">Leave To Date *</span><input id="f_leave_to_date" type="date" class="field mt-1"></label></div><label class="block mt-3"><span class="font-bold text-sm">Reason for Leave / Absent *</span><textarea id="f_leave_reason" class="field mt-1" rows="3" placeholder="ଦୟାକରି ଛୁଟି ନେବାର କାରଣ ସଠିକ୍ ଭାବେ ଉଲ୍ଲେଖ କରନ୍ତୁ"></textarea></label>${deductionBoxHtml()}<div class="azp-marquee"><span>⚠️ ସୂଚନା: ପୂର୍ବରୁ ଛୁଟି ଅନୁମୋଦନ ନିଅନ୍ତୁ। ଅନୁମତି ବିନା ଅନୁପସ୍ଥିତ ରହିଲେ ବେତନ କଟିପାରେ ଏବଂ Black List ସ୍ଥିତି ସୃଷ୍ଟି ହୋଇପାରେ। କମ୍ପାନୀ ସହ ସମ୍ପର୍କ ରଖନ୍ତୁ।</span></div></div><label class="block mt-3"><span class="font-bold text-sm">Remarks</span><textarea id="f_remarks" class="field mt-1" rows="3"></textarea></label><button onclick="saveAttendanceSmart()" class="btn bg-blue-700 text-white w-full mt-3">Save Permanent Record</button></div><div class="mt-4 space-y-3">${rows.map(attendanceMini).join('')||''}</div>`;
+    }
+    window.toggleLeaveFields=()=>{const st=document.getElementById('f_attendance_status')?.value; const box=document.getElementById('leaveFields'); if(box) box.classList.toggle('hidden',!(st==='Absent'||st==='Leave'));};
+    function attendanceMini(r){const st=esc(r.attendance_status||r.status||'Record'); const appr=esc(r.company_approval||r.approval_status||'Pending Approval'); const remark=esc(r.company_remark||r.approval_remark||r.remarks||''); return `<div class="card p-3"><p class="font-black">${esc(r.date||r.leave_from_date||'Attendance')} — ${st}</p><p class="text-sm text-slate-500">${r.leave_from_date||r.leave_to_date?`Leave: ${esc(r.leave_from_date||'-')} to ${esc(r.leave_to_date||'-')} | `:''}${esc(r.leave_reason||r.remarks||'')}</p><p class="chip ${appr==='Approved'?'bg-emerald-100 text-emerald-800':appr==='Rejected'?'bg-red-100 text-red-800':'bg-amber-100 text-amber-900'} mt-2">Company: ${appr}</p>${remark?`<p class="text-sm font-bold mt-2">Company Remark: ${remark}</p>`:''}</div>`;}
+    window.saveAttendanceSmart=async()=>{const st=document.getElementById('f_attendance_status')?.value||'Present'; const data={module:'attendance',collection:'attendance',role:currentUser.role,employee_name:currentUser.name,driver_name:currentUser.role==='Driver'?currentUser.name:'',worker_name:currentUser.role==='Worker'?currentUser.name:'',date:document.getElementById('f_date')?.value||today(),attendance_status:st,remarks:document.getElementById('f_remarks')?.value||'',approval_status:st==='Present'?'Auto Present':'Pending Approval',company_approval:st==='Present'?'Auto Present':'Pending Approval',salary_deduction_per_day:staffMoneySettings().salaryDay,fooding_deduction_per_day:staffMoneySettings().fooding,total_deduction_per_day:staffMoneySettings().totalDay,monthly_salary:staffMoneySettings().salary,updatedAt:serverTimestamp(),createdAt:serverTimestamp()}; if(st==='Absent'||st==='Leave'){data.leave_from_date=document.getElementById('f_leave_from_date')?.value||''; data.leave_to_date=document.getElementById('f_leave_to_date')?.value||''; data.leave_reason=document.getElementById('f_leave_reason')?.value||''; if(!data.leave_from_date||!data.leave_to_date||!data.leave_reason.trim()){toast('Leave/Absent me From Date, To Date aur Reason compulsory hai.',true); return;} if(data.leave_from_date===data.leave_to_date){toast('Leave/Absent ke liye dono date bharna zaruri hai. Same day leave allowed nahi hai.',true); return;}} await setDoc(doc(db,MAIN,sid('attendance_'+currentUser.name+'_'+data.date+'_'+Date.now())),data,{merge:true}); toast(st==='Present'?'Attendance saved permanently':'Leave/Absent request sent for company approval');};
+    function addDaysISO(dateStr, days){
+      const base = dateStr ? new Date(dateStr+'T00:00:00') : new Date();
+      if(isNaN(base.getTime())) return '';
+      base.setDate(base.getDate()+Number(days||0));
+      return base.toISOString().slice(0,10);
+    }
+    function humanDate(dateStr){
+      if(!dateStr) return 'Not updated';
+      const d=new Date(dateStr+'T00:00:00');
+      if(isNaN(d.getTime())) return esc(dateStr);
+      return d.toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'});
+    }
+    function foodingRelatedRecords(){
+      // Read both old Fooding records and new Execution Software Fooding 4-Day Cycle records.
+      return [...myRecords('fooding'), ...myRecords('foodingCycle')]
+        .filter((r,i,arr)=>arr.findIndex(x=>x.id===r.id)===i)
+        .sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+    }
+    function getFoodingPaidRecords(){
+      return foodingRelatedRecords().filter(r=>{
+        const st=String(r.payment_status||r.status||'').toLowerCase();
+        return st.includes('paid') || st.includes('received') || st.includes('approved');
+      }).sort((a,b)=>{
+        const bd=String(b.paid_date||b.payment_date||b.date||b.cycle_end_date||'');
+        const ad=String(a.paid_date||a.payment_date||a.date||a.cycle_end_date||'');
+        return bd.localeCompare(ad) || (b.updatedAtMs||0)-(a.updatedAtMs||0);
+      });
+    }
+    function foodingCycleInfo(){
+      const rate = Number(staffMoneySettings().fooding || (currentUser?.role==='Driver'?250:150));
+      const cycleDays = 4;
+      const cycleAmount = rate * cycleDays;
+      const paid = getFoodingPaidRecords()[0] || {};
+      const lastPaidDate = paid.paid_date || paid.payment_date || paid.date || '';
+      const lastPaidAmount = Number(paid.paid_amount || paid.amount || paid.fooding_amount || paid.due_amount || cycleAmount || 0);
+      const nextDueDate = paid.next_due_date || (lastPaidDate ? addDaysISO(lastPaidDate, cycleDays) : today());
+      const due = nextDueDate && nextDueDate <= today();
+      return {rate, cycleDays, cycleAmount, paid, lastPaidDate, lastPaidAmount, nextDueDate, due};
+    }
+    function fooding(){
+      const info = foodingCycleInfo();
+      const rows = foodingRelatedRecords().slice(0,10);
+      document.getElementById('content').innerHTML=`
+        <div class="space-y-4">
+          <div class="card p-5 max-w-2xl">
+            <h3 class="font-black text-2xl mb-2">Fooding Date & Payment</h3>
+            <p class="text-sm text-slate-500 font-bold">Every 4 days fooding payment cycle. Execution Software me company Mark Paid karegi, aur yahan automatically Paid Date / Amount reflect hoga.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-4">
+                <p class="text-xs font-black text-emerald-700 uppercase">Per Day Fooding</p>
+                <p class="text-3xl font-black text-emerald-800">${money(info.rate)}</p>
+                <p class="text-sm font-bold text-emerald-700 mt-1">${esc(currentUser?.role||'Staff')} rate</p>
+              </div>
+              <div class="rounded-2xl bg-blue-50 border border-blue-200 p-4">
+                <p class="text-xs font-black text-blue-700 uppercase">4 Days Amount</p>
+                <p class="text-3xl font-black text-blue-800">${money(info.cycleAmount)}</p>
+                <p class="text-sm font-bold text-blue-700 mt-1">${money(info.rate)} × 4 days</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                <p class="text-xs font-black text-slate-500 uppercase">Last Paid</p>
+                <p class="font-black text-lg text-slate-900">${humanDate(info.lastPaidDate)}</p>
+                <p class="chip bg-emerald-100 text-emerald-800 mt-2">Amount: ${money(info.lastPaidAmount||0)}</p>
+              </div>
+              <div class="rounded-2xl ${info.due?'bg-red-50 border-red-200':'bg-amber-50 border-amber-200'} border p-4">
+                <p class="text-xs font-black ${info.due?'text-red-700':'text-amber-700'} uppercase">Next 4 Days Due</p>
+                <p class="font-black text-lg ${info.due?'text-red-900':'text-amber-900'}">${humanDate(info.nextDueDate)}</p>
+                <p class="chip ${info.due?'bg-red-100 text-red-800':'bg-amber-100 text-amber-900'} mt-2">Amount: ${money(info.cycleAmount)}</p>
+              </div>
+            </div>
+            ${info.due?`<div class="azp-marquee"><span>⚠️ ଫୁଡିଂ ପେମେଣ୍ଟ ସମୟ ହୋଇଗଲା — ${esc(currentUser.name)}ଙ୍କ ୪ ଦିନର ଫୁଡିଂ ପେମେଣ୍ଟ ବକେୟା ଅଛି। ରାଶି: ${money(info.cycleAmount)} । ଦୟାକରି କମ୍ପାନୀ ପେମେଣ୍ଟ ଅପଡେଟ୍ କରନ୍ତୁ।</span></div>`:`<div class="mt-3 rounded-2xl bg-emerald-50 border border-emerald-200 p-3 text-emerald-800 font-black">✅ Fooding cycle is not overdue yet.</div>`}
+            ${info.due?`<button onclick="requestFoodingReminder()" class="btn bg-orange-600 hover:bg-orange-700 text-white w-full mt-4">Send Fooding Payment Reminder to Company</button>`:`<button disabled class="btn bg-slate-300 text-slate-600 w-full mt-4 cursor-not-allowed">Reminder will open on due date</button>`}
+          </div>
+          <div class="card p-5 max-w-2xl">
+            <h3 class="font-black text-xl mb-3">Company Payment Status</h3>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-black text-slate-500 uppercase">Payment Status</p>
+              <p class="text-2xl font-black ${String(info.paid.payment_status||info.paid.status||'').toLowerCase().includes('paid')?'text-emerald-700':'text-red-700'}">${esc(info.paid.payment_status||info.paid.status||'Pending')}</p>
+              ${info.paid.company_remark||info.paid.remarks?`<p class="mt-2 text-sm font-bold text-slate-700">Company Remark: ${esc(info.paid.company_remark||info.paid.remarks)}</p>`:''}
+            </div>
+          </div>
+        </div>`;
+    }
+    window.requestFoodingReminder=async()=>{
+      const info=foodingCycleInfo();
+      await setDoc(doc(db,MAIN,sid('fooding_reminder_'+currentUser.name+'_'+Date.now())),{
+        module:'fooding',collection:'fooding',role:currentUser.role,employee_name:currentUser.name,
+        driver_name:currentUser.role==='Driver'?currentUser.name:'',worker_name:currentUser.role==='Worker'?currentUser.name:'',
+        date:today(),payment_status:'Pending',status:'Fooding Payment Reminder',amount:info.cycleAmount,
+        per_day_fooding:info.rate,cycle_days:info.cycleDays,last_paid_date:info.lastPaidDate||'',next_due_date:info.nextDueDate||'',
+        remarks:`Fooding payment reminder: ${currentUser.name} ka 4 days fooding due amount ${money(info.cycleAmount)}. Please update payment.`,
+        odia_remark:`ଫୁଡିଂ ପେମେଣ୍ଟ ସମୟ ହୋଇଗଲା। ${currentUser.name}ଙ୍କ ୪ ଦିନର ଫୁଡିଂ ପେମେଣ୍ଟ ବକେୟା ଅଛି। ରାଶି: ${money(info.cycleAmount)} ।`,
+        updatedAt:serverTimestamp(),createdAt:serverTimestamp()
+      },{merge:true});
+      toast('Fooding payment reminder sent to company');
+    };
+    function extra(){formBlock('extraWork','Extra Worker / Extra Work',['date','Date','date'],['job_id','Job ID','text'],['extra_type','Extra Type','select',['Extra Worker','Extra Floor','Extra Items','Night Work','Long Carry','Other']],['amount','Claim Amount ₹','number'],['approved_status','Approval Status','select',['Pending','Approved','Rejected']],['remarks','Details','textarea']);}
+    function uniform(){formBlock('uniform','Uniform Status',['date','Date','date'],['uniform_status','Uniform','select',['Present With Uniform','Present Without Uniform','Uniform Issued','Uniform Damaged','Need New Uniform']],['remarks','Remarks','textarea']);}
+    function bill(){ const jobs=myJobs(); const pays=myRecords('payments'); document.getElementById('content').innerHTML=`<div class="card p-5"><h3 class="font-black text-xl mb-3">Bill & Customer Payment</h3>${jobs.map(j=>`<div class="border rounded-2xl p-3 mb-3"><b>${esc(j.customer_name)}</b><p class="text-sm text-slate-500">Total ${money(j.total_amount)} | Advance ${money(j.advance_received)} | Loading ${money(j.loading_payment)} | Unloading ${money(j.unloading_payment)}</p><p class="mt-2 chip bg-orange-100 text-orange-900">Pending ${money(Math.max((+j.total_amount||0)-(+j.advance_received||0)-(+j.loading_payment||0)-(+j.unloading_payment||0),0))}</p></div>`).join('')||'No bill/payment visible.'}</div>`; }
+    function salary(){
+      const rows=myRecords('payroll').sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+      const latest=rows[0]||{};
+      const d=staffMoneySettings();
+      const bonusRows=myRecords('bonus');
+      const bonusTotal=bonusRows.reduce((a,r)=>a+(+r.amount||0),0) + (+latest.bonus||0);
+      const foodRate=+latest.fooding_per_day || +latest.fooding_rate || d.fooding || (currentUser?.role==='Driver'?250:150);
+      const monthlySalary=+latest.salary || d.salary || 0;
+      const perDaySalary=monthlySalary?Math.round(monthlySalary/30):d.salaryDay;
+      const foodingDays=+latest.fooding_days||0;
+      const foodingAmount=(+latest.fooding_amount||0) || (foodingDays?foodingDays*foodRate:0);
+      const advance=+latest.advance||0;
+      const otherDeduction=+latest.deduction||0;
+      const absentDeduction=+latest.absent_deduction_amount||0;
+      const foodingDeduction=+latest.fooding_deduction_amount||0;
+      const totalDeduction=advance+otherDeduction+absentDeduction+foodingDeduction;
+      const net=+latest.net_salary || (monthlySalary + bonusTotal + foodingAmount - totalDeduction);
+      const offerText=latest.odia_offer || latest.company_offer_odia || latest.offer_text_odia || latest.salary_message_odia || 'ଆପଣଙ୍କ ପରିଶ୍ରମର ସଠିକ୍ ହିସାବ କମ୍ପାନୀ ରଖୁଛି। ନିୟମିତ କାମ କରନ୍ତୁ, ଆଗକୁ ବଢନ୍ତୁ। ଭଲ କାମ ପାଇଁ Bonus ଏବଂ Extra Work payment ସୁଯୋଗ ରହିଛି।';
+      document.getElementById('content').innerHTML=`<div class="space-y-4">
+        <div class="card p-5 max-w-3xl overflow-hidden">
+          <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <p class="text-xs font-black text-blue-700 uppercase tracking-wide">My Salary Wallet</p>
+              <h3 class="font-black text-2xl">${esc(currentUser?.name||'Staff')} Salary Section</h3>
+              <p class="text-sm text-slate-500 font-bold mt-1">Execution Software se company jo salary, fooding, bonus aur deduction update karegi, yahan staff ko attractive transparent hisab dikhega.</p>
+            </div>
+            <span class="chip bg-emerald-100 text-emerald-800">Read Only</span>
+          </div>
+          <div class="azp-marquee mt-4"><span>🎁 ${esc(offerText)}</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+          <div class="card p-5 bg-gradient-to-br from-emerald-50 to-white border-emerald-200">
+            <p class="text-xs font-black text-emerald-700 uppercase">Monthly Salary</p>
+            <p class="text-4xl font-black text-emerald-800">${money(monthlySalary)}</p>
+            <p class="text-sm font-bold text-emerald-700 mt-1">Company salary record</p>
+          </div>
+          <div class="card p-5 bg-gradient-to-br from-blue-50 to-white border-blue-200">
+            <p class="text-xs font-black text-blue-700 uppercase">Per Day Salary</p>
+            <p class="text-4xl font-black text-blue-800">${money(perDaySalary)}</p>
+            <p class="text-sm font-bold text-blue-700 mt-1">Monthly salary ÷ 30 days</p>
+          </div>
+          <div class="card p-5 bg-gradient-to-br from-orange-50 to-white border-orange-200">
+            <p class="text-xs font-black text-orange-700 uppercase">Fooding Per Day</p>
+            <p class="text-4xl font-black text-orange-800">${money(foodRate)}</p>
+            <p class="text-sm font-bold text-orange-700 mt-1">${esc(currentUser?.role||'Staff')} fooding rate</p>
+          </div>
+          <div class="card p-5 bg-gradient-to-br from-purple-50 to-white border-purple-200">
+            <p class="text-xs font-black text-purple-700 uppercase">Bonus / Reward</p>
+            <p class="text-4xl font-black text-purple-800">${money(bonusTotal)}</p>
+            <p class="text-sm font-bold text-purple-700 mt-1">Approved bonus amount</p>
+          </div>
+        </div>
+
+        <div class="card p-5 max-w-3xl">
+          <h3 class="font-black text-xl mb-3">Total Salary Summary</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-3"><p class="text-xs font-black text-emerald-700">Salary</p><p class="text-xl font-black">${money(monthlySalary)}</p></div>
+            <div class="rounded-2xl bg-orange-50 border border-orange-200 p-3"><p class="text-xs font-black text-orange-700">Fooding</p><p class="text-xl font-black">${money(foodingAmount)}</p></div>
+            <div class="rounded-2xl bg-purple-50 border border-purple-200 p-3"><p class="text-xs font-black text-purple-700">Bonus</p><p class="text-xl font-black">${money(bonusTotal)}</p></div>
+            <div class="rounded-2xl bg-red-50 border border-red-200 p-3"><p class="text-xs font-black text-red-700">Deduction</p><p class="text-xl font-black">${money(totalDeduction)}</p></div>
+          </div>
+          <div class="mt-4 rounded-3xl bg-slate-900 text-white p-5 text-center ${net>0?'azp-proof-pending':''}" style="animation-duration:1.8s">
+            <p class="text-sm font-black text-white/70 uppercase">Net Payable / Total Amount</p>
+            <p class="text-5xl font-black mt-1">${money(net)}</p>
+            <p class="text-sm font-bold text-white/70 mt-2">Final amount company approval aur Execution Software record ke hisab se hoga.</p>
+          </div>
+          <button onclick="submitSimple('bonusRequest',{reason:'Salary/Bonus Review Request',date:today(),status:'Pending',remarks:'Staff requested salary/bonus review from driver-worker software.'})" class="btn bg-purple-700 hover:bg-purple-800 text-white w-full mt-4">Request Salary / Bonus Review</button>
+        </div>
+
+        <div class="space-y-3 max-w-3xl">
+          <h3 class="font-black text-xl px-1">Salary Records</h3>
+          ${rows.length?rows.map(r=>`<div class="card p-4"><div class="flex items-start justify-between gap-3"><div><b>${esc(r.month||'Month')}</b><p class="text-sm text-slate-500 mt-1">Salary ${money(r.salary)} | Fooding ${money(r.fooding_amount)} | Advance ${money(r.advance)} | Deduction ${money((+r.deduction||0)+(+r.absent_deduction_amount||0)+(+r.fooding_deduction_amount||0))} | Bonus ${money(r.bonus)}</p></div><span class="chip bg-emerald-100 text-emerald-800">Net ${money(r.net_salary)}</span></div>${r.remarks?`<p class="text-sm font-bold text-slate-600 mt-2">Remark: ${esc(r.remarks)}</p>`:''}</div>`).join(''):empty('No salary record found yet.')}
+        </div>
+      </div>`;
+    }
+    function bonus(){ const rows=myRecords('bonus'); document.getElementById('content').innerHTML=`<div class="space-y-3"><div class="card p-5"><h3 class="font-black text-xl">Bonus</h3><button onclick="submitSimple('bonusRequest',{reason:'Bonus Request',date:today(),status:'Pending'})" class="btn bg-purple-700 text-white mt-3">Request Bonus Review</button></div>${rows.map(r=>`<div class="card p-4"><b>${esc(r.reason)}</b><p>${money(r.amount)} | ${esc(r.date)}</p></div>`).join('')||empty('No bonus record found yet.')}</div>`; }
+    function level(){
+      const rows = all.filter(r=>{
+        const isLevelRecord = ['list','blackWhiteLevel','blackWhiteList','blacklistWhitelist'].some(m=>r.module===m || r.collection===m);
+        if(!isLevelRecord) return false;
+        if(isMine(r)) return true;
+        const n=currentUser?.name||'';
+        const mobile=String(currentUser?.mobile||'').replace(/\D/g,'');
+        const names=[r.name,r.employee_name,r.staff_name,r.driver_name,r.worker_name,r.visible_to_staff];
+        const mobiles=[r.mobile,r.employee_mobile,r.driver_mobile,r.worker_mobile,r.contact];
+        return names.some(x=>hasName(x,n)) || (mobile && mobiles.some(x=>String(x||'').replace(/\D/g,'')===mobile));
+      }).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+
+      const card = r => {
+        const raw = String(r.status || r.black_white_status || r.blacklist_status || '').trim();
+        const st = raw || (Number(r.percentage_level||r.score||80)<=20?'Blacklist':'Whitelist');
+        const isBlack = st.toLowerCase().includes('black');
+        const pct = r.percentage_level || r.score || (isBlack ? 0 : 100);
+        return `<div class="border rounded-2xl p-4 ${isBlack?'bg-red-50 border-red-200':'bg-emerald-50 border-emerald-200'}">
+          <div class="flex items-center justify-between gap-2">
+            <span class="chip ${isBlack?'bg-red-100 text-red-800':'bg-emerald-100 text-emerald-800'}">${esc(st)}</span>
+            <span class="text-2xl font-black ${isBlack?'text-red-800':'text-emerald-800'}">${esc(pct)}%</span>
+          </div>
+          <p class="mt-2 font-black">${isBlack?'Restricted / Blacklist Level':'Trusted / Whitelist Level'}</p>
+          <p class="text-sm text-slate-600 mt-1">${esc(r.reason||r.company_remark||'')}</p>
+          ${r.date?`<p class="text-xs text-slate-500 mt-2">Date: ${esc(r.date)}</p>`:''}
+        </div>`;
+      };
+
+      document.getElementById('content').innerHTML=`<div class="card p-5">
+        <h3 class="font-black text-xl mb-3">Blacklist / Whitelist Percentage Level</h3>
+        ${rows.length ? rows.map(card).join('') : empty('No blacklist/whitelist record for you.')}
+      </div>`;
+    }
+    function vehicle(){ const vehs=byModule('vehicleMaster').filter(isMine), docs=byModule('documents').filter(d=>vehs.some(v=>v.vehicle_number===d.vehicle_number)||isMine(d)); document.getElementById('content').innerHTML=`<div class="space-y-3"><div class="card p-5"><h3 class="font-black text-xl">Vehicle Document Renewal Date</h3></div>${[...vehs,...docs].map(r=>`<div class="card p-4"><b>${esc(r.vehicle_number)}</b><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm"><div>Insurance<br><b>${esc(r.insurance_expiry||'-')}</b></div><div>Pollution<br><b>${esc(r.pollution_expiry||'-')}</b></div><div>Fitness<br><b>${esc(r.fitness_expiry||'-')}</b></div><div>Permit<br><b>${esc(r.permit_expiry||'-')}</b></div></div></div>`).join('')||empty('No assigned vehicle document found.')}</div>`; }
+    function repairing(){ const rows=myRecords('repairing'); document.getElementById('content').innerHTML=`<div class="space-y-3"><div class="card p-5"><h3 class="font-black text-xl">Repairing Details</h3><button onclick="submitSimple('repairing',{repair_date:today(),repair_status:'Emergency',description:'Driver reported new repairing issue',amount:0})" class="btn bg-red-700 text-white mt-3">Report New Repair Issue</button></div>${rows.map(r=>`<div class="card p-4"><b>${esc(r.vehicle_number||'Vehicle')}</b><p>${esc(r.repair_date||'')} | ${esc(r.repair_type||r.repair_status||'')}</p><p class="text-sm text-slate-500">${esc(r.description||r.remarks||'')}</p><p class="chip bg-red-100 text-red-800 mt-2">${money(r.amount)}</p></div>`).join('')||empty('No repair record assigned to you.')}</div>`; }
+    function rules(){ document.getElementById('content').innerHTML=`<div class="card p-5"><h3 class="font-black text-xl mb-4">Rules To Appear On Device</h3>${companyRules.map((r,i)=>`<div class="flex gap-3 border rounded-2xl p-3 mb-2"><span class="font-black text-blue-700">${i+1}</span><b>${esc(r)}</b></div>`).join('')}</div>`; }
+
+    async function boot(){ window.refreshNames(); const saved=localStorage.getItem('azp_staff_login'); try{unsub=onSnapshot(query(collection(db,MAIN)),snap=>{all=snap.docs.map(d=>{const v=d.data();return{id:d.id,...v,updatedAtMs:v.updatedAt?.toMillis?.()||0}});status('Firebase Connected',true);window.refreshNames(); if(saved&&!currentUser){currentUser=JSON.parse(saved);document.getElementById('loginPanel').classList.add('hidden');document.getElementById('appPanel').classList.remove('hidden');buildNav();} render();},err=>{console.error(err);status('Rules Issue',false);toast('Firebase rules issue. Check rules.',true)});}catch(e){status('Connection Failed',false)} }
+    boot(); window.today=today;
+  </script>
+</body>
+</html>
