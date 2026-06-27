@@ -939,6 +939,7 @@
                   <div><label class="planning-label">Work Starting Time</label><input id="plan_work_start_time" class="planning-input" type="time"></div>
                   <div><label class="planning-label">Work Ending Time</label><input id="plan_work_end_time" class="planning-input" type="time"></div>
                   <div><label class="planning-label">Number of Workers</label><input id="plan_workers" class="planning-input" type="number" min="0"></div>
+                  <div><label class="planning-label">Workers Name</label><input id="plan_workers_name" class="planning-input" type="text" placeholder="Example: Deepak, Santosh, Sukadeb"></div>
                   <div><label class="planning-label">Number of Drivers</label><input id="plan_drivers" class="planning-input" type="number" min="0"></div>
                   <div><label class="planning-label">Team Leader</label><select id="plan_team_leader" class="planning-input bg-white"><option value="">Select Team Leader</option><option>Sanjay</option><option>Ajay</option><option>Somnath</option><option>Mahesh</option><option>Santosh</option><option>Sanjeet</option></select></div>
                   <div><label class="planning-label">Team Leader Contact Number</label><input id="plan_team_leader_contact" class="planning-input" type="tel" placeholder="Enter team leader mobile number"></div>
@@ -3838,7 +3839,7 @@ function formatCurrency(amount) {
         confirmation_sms: document.getElementById('plan_confirmation_sms').value,
         work_start_time: document.getElementById('plan_work_start_time').value,
         work_end_time: document.getElementById('plan_work_end_time').value,
-        workers: Number(document.getElementById('plan_workers').value || 0),
+        workers_name: (document.getElementById('plan_workers_name')?.value || ''), plan_workers_name: (document.getElementById('plan_workers_name')?.value || ''), worker_names: (document.getElementById('plan_workers_name')?.value || ''), workers: Number(document.getElementById('plan_workers').value || 0),
         drivers: Number(document.getElementById('plan_drivers').value || 0),
         team_leader: document.getElementById('plan_team_leader').value.trim(),
         team_leader_name: document.getElementById('plan_team_leader_name')?.value.trim() || document.getElementById('plan_team_leader').value.trim(),
@@ -10405,6 +10406,48 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
   // Old/future optional sources; fail hone par quotation ka main kaam disturb nahi hoga.
   listenDirect("quotationNotifications");
   listenDirect("notification");
+</script>
+
+
+<!-- AZP WORKERS NAME FIREBASE SAVE FINAL PATCH -->
+<script>
+(function(){
+  function el(id){ return document.getElementById(id); }
+  function workersName(){ return (el('plan_workers_name') && el('plan_workers_name').value || '').trim(); }
+
+  // Make sure textbox exists after Number of Workers
+  function ensureField(){
+    if(el('plan_workers_name')) return;
+    var w = el('plan_workers');
+    if(!w) return;
+    var div = document.createElement('div');
+    div.innerHTML = '<label class="planning-label">Workers Name</label><input id="plan_workers_name" class="planning-input" type="text" placeholder="Example: Deepak, Santosh, Sukadeb">';
+    var p = w.closest('div');
+    if(p && p.parentNode) p.parentNode.insertBefore(div, p.nextSibling);
+  }
+
+  // Before save/preview, mirror Workers Name to hidden compatible fields if present
+  function mirror(){
+    var v = workersName();
+    if(!v) return;
+    ['plan_workers','workers','worker_names','workers_name','plan_workers_name','assigned_workers'].forEach(function(id){
+      var f = el(id);
+      if(f && !f.value) f.value = v;
+    });
+    try{ localStorage.setItem('azp_last_workers_name', v); }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    ensureField();
+    var form = el('planning-sheet-form');
+    if(form) form.addEventListener('submit', mirror, true);
+  });
+  document.addEventListener('click', function(e){
+    var txt = ((e.target && (e.target.innerText || e.target.textContent)) || '').toLowerCase();
+    if(txt.includes('save planning') || txt.includes('preview') || txt.includes('download')) mirror();
+  }, true);
+  setInterval(ensureField, 1000);
+})();
 </script>
 
 </body>
