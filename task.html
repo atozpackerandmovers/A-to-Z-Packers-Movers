@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>A TO Z Packers & Movers - Professional Task Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f172a;--muted:#64748b;--soft:#f6f8fc;--card:#fff;--line:#e2e8f0;
+  --brand:#17345f;--brand2:#2457d6;--purple:#6d35e8;--green:#0f9f7a;--red:#e11d48;--amber:#d97706;
+  --shadow:0 16px 40px rgba(15,23,42,.10);--shadow2:0 8px 22px rgba(15,23,42,.08);
+  --radius:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#0f766e,#1d4ed8 50%,#6d28d9);color:var(--ink)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{width:min(820px,100%);margin:0 auto;min-height:100vh;background:var(--soft);position:relative;box-shadow:0 22px 80px rgba(2,6,23,.25);padding-bottom:96px;overflow-x:hidden}
+.hero{background:linear-gradient(135deg,#07182f,#17345f 65%,#0f766e);color:#fff;padding:18px 18px 20px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-40px;top:-70px;width:180px;height:180px;background:rgba(255,255,255,.08);border-radius:50%}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:1}.brand-left{display:flex;gap:12px;align-items:center}.logo{width:52px;height:52px;border-radius:18px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:28px;border:1px solid rgba(255,255,255,.16)}
+.brand h1{font-size:22px;line-height:1.12;margin:0 0 5px;font-weight:900;letter-spacing:-.55px}.brand p{margin:0;color:#cbd5e1;font-size:13.5px}.status-pill{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);border-radius:999px;padding:9px 12px;font-size:12px;font-weight:800;white-space:nowrap}.top-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;position:relative;z-index:1}.top-stat{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.13);border-radius:17px;padding:11px;text-align:center}.top-stat b{font-size:19px}.top-stat span{display:block;color:#cbd5e1;font-size:11.5px;margin-top:3px}
+.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}.tab{border:0;background:transparent;padding:15px 5px 14px;font-size:14px;font-weight:850;color:#64748b;position:relative}.tab.active{color:var(--brand2)}.tab.active:after{content:"";position:absolute;left:22%;right:22%;bottom:0;height:4px;border-radius:8px 8px 0 0;background:linear-gradient(90deg,var(--brand2),var(--purple))}
+.page{display:none;padding:16px 16px 120px}.page.active{display:block}.section-head{display:flex;align-items:center;justify-content:space-between;margin:7px 0 13px}.section-head h2{margin:0;font-size:20px;font-weight:900;letter-spacing:-.35px}.muted{color:var(--muted);font-size:13px}.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.stat{background:var(--card);border:1px solid #edf2f7;border-radius:20px;box-shadow:var(--shadow2);padding:16px;display:flex;align-items:center;gap:13px;min-height:86px}.stat .ico{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:22px;background:#eef2ff}.stat b{display:block;font-size:25px;font-weight:900;line-height:1}.stat span{display:block;color:var(--muted);font-size:13px;margin-top:4px}.quick-main{width:100%;border:0;border-radius:19px;padding:16px;margin:14px 0;background:linear-gradient(135deg,var(--brand2),var(--purple));color:#fff;font-weight:900;font-size:16px;box-shadow:0 16px 35px rgba(79,53,232,.25)}
+.searchbar{position:sticky;top:51px;background:var(--soft);z-index:20;padding:0 0 10px}.searchbar input{width:100%;height:56px;border:1px solid var(--line);border-radius:18px;background:#fff;padding:0 16px;font-size:15px;outline:none;box-shadow:var(--shadow2)}.filters{display:flex;gap:9px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.filter{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-weight:800;color:#475569}.filter.active{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--brand2),var(--purple))}
+.card{background:#fff;border:1px solid #edf2f7;border-radius:22px;padding:15px;margin-bottom:13px;box-shadow:var(--shadow2);position:relative;overflow:hidden}.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--brand2)}.card.completed:before{background:var(--green)}.card.overdue:before{background:var(--red)}.card-title{font-size:17px;font-weight:900;line-height:1.35;margin:0 0 8px;word-break:break-word}.card-meta{font-size:13px;color:var(--muted);line-height:1.55}.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:11px 0 8px}.badge{border-radius:999px;padding:6px 10px;font-size:12px;font-weight:850;background:#eef2ff;color:#1e40af}.badge.green{background:#dcfce7;color:#166534}.badge.red{background:#ffe4e6;color:#be123c}.badge.amber{background:#ffedd5;color:#c2410c}.badge.purple{background:#f3e8ff;color:#6b21a8}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:14px;padding:11px 13px;font-size:13.5px;font-weight:850;color:#fff;background:linear-gradient(135deg,var(--brand2),var(--purple));box-shadow:0 8px 20px rgba(79,53,232,.15)}.btn.secondary{background:#f1f5f9;color:#334155;box-shadow:none}.btn.green{background:#0f9f7a}.btn.red{background:#dc2626}.btn.full{width:100%;padding:15px;font-size:15px}.empty{background:#fff;border:1px dashed #cbd5e1;color:var(--muted);border-radius:20px;padding:28px;text-align:center}.form-card{background:#fff;border:1px solid #edf2f7;border-radius:24px;box-shadow:var(--shadow);padding:18px}.field{margin-bottom:14px}.field label{display:block;font-size:13px;font-weight:850;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;height:52px;border:1px solid var(--line);border-radius:16px;padding:0 14px;background:#fff;outline:none;font-size:15px}.field textarea{height:90px;padding:13px 14px;resize:vertical}.staff-card{background:#fff;border:1px solid #edf2f7;border-radius:18px;box-shadow:var(--shadow2);padding:14px;margin-bottom:11px;display:flex;justify-content:space-between;gap:10px;align-items:center}.staff-name{font-weight:900}.staff-meta{font-size:12.5px;color:var(--muted);margin-top:4px}.settings{background:#fff;border-radius:18px;padding:13px;color:var(--muted);font-size:12px;line-height:1.45;margin-top:14px;border:1px solid #edf2f7}
+.fab{position:fixed;right:calc(50% - min(410px,50%) + 16px);bottom:18px;width:62px;height:62px;border-radius:22px;border:0;background:linear-gradient(135deg,var(--brand2),var(--purple));color:white;font-size:32px;font-weight:800;box-shadow:0 18px 35px rgba(79,53,232,.38);z-index:5000}.bottom-quick{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;width:min(610px,calc(100% - 112px));border:0;border-radius:22px;padding:18px 14px;background:linear-gradient(135deg,var(--brand2),var(--purple));color:#fff;font-size:16px;font-weight:900;box-shadow:0 18px 35px rgba(79,53,232,.30);z-index:4999}.modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,.56);backdrop-filter:blur(7px);z-index:9000;padding:16px;align-items:flex-start;justify-content:center;overflow:auto}.modal.show{display:flex}.modal-box{width:min(680px,100%);background:#fff;border-radius:28px;margin:18px auto;padding:18px;box-shadow:0 28px 90px rgba(0,0,0,.32)}.modal-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}.modal-icon{width:56px;height:56px;border-radius:19px;background:#f0e9ff;display:grid;place-items:center;font-size:30px}.modal-title h2{font-size:24px;line-height:1.05;margin:0 0 5px;font-weight:950;letter-spacing:-.6px}.modal-title p{margin:0;color:var(--muted);font-size:13.5px}.close{margin-left:auto;width:44px;height:44px;border:0;border-radius:16px;background:#f1f5f9;font-size:25px;color:#334155}.quick-field{border:1px solid var(--line);border-radius:21px;background:#fff;padding:12px;margin-bottom:12px}.qrow{display:flex;align-items:center;gap:12px}.qico{width:48px;height:48px;border-radius:16px;background:#eef4ff;display:grid;place-items:center;font-size:23px;flex:0 0 auto}.qbody{min-width:0;flex:1}.qbody label{font-size:12.5px;font-weight:900;display:block;margin-bottom:4px}.qbody input,.qbody select,.qbody textarea{width:100%;border:0;background:transparent;outline:none;font-size:16px;font-weight:700;color:var(--ink);padding:7px 0}.qbody select{height:42px}.qbody textarea{min-height:96px;resize:none;line-height:1.35;font-size:18px;font-weight:850}.date-grid{display:grid;grid-template-columns:1fr 108px;gap:9px}.date-grid input{height:50px;border:1px solid var(--line)!important;background:#f8fafc!important;border-radius:15px!important;padding:0 12px!important;font-weight:750!important;color:#334155!important}.quick-chips{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-left:60px;scrollbar-width:none}.quick-chips::-webkit-scrollbar{display:none}.chip{border:0;border-radius:999px;background:#f1f5ff;color:#4f31d8;padding:10px 13px;font-size:13px;font-weight:900;white-space:nowrap}.more-toggle{width:100%;border:1px solid #e0e7ff;border-radius:17px;background:linear-gradient(135deg,#f5f8ff,#faf5ff);color:#5534d7;font-weight:900;padding:14px 15px;display:flex;justify-content:space-between;margin:10px 0}.more{display:none;border-top:1px solid var(--line);padding-top:12px}.more.show{display:block}.suggestions{display:none;margin:10px 0 0 60px;border:1px solid #c7d2fe;border-radius:18px;background:#fff;box-shadow:0 16px 36px rgba(15,23,42,.14);max-height:240px;overflow:auto;position:relative;z-index:20}.suggestions.show{display:block}.suggest-title{padding:10px 13px 7px;font-size:11px;font-weight:950;color:#4f46e5;text-transform:uppercase;letter-spacing:.4px;background:#f8faff}.suggestion{padding:12px 13px;border-bottom:1px solid #f1f5f9;cursor:pointer}.suggestion:last-child{border-bottom:0}.suggestion:hover{background:#f8faff}.suggestion b{font-size:13.8px;line-height:1.35;display:block;color:#0f172a}.suggestion span{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}.suggestion mark{background:#fef3c7;color:#92400e;border-radius:5px;padding:0 2px}.no-suggest{padding:12px 13px;color:#64748b;font-size:12px;font-weight:800}.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#0f172a;color:#fff;border-radius:16px;padding:13px 18px;font-weight:800;display:none;z-index:9999;box-shadow:var(--shadow)}.toast.show{display:block}
+@media(max-width:560px){.hero{padding:16px 15px 18px}.brand h1{font-size:20px}.logo{width:48px;height:48px}.status-pill{display:none}.top-stats{grid-template-columns:repeat(3,1fr);gap:8px}.top-stat{padding:9px 6px}.tab{font-size:14px}.page{padding:14px}.stat{border-radius:18px;padding:14px 12px}.stat .ico{width:40px;height:40px}.stat b{font-size:22px}.stat span{font-size:12px}.modal{padding:10px}.modal-box{border-radius:26px;margin:12px 0;padding:16px}.modal-title h2{font-size:22px}.quick-field{padding:11px}.qico{width:46px;height:46px}.date-grid{grid-template-columns:1fr 96px}.bottom-quick{left:16px;right:86px;transform:none;width:auto;bottom:12px}.fab{right:16px;bottom:12px}.toast{bottom:88px}}
+
+/* AZP AI Writing Assistant Buttons */
+.ai-tools{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:11px 0 0 60px}
+.ai-btn{border:0;border-radius:15px;padding:12px 8px;font-size:13px;font-weight:950;color:#fff;box-shadow:0 10px 22px rgba(15,23,42,.12)}
+.ai-btn.eng{background:linear-gradient(135deg,#2563eb,#7c3aed)}
+.ai-btn.odia{background:linear-gradient(135deg,#0f766e,#16a34a)}
+.ai-hint{margin:8px 0 0 60px;font-size:11.5px;color:#64748b;font-weight:800;line-height:1.35}
+@media(max-width:420px){.ai-tools{margin-left:58px;gap:7px}.ai-btn{font-size:12px;padding:11px 6px;border-radius:14px}.ai-hint{margin-left:58px;font-size:11px}}
+
+
+/* AZP Compact Icon Action Buttons - Task Records */
+.actions.azp-icon-actions{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px !important;
+  align-items:stretch;
+}
+.actions.azp-icon-actions .btn.icon-btn{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:64px !important;
+  padding:7px 4px !important;
+  border-radius:18px !important;
+  font-size:24px !important;
+  line-height:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  text-align:center !important;
+  box-shadow:0 9px 20px rgba(15,23,42,.10) !important;
+}
+.actions.azp-icon-actions .btn.icon-btn span{
+  display:block;
+  font-size:10.5px;
+  font-weight:950;
+  line-height:1.05;
+  letter-spacing:-.15px;
+}
+.actions.azp-icon-actions .btn.call{background:#0284c7;color:#fff}
+.actions.azp-icon-actions .btn.calbtn{background:#f1f5f9;color:#334155;box-shadow:none}
+@media(max-width:420px){
+  .actions.azp-icon-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px !important}
+  .actions.azp-icon-actions .btn.icon-btn{min-height:58px !important;border-radius:16px !important;font-size:21px !important;padding:6px 2px !important}
+  .actions.azp-icon-actions .btn.icon-btn span{font-size:9.5px}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero">
+  <div class="brand-row">
+    <div class="brand-left"><div class="logo">📦</div><div class="brand"><h1>A TO Z Packers & Movers</h1><p>Professional Task Management System</p></div></div>
+    <div class="status-pill">Firebase Ready</div>
+  </div>
+  <div class="top-stats"><div class="top-stat"><b id="hTotal">0</b><span>Total</span></div><div class="top-stat"><b id="hPending">0</b><span>Pending</span></div><div class="top-stat"><b id="hOverdue">0</b><span>Overdue</span></div></div>
+</header>
+<nav class="nav"><button class="tab active" data-page="dashboard">Dashboard</button><button class="tab" data-page="tasks">Tasks</button><button class="tab" data-page="staff">Staff</button><button class="tab openQuick" data-page="quick">+ Task</button></nav>
+<section id="dashboard" class="page active">
+  <button class="quick-main openQuick">⚡ Create Quick Task</button>
+  <div class="stats-grid">
+    <div class="stat"><div class="ico">📋</div><div><b id="total">0</b><span>Total Tasks</span></div></div>
+    <div class="stat"><div class="ico">⏳</div><div><b id="pending">0</b><span>Pending</span></div></div>
+    <div class="stat"><div class="ico">✅</div><div><b id="completed">0</b><span>Completed</span></div></div>
+    <div class="stat"><div class="ico">⚠️</div><div><b id="overdue">0</b><span>Overdue</span></div></div>
+    <div class="stat"><div class="ico">📅</div><div><b id="today">0</b><span>Today</span></div></div>
+    <div class="stat"><div class="ico">🚀</div><div><b id="progress">0</b><span>In Progress</span></div></div>
+  </div>
+  <div class="section-head"><h2>Recent Tasks</h2><span class="muted">Latest 5</span></div><div id="recentTasks"></div>
+</section>
+<section id="tasks" class="page">
+  <div class="searchbar"><input id="searchInput" placeholder="Search any word from task history..." /></div>
+  <div class="filters" id="filters"></div><div id="taskList"></div>
+</section>
+<section id="staff" class="page">
+  <div class="form-card"><div class="section-head"><h2>Staff Master</h2></div><input type="hidden" id="staffId"><div class="field"><label>Staff Name</label><input id="staffName" placeholder="Example: Mahesh"></div><div class="field"><label>WhatsApp Mobile Number</label><input id="staffPhone" inputmode="tel" placeholder="10 digit number"></div><div class="field"><label>Role</label><select id="staffRole"><option>Indoor</option><option>Outdoor</option><option>Driver</option><option>Worker</option><option>Office</option><option>Team Leader</option></select></div><div class="field"><label>Status</label><select id="staffStatus"><option>Active</option><option>Inactive</option></select></div><button type="button" class="btn full" id="saveStaffBtn" onclick="saveStaff(event)">Save Staff</button></div>
+  <div class="section-head"><h2>Staff List</h2></div><div id="staffList"></div>
+</section>
+<section id="addtask" class="page"><div id="fullTaskForm"></div><div class="settings"><b>Note:</b> Firebase live sync enabled. Tasks save to taskMaster and azpExecutionRecords with module: taskManagement. localStorage is used only as backup.</div></section>
+<button class="bottom-quick openQuick">⚡ Quick Task</button><button class="fab openQuick">+</button>
+</div>
+<div class="modal" id="taskModal"><div class="modal-box"><div class="modal-head"><div class="modal-icon">⚡</div><div class="modal-title"><h2>Quick Task Entry</h2><p>Create task in a systematic way</p></div><button class="close" id="closeModal">×</button></div><div id="modalForm"></div></div></div><div id="toast" class="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const DEFAULT_STAFF=[{id:uid(),name:'Mahesh',phone:'',role:'Driver',status:'Active'},{id:uid(),name:'Ajay',phone:'',role:'Driver',status:'Active'},{id:uid(),name:'Deepak',phone:'',role:'Worker',status:'Active'},{id:uid(),name:'Santosh',phone:'',role:'Worker',status:'Active'},{id:uid(),name:'Srinivas',phone:'',role:'Office',status:'Active'}];
+let staff=JSON.parse(localStorage.getItem('az_staff_pro')||localStorage.getItem('az_staff')||'null')||DEFAULT_STAFF;
+let tasks=loadAllSavedTasks();
+let currentFilter='All';
+
+/* ================= FIREBASE LIVE SAVE CONFIG =================
+   Same project as Execution / Education software.
+   Tasks are saved in TWO places:
+   1) taskMaster            -> clean task app collection
+   2) azpExecutionRecords   -> visible inside existing Execution Firebase records
+============================================================= */
+const firebaseConfig = {
+  apiKey: 'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',
+  authDomain: 'az-packers-quotation.firebaseapp.com',
+  projectId: 'az-packers-quotation',
+  storageBucket: 'az-packers-quotation.firebasestorage.app',
+  messagingSenderId: '682004383688',
+  appId: '1:682004383688:web:b795a19579dba9a612a2fd'
+};
+let fbDb=null, firebaseReady=false, firebaseSyncStarted=false;
+function initFirebase(){
+  try{
+    if(!window.firebase) throw new Error('Firebase SDK not loaded');
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    fbDb=firebase.firestore();
+    firebaseReady=true;
+    const pill=document.querySelector('.status-pill');
+    if(pill){pill.textContent='Firebase Connected'; pill.style.background='rgba(187,247,208,.25)'; pill.style.color='#dcfce7';}
+    startFirebaseSync();
+  }catch(e){
+    console.error('Firebase init error:',e);
+    const pill=document.querySelector('.status-pill');
+    if(pill){pill.textContent='Local Mode'; pill.style.background='rgba(254,243,199,.20)'; pill.style.color='#fde68a';}
+  }
+}
+function firestoreTask(t){
+  return {
+    id:t.id, module:'taskManagement', collection:'taskManagement',
+    task_title:t.title||'', title:t.title||'',
+    assigned_staff:t.staffName||'', staffName:t.staffName||'', staffId:t.staffId||'',
+    assign_role:(staff.find(s=>s.id===t.staffId)||{}).role||'',
+    staff_mobile:t.phone||'', phone:t.phone||'',
+    due_date:t.dueDate||'', due_time:t.dueTime||'',
+    task_type:t.type||'Small Task', priority:t.priority||'Normal',
+    status:t.status||'Pending', whatsapp_status:t.whatsapp_status||'Ready To Send',
+    write_to:t.writeTo||'', comments:t.comment||'', comment:t.comment||'',
+    created_by:t.createdBy||'Office Admin', createdAtMs:t.createdAt||Date.now(),
+    updatedAtMs:Date.now(), updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+function firestoreStaff(s){
+  return {
+    id:s.id, module:'staffMaster', collection:'staffMaster',
+    name:s.name||'', staff_name:s.name||'', mobile:s.phone||'', phone:s.phone||'',
+    role:s.role||'', status:s.status||'Active', updatedAtMs:Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+function normalizeFirestoreTask(d){
+  const data=d.data?d.data():d;
+  return normalizeTask({
+    id:data.id||d.id, title:data.title||data.task_title, staffId:data.staffId||'',
+    staffName:data.staffName||data.assigned_staff, phone:data.phone||data.staff_mobile,
+    dueDate:data.dueDate||data.due_date, dueTime:data.dueTime||data.due_time,
+    type:data.type||data.task_type, priority:data.priority, status:data.status,
+    writeTo:data.writeTo||data.write_to, comment:data.comment||data.comments,
+    createdBy:data.createdBy||data.created_by, createdAt:data.createdAtMs||data.createdAt||Date.now()
+  });
+}
+function mergeTasks(remote){
+  const map=new Map();
+  [...tasks,...remote].forEach(t=>{ if(t&&t.title) map.set(t.id||('T_'+t.title),t); });
+  tasks=[...map.values()].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+}
+function mergeStaff(remote){
+  const map=new Map();
+  [...staff,...remote].forEach(s=>{ if(s&&s.name) map.set(s.id||s.name,s); });
+  staff=[...map.values()];
+}
+function shouldSkipRerender(){
+  const a=document.activeElement;
+  return a && ['searchInput','m_taskTitle','p_taskTitle'].includes(a.id);
+}
+function startFirebaseSync(){
+  if(!firebaseReady || firebaseSyncStarted) return;
+  firebaseSyncStarted=true;
+  fbDb.collection('taskMaster').onSnapshot(snap=>{
+    const remote=[]; snap.forEach(doc=>{ const t=normalizeFirestoreTask(doc); if(t) remote.push(t); });
+    mergeTasks(remote); persist(); if(!shouldSkipRerender()) renderAll();
+  },err=>console.error('taskMaster sync error',err));
+  fbDb.collection('staffMaster').onSnapshot(snap=>{
+    const remote=[]; snap.forEach(doc=>{ const x=doc.data(); if(x&&x.name) remote.push({id:x.id||doc.id,name:x.name||x.staff_name||'',phone:x.phone||x.mobile||'',role:x.role||'Indoor',status:x.status||'Active'}); });
+    if(remote.length){ mergeStaff(remote); persist(); if(!shouldSkipRerender()){initForms();renderAll();} }
+  },err=>console.error('staffMaster sync error',err));
+}
+async function firebaseSaveTask(t){
+  if(!firebaseReady||!fbDb){
+    toast('Firebase not connected - saved locally only');
+    return false;
+  }
+
+  const data = firestoreTask(t);
+  const now = Date.now();
+
+  // IMPORTANT:
+  // 1) Existing Execution software reads/writes mainly in azpExecutionRecords.
+  // 2) Firebase Console sorting/search on mobile is difficult.
+  // 3) So this version writes TWO visible records inside azpExecutionRecords:
+  //    - AZP_TASK_<time>_<id>  (easy to see near AZP records)
+  //    - TASK_<id>             (task-specific fixed id for update/delete)
+  // It also writes taskMaster if rules allow.
+  const visibleDocId = 'AZP_TASK_' + now + '_' + String(t.id || '').replace(/[^A-Za-z0-9_-]/g,'_').slice(0,40);
+  const fixedDocId = 'TASK_' + String(t.id || visibleDocId).replace(/[^A-Za-z0-9_-]/g,'_').slice(0,80);
+
+  const payload = {
+    ...data,
+    id: t.id,
+    firebase_doc_id: visibleDocId,
+    fixed_task_doc_id: fixedDocId,
+    module: 'taskManagement',
+    collection: 'taskManagement',
+    task_save_test: 'YES_FIREBASE_TASK_RECORD',
+    createdAt: new Date().toLocaleString('en-IN'),
+    updatedAtMs: now
+  };
+
+  let ok = false;
+  let savedIds = [];
+  let errors = [];
+
+  try{
+    await fbDb.collection('azpExecutionRecords').doc(visibleDocId).set(payload,{merge:true});
+    ok = true;
+    savedIds.push(visibleDocId);
+  }catch(e){
+    console.error('Visible azpExecutionRecords task save error', e);
+    errors.push('AZP_TASK: ' + (e && e.message ? e.message : e));
+  }
+
+  try{
+    await fbDb.collection('azpExecutionRecords').doc(fixedDocId).set(payload,{merge:true});
+    ok = true;
+    savedIds.push(fixedDocId);
+  }catch(e){
+    console.error('Fixed TASK azpExecutionRecords save error', e);
+    errors.push('TASK: ' + (e && e.message ? e.message : e));
+  }
+
+  try{
+    await fbDb.collection('taskMaster').doc(t.id).set(payload,{merge:true});
+    ok = true;
+    savedIds.push('taskMaster/' + t.id);
+  }catch(e){
+    console.warn('taskMaster save skipped/blocked by rules:', e);
+    errors.push('taskMaster: ' + (e && e.message ? e.message : e));
+  }
+
+  // Store last Firebase result locally for checking from app.
+  localStorage.setItem('az_last_firebase_task_save', JSON.stringify({
+    ok, savedIds, errors, taskTitle:t.title, time:new Date().toLocaleString('en-IN')
+  }));
+
+  if(ok){
+    toast('✅ Firebase saved: ' + savedIds[0]);
+    return true;
+  }else{
+    alert('Firebase task save failed. Error: ' + errors.join(' | '));
+    toast('Firebase task save failed - check rules');
+    return false;
+  }
+}
+async function firebaseDeleteTask(id){
+  if(!firebaseReady||!fbDb) return;
+  try{
+    await fbDb.collection('taskMaster').doc(id).delete();
+    await fbDb.collection('azpExecutionRecords').doc('TASK_'+id).delete();
+  }catch(e){ console.error('Task Firebase delete error',e); }
+}
+async function firebaseSaveStaff(s){
+  if(!firebaseReady||!fbDb){ toast('Firebase not connected - saved locally only'); return false; }
+  const data=firestoreStaff(s);
+  let ok=false;
+  try{
+    await fbDb.collection('azpExecutionRecords').doc('STAFF_'+s.id).set(data,{merge:true});
+    ok=true;
+  }catch(e){ console.error('azpExecutionRecords staff save error',e); }
+  try{
+    await fbDb.collection('staffMaster').doc(s.id).set(data,{merge:true});
+    ok=true;
+  }catch(e){ console.warn('staffMaster save skipped/blocked by rules:',e); }
+  if(!ok) toast('Firebase staff save failed - check Firestore rules');
+  return ok;
+}
+async function firebaseDeleteStaff(id){
+  if(!firebaseReady||!fbDb) return;
+  try{
+    await fbDb.collection('staffMaster').doc(id).delete();
+    await fbDb.collection('azpExecutionRecords').doc('STAFF_'+id).delete();
+  }catch(e){ console.error('Staff Firebase delete error',e); }
+}
+
+function uid(){return 'AZT'+Date.now()+Math.floor(Math.random()*99999)}
+function safeJSON(v,fb){try{return JSON.parse(v)}catch(e){return fb}}
+function normalizeTask(t){
+  if(!t || typeof t!=='object') return null;
+  const title=(t.title||t.taskTitle||t.name||t.task||'').toString().trim();
+  if(!title) return null;
+  return {id:t.id||uid(),title,staffId:t.staffId||'',staffName:t.staffName||t.assignTo||t.staff||'',phone:t.phone||t.taskPhone||'',dueDate:t.dueDate||t.date||'',dueTime:t.dueTime||t.time||'',type:t.type||t.taskType||'Small Task',priority:t.priority||'Normal',status:t.status||'Pending',writeTo:t.writeTo||'',comment:t.comment||t.notes||'',createdBy:t.createdBy||'Office Admin',createdAt:Number(t.createdAt||Date.now())};
+}
+function loadAllSavedTasks(){
+  const merged=[]; const seen=new Set();
+  function addArray(arr){
+    (Array.isArray(arr)?arr:[]).forEach(item=>{
+      const t=normalizeTask(item); if(!t) return;
+      const key=(t.id+'|'+t.title).toLowerCase();
+      const titleKey=('title|'+t.title).toLowerCase();
+      if(seen.has(key) || seen.has(titleKey)) return;
+      seen.add(key); seen.add(titleKey); merged.push(t);
+    });
+  }
+  ['az_tasks_pro','az_tasks','az_tasks_smart','az_tasks_quick','az_task_master','taskMaster','tasks'].forEach(k=>addArray(safeJSON(localStorage.getItem(k)||'[]',[])));
+  // Import task data from any older A TO Z task HTML version saved in this browser.
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i)||'';
+    if(/task/i.test(k)) addArray(safeJSON(localStorage.getItem(k)||'[]',[]));
+  }
+  const titleMemory=safeJSON(localStorage.getItem('az_task_title_memory')||'[]',[]);
+  titleMemory.forEach(v=>addArray([{title:typeof v==='string'?v:(v&&v.title)||'',createdAt:(v&&v.createdAt)||Date.now()}]));
+  return merged.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+}
+function saveTitleMemory(title){
+  title=(title||'').trim(); if(!title) return;
+  let mem=safeJSON(localStorage.getItem('az_task_title_memory')||'[]',[]).filter(Boolean);
+  mem=mem.filter(x=>String((x.title||x)).toLowerCase()!==title.toLowerCase());
+  mem.unshift({title,createdAt:Date.now()});
+  localStorage.setItem('az_task_title_memory',JSON.stringify(mem.slice(0,200)));
+}
+function persist(){localStorage.setItem('az_staff_pro',JSON.stringify(staff));localStorage.setItem('az_tasks_pro',JSON.stringify(tasks));localStorage.setItem('az_tasks',JSON.stringify(tasks));}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function todayStr(){return new Date().toISOString().slice(0,10)}function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
+function isToday(x){return x.dueDate===todayStr()}function isOverdue(x){if(x.status==='Completed'||!x.dueDate)return false;return new Date(x.dueDate+'T'+(x.dueTime||'23:59'))<new Date()}
+function staffOptions(){return '<option value="">Select staff member...</option>'+staff.filter(s=>s.status==='Active').map(s=>`<option value="${s.id}">${esc(s.name)} - ${esc(s.role)}</option>`).join('')}
+function formHTML(p){return `<input type="hidden" id="${p}taskId"><div class="quick-field"><div class="qrow"><div class="qico">📋</div><div class="qbody"><label>Task Title *</label><textarea id="${p}taskTitle" placeholder="Write task. Add: in Odia for Odia delivery..." autocomplete="off"></textarea></div></div><div class="ai-hint">Auto mode: English will be corrected automatically. For Odia delivery, write <b>in Odia</b> at the end of the task.</div><div id="${p}suggestions" class="suggestions"></div></div><div class="quick-field"><div class="qrow"><div class="qico">👤</div><div class="qbody"><label>Assign To *</label><select id="${p}assignStaff">${staffOptions()}</select></div></div></div><div class="quick-field"><div class="qrow"><div class="qico">📅</div><div class="qbody"><label>Due Date & Time *</label><div class="date-grid"><input id="${p}dueDate" type="date"><input id="${p}dueTime" type="time"></div></div></div><div class="quick-chips"><button class="chip" data-prefix="${p}" data-q="today">Today</button><button class="chip" data-prefix="${p}" data-q="tomorrow">Tomorrow</button><button class="chip" data-prefix="${p}" data-q="nextweek">Next Week</button><button class="chip" data-prefix="${p}" data-gcal="1">Google Calendar</button></div></div><button class="more-toggle" data-prefix="${p}"><span>+ More Options</span><span>⌄</span></button><div id="${p}more" class="more"><div class="field"><label>Staff WhatsApp Number</label><input id="${p}taskPhone" placeholder="Auto fill / manual"></div><div class="field"><label>Task Type</label><select id="${p}taskType"><option>Small Task</option><option>Big Task</option></select></div><div class="field"><label>Priority</label><select id="${p}priority"><option>Normal</option><option>Urgent</option><option>Very Urgent</option></select></div><div class="field"><label>Status</label><select id="${p}taskStatus"><option>Pending</option><option>In Progress</option><option>Completed</option></select></div><div class="field"><label>Write To Someone</label><input id="${p}writeTo" placeholder="Customer / Staff / Office name"></div><div class="field"><label>Comment / Notes</label><textarea id="${p}comment" placeholder="Task details..."></textarea></div><div class="field"><label>Created By</label><input id="${p}createdBy" value="Office Admin"></div></div><button class="btn green full saveSend" data-prefix="${p}">1st WhatsApp + Save in App</button><button class="btn full saveOnly" data-prefix="${p}">Save in App Only</button>`}
+function initForms(){document.getElementById('modalForm').innerHTML=formHTML('m_');document.getElementById('fullTaskForm').innerHTML='<div class="form-card"><div class="section-head"><h2>Create / Edit Task</h2></div>'+formHTML('p_')+'</div>';['m_','p_'].forEach(bindForm)}
+function bindForm(p){document.getElementById(p+'assignStaff').addEventListener('change',()=>{const s=staff.find(x=>x.id===document.getElementById(p+'assignStaff').value);document.getElementById(p+'taskPhone').value=s?s.phone:''});document.getElementById(p+'taskTitle').addEventListener('input',()=>showSuggestions(p));}
+function showSuggestions(p){
+  const input=document.getElementById(p+'taskTitle');
+  const box=document.getElementById(p+'suggestions');
+  const raw=input.value.trim();
+  const q=raw.toLowerCase();
+  if(!q){box.classList.remove('show');box.innerHTML='';return}
+  const words=q.split(/\s+/).filter(Boolean);
+  const scoreTask=(t)=>{
+    const text=[t.title,t.comment,t.writeTo,t.staffName,t.status,t.priority,t.type].join(' ').toLowerCase();
+    let score=0;
+    words.forEach(w=>{ if(text.includes(w)) score += (t.title||'').toLowerCase().includes(w)?3:1; });
+    if((t.title||'').toLowerCase().startsWith(q)) score += 5;
+    return score;
+  };
+  // Always refresh from every saved task key, so old tasks from previous versions also appear.
+  tasks=loadAllSavedTasks();
+  const seen=new Set();
+  const list=tasks
+    .map(t=>({...t,_score:scoreTask(t)}))
+    .filter(t=>t._score>0 && !seen.has((t.title||'').toLowerCase()) && seen.add((t.title||'').toLowerCase()))
+    .sort((a,b)=>b._score-a._score || (b.createdAt||0)-(a.createdAt||0))
+    .slice(0,10);
+  const highlight=(txt)=>{
+    let out=esc(txt||'');
+    words.slice(0,4).forEach(w=>{
+      if(!w) return;
+      const safe=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      out=out.replace(new RegExp('('+safe+')','ig'),'<mark>$1</mark>');
+    });
+    return out;
+  };
+  if(list.length){
+    box.innerHTML='<div class="suggest-title">Matching Task History</div>'+list.map(t=>`<div class="suggestion" data-title="${esc(t.title)}"><b>${highlight(t.title)}</b><span>${esc(t.staffName||'-')} • ${esc(t.status||'-')} • ${esc(t.dueDate||'-')} ${esc(t.dueTime||'')}</span></div>`).join('');
+  }else{
+    box.innerHTML='<div class="suggest-title">Matching Task History</div><div class="no-suggest">No old task found for this word. Save this task once, then it will appear here next time.</div>';
+  }
+  box.classList.add('show');
+}
+function collect(p){
+  const sid=document.getElementById(p+'assignStaff').value;
+  const st=staff.find(s=>s.id===sid);
+  const rawTitle=document.getElementById(p+'taskTitle').value.trim();
+  const title=autoProfessionalTaskText(rawTitle);
+  return {id:document.getElementById(p+'taskId').value||uid(),title,rawTitle,staffId:sid,staffName:st?st.name:'',phone:document.getElementById(p+'taskPhone').value.trim(),dueDate:document.getElementById(p+'dueDate').value,dueTime:document.getElementById(p+'dueTime').value,type:document.getElementById(p+'taskType').value,priority:document.getElementById(p+'priority').value,status:document.getElementById(p+'taskStatus').value,writeTo:document.getElementById(p+'writeTo').value.trim(),comment:document.getElementById(p+'comment').value.trim(),createdBy:document.getElementById(p+'createdBy').value.trim(),createdAt:Date.now()}
+}
+async function saveTask(p,send){const obj=collect(p);if(!obj.title)return toast('Task title required');if(!obj.staffName)return toast('Please select staff');if(!obj.dueDate)return toast('Due date required');let i=tasks.findIndex(t=>t.id===obj.id);if(i>=0){obj.createdAt=tasks[i].createdAt;tasks[i]=obj}else tasks.unshift(obj);saveTitleMemory(obj.title);persist();const fbOk=await firebaseSaveTask(obj);tasks=loadAllSavedTasks();renderAll();clearTask(p);if(p==='m_')closeModal();toast(fbOk ? (send?'Firebase saved, opening WhatsApp':'Task saved in Firebase/App history') : 'Saved locally; Firebase write failed');if(send && fbOk)sendWATask(obj)}
+function clearTask(p){[p+'taskId',p+'taskTitle',p+'taskPhone',p+'dueDate',p+'dueTime',p+'writeTo',p+'comment'].forEach(id=>document.getElementById(id).value='');document.getElementById(p+'assignStaff').value='';document.getElementById(p+'taskType').value='Small Task';document.getElementById(p+'priority').value='Normal';document.getElementById(p+'taskStatus').value='Pending';document.getElementById(p+'createdBy').value='Office Admin';document.getElementById(p+'more').classList.remove('show');document.getElementById(p+'suggestions').classList.remove('show')}
+function setDue(p,type){let d=new Date();if(type==='tomorrow')d.setDate(d.getDate()+1);if(type==='nextweek')d.setDate(d.getDate()+7);document.getElementById(p+'dueDate').value=d.toISOString().slice(0,10);if(!document.getElementById(p+'dueTime').value)document.getElementById(p+'dueTime').value='10:00'}
+function renderDashboard(){const c={total:tasks.length,pending:0,completed:0,overdue:0,today:0,progress:0};tasks.forEach(t=>{if(t.status==='Pending')c.pending++;if(t.status==='Completed')c.completed++;if(t.status==='In Progress')c.progress++;if(isOverdue(t))c.overdue++;if(isToday(t))c.today++});Object.keys(c).forEach(k=>document.getElementById(k).textContent=c[k]);hTotal.textContent=c.total;hPending.textContent=c.pending;hOverdue.textContent=c.overdue;const recent=[...tasks].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);recentTasks.innerHTML=recent.length?recent.map(cardHTML).join(''):'<div class="empty">No recent task saved yet.</div>'}
+function renderFilters(){const arr=['All','Pending','In Progress','Completed','History','Today','Overdue','Small Task','Big Task'];filters.innerHTML=arr.map(f=>`<button class="filter ${currentFilter===f?'active':''}" data-filter="${f}">${f}</button>`).join('')}
+function matchTask(t,q){q=q.toLowerCase().trim();if(!q)return true;return q.split(/\s+/).filter(Boolean).some(w=>[t.title,t.staffName,t.phone,t.type,t.status,t.priority,t.comment,t.writeTo,t.createdBy,t.dueDate,t.dueTime].join(' ').toLowerCase().includes(w))}
+function filterTask(t){if(currentFilter==='All')return true;if(currentFilter==='History')return t.status==='Completed';if(currentFilter==='Today')return isToday(t);if(currentFilter==='Overdue')return isOverdue(t);if(currentFilter==='Small Task'||currentFilter==='Big Task')return t.type===currentFilter;return t.status===currentFilter}
+function renderTasks(){renderFilters();const q=searchInput.value||'';const list=tasks.filter(t=>matchTask(t,q)&&filterTask(t)).sort((a,b)=>(a.dueDate+a.dueTime).localeCompare(b.dueDate+b.dueTime));taskList.innerHTML=list.length?list.map(cardHTML).join(''):'<div class="empty">No matching task found.</div>'}
+function cardHTML(t){const cls=isOverdue(t)?'overdue':t.status==='Completed'?'completed':'';return `<div class="card ${cls}"><h3 class="card-title">${esc(t.title)}</h3><div class="card-meta">👤 ${esc(t.staffName||'-')} &nbsp; | &nbsp; 📱 ${esc(t.phone||'-')}<br>📅 ${esc(t.dueDate||'-')} &nbsp; ⏰ ${esc(t.dueTime||'-')}<br>✍️ ${esc(t.writeTo||'-')}</div><div class="badge-row">${isOverdue(t)?'<span class="badge red">OVERDUE</span>':''}${isToday(t)?'<span class="badge amber">TODAY</span>':''}<span class="badge ${t.type==='Big Task'?'purple':''}">${esc(t.type)}</span><span class="badge ${t.status==='Completed'?'green':t.status==='Pending'?'amber':''}">${esc(t.status)}</span><span class="badge ${t.priority==='Very Urgent'?'red':t.priority==='Urgent'?'amber':''}">${esc(t.priority)}</span></div><div class="card-meta">📝 ${esc(t.comment||'No comment')}</div>${t.status==='Completed'?'<div class="badge-row"><span class="badge green">Saved in History</span></div>':''}<div class="actions azp-icon-actions"><button class="btn secondary icon-btn" data-action="edit" data-id="${t.id}" title="Edit">✏️<span>Edit</span></button><button class="btn green icon-btn" data-action="wa" data-id="${t.id}" title="WhatsApp">💬<span>WhatsApp</span></button><button class="btn call icon-btn" data-action="call" data-id="${t.id}" title="Call">📞<span>Call</span></button><button class="btn secondary icon-btn" data-action="copy" data-id="${t.id}" title="Copy">📋<span>Copy</span></button><button class="btn calbtn icon-btn" data-action="cal" data-id="${t.id}" title="Google Calendar">📅<span>Calendar</span></button><button class="btn icon-btn" data-action="complete" data-id="${t.id}" title="Complete">✅<span>Complete</span></button><button class="btn red icon-btn" data-action="delete" data-id="${t.id}" title="Delete">🗑️<span>Delete</span></button></div></div>`}
+function renderStaff(){const el=document.getElementById('staffList'); if(!el)return; el.innerHTML=staff.length?staff.map(s=>`<div class="staff-card"><div><div class="staff-name">${esc(s.name)}</div><div class="staff-meta">${esc(s.role)} • ${esc(s.phone||'No number')} • ${s.status}</div></div><div class="actions"><button type="button" class="btn secondary" onclick="event.stopPropagation();editStaff('${s.id}')" data-action="staffEdit" data-id="${s.id}">Edit</button><button type="button" class="btn red" onclick="event.stopPropagation();deleteStaff('${s.id}')" data-action="staffDelete" data-id="${s.id}">Delete</button></div></div>`).join(''):'<div class="empty">No staff saved.</div>'}
+function saveStaff(ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  const idEl=document.getElementById('staffId');
+  const nameEl=document.getElementById('staffName');
+  const phoneEl=document.getElementById('staffPhone');
+  const roleEl=document.getElementById('staffRole');
+  const statusEl=document.getElementById('staffStatus');
+  const id=(idEl && idEl.value) || uid();
+  const obj={
+    id:id,
+    name:(nameEl?.value||'').trim(),
+    phone:(phoneEl?.value||'').replace(/\D/g,''),
+    role:roleEl?.value||'Indoor',
+    status:statusEl?.value||'Active'
+  };
+  if(!obj.name){ toast('Staff name required'); nameEl?.focus(); return false; }
+  if(obj.phone && obj.phone.length<10){ toast('Please enter valid WhatsApp number'); phoneEl?.focus(); return false; }
+  const i=staff.findIndex(s=>s.id===id);
+  if(i>=0){ staff[i]=obj; } else { staff.push(obj); }
+  persist();
+  firebaseSaveStaff(obj);
+  try{ localStorage.setItem('az_staff_master',JSON.stringify(staff)); localStorage.setItem('staffMaster',JSON.stringify(staff)); }catch(e){}
+  if(idEl)idEl.value=''; if(nameEl)nameEl.value=''; if(phoneEl)phoneEl.value=''; if(roleEl)roleEl.value='Indoor'; if(statusEl)statusEl.value='Active';
+  initForms(); renderAll(); toast('✅ Staff saved successfully');
+  setTimeout(()=>showPage('staff'),50);
+  return false;
+}
+function editStaff(id){
+  const s=staff.find(x=>x.id===id); if(!s){toast('Staff not found'); return;}
+  showPage('staff');
+  document.getElementById('staffId').value=s.id;
+  document.getElementById('staffName').value=s.name||'';
+  document.getElementById('staffPhone').value=s.phone||'';
+  document.getElementById('staffRole').value=s.role||'Indoor';
+  document.getElementById('staffStatus').value=s.status||'Active';
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('Edit mode opened');
+}
+function deleteStaff(id){if(confirm('Delete this staff?')){staff=staff.filter(s=>s.id!==id);persist();firebaseDeleteStaff(id);initForms();renderAll();toast('Staff deleted')}}
+function editTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;showPage('addtask');const p='p_';document.getElementById(p+'taskId').value=t.id;document.getElementById(p+'taskTitle').value=t.title;document.getElementById(p+'assignStaff').value=t.staffId;document.getElementById(p+'taskPhone').value=t.phone;document.getElementById(p+'dueDate').value=t.dueDate;document.getElementById(p+'dueTime').value=t.dueTime;document.getElementById(p+'taskType').value=t.type;document.getElementById(p+'priority').value=t.priority;document.getElementById(p+'taskStatus').value=t.status;document.getElementById(p+'writeTo').value=t.writeTo;document.getElementById(p+'comment').value=t.comment;document.getElementById(p+'createdBy').value=t.createdBy;document.getElementById(p+'more').classList.add('show')}
+function completeTask(id){const t=tasks.find(x=>x.id===id);if(t){t.status='Completed';persist();firebaseSaveTask(t);renderAll();toast('Task completed and saved in history')}}function deleteTask(id){if(confirm('Delete this task permanently?')){tasks=tasks.filter(t=>t.id!==id);persist();firebaseDeleteTask(id);renderAll()}}
+function cleanTaskText(txt){
+  return String(txt||'')
+    .replace(/(?:\bin\s+odia\b|\bin\s+odiya\b|\bin\s+udia\b|\bin\s+odia\s*language\b|\bodia\b|\budia\b|\budiya\b|\bodiya\b|\boriya\b|\bodia\s*kari\b)/ig,'')
+    .trim().replace(/\s+/g,' ').replace(/\n{3,}/g,'\n\n');
+}
+function capFirst(s){s=String(s||'').trim();return s?s.charAt(0).toUpperCase()+s.slice(1):s}
+function titleCaseName(s){return String(s||'').trim().split(/\s+/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ')}
+function normalizeEnglishWords(text){
+  let t=String(text||'').toLowerCase().trim();
+  const replacements=[[/\burjent\b|\bargent\b|\burgently\b/g,'urgent'],[/\bcustmer\b|\bcustmor\b|\bcustomer party\b/g,'customer'],[/\bcll\b|\bcal\b/g,'call'],[/\bpaymant\b|\bpaymentt\b/g,'payment'],[/\btomorow\b|\btmrw\b/g,'tomorrow'],[/\btoday itself\b/g,'today'],[/\bupdte\b/g,'update'],[/\bcomplet\b/g,'complete'],[/\bconfirmm\b/g,'confirm'],[/\bpls\b|\bplz\b/g,'please'],[/\bofc\b/g,'office'],[/\bfrm\b/g,'from'],[/\bbcz\b|\bbecause\b/g,'because'],[/\bmsg\b/g,'message'],[/\batm\b/g,'ATM'],[/\bindian bank\b/g,'Indian Bank'],[/\bpuja mam\b/g,'Puja Mam'],[/\bsrinivas\b/g,'Srinivas']];
+  replacements.forEach(([a,b])=>t=t.replace(a,b));
+  t=t.replace(/\bplease\s+([a-zA-Z]+)\s+please\b/gi,'$1, please');
+  t=t.replace(/\bplease\s+please\b/gi,'please');
+  t=t.replace(/\binform\s+to\s+/gi,'inform ');
+  return t.replace(/\s+/g,' ').trim();
+}
+function improveEnglishText(text){
+  let t=normalizeEnglishWords(cleanTaskText(text));
+  if(!t) return '';
+  const l=t.toLowerCase();
+  let m;
+  if(/remind me/.test(l) && /medicine/.test(l) && /(purchase|buy)/.test(l)) return 'Please remind me to purchase medicine.';
+  if((m=l.match(/^(srinivas|mahesh|ajay|deepak|santosh|sanjay|somnath|swagatika|gayatri),?\s*please\s+inform\s+(.*?)\s+not\s+to\s+come\s+(?:to\s+)?office\s+until\s+i\s+tell\s+(?:him|her|them)?/i))){
+    const name=titleCaseName(m[1]); const person=titleCaseName(m[2]||'the person');
+    return `${name}, please inform ${person} not to come to the office until I give further instructions.`;
+  }
+  if((m=l.match(/^(srinivas|mahesh|ajay|deepak|santosh|sanjay|somnath|swagatika|gayatri),?\s*please\s+go\s+to\s+(.*?)\s+for\s+(.*?)\s+(?:form\s+)?(?:carry|bring|collect)?\.?$/i))){
+    const name=titleCaseName(m[1]); let place=titleCaseName(m[2]).replace(/Atm/g,'ATM').replace(/Indian Bank/i,'Indian Bank'); let item=(m[3]||'the required work').replace(/atm/ig,'ATM').trim();
+    if(!/form/i.test(item) && /application/i.test(item)) item += ' form';
+    return `${name}, please go to ${place} and collect the ${item}.`;
+  }
+  if(/go to/.test(l) && /bank/.test(l) && /atm/.test(l)) return capFirst(t.replace(/^please\s+/i,'' ).replace(/\.$/,'')).replace(/ for atm application form carry/i,' and collect the ATM application form')+'.';
+  if(/call/.test(l) && /payment/.test(l)) return 'Please call the customer and collect the pending payment today.';
+  if(/call/.test(l) && /confirm/.test(l)) return 'Please call the customer and confirm the work details.';
+  if(/quotation|quote/.test(l) && /send/.test(l)) return 'Please prepare and send the quotation to the customer.';
+  if(/follow/.test(l)) return 'Please follow up with the customer and update the response.';
+  if(/vehicle|driver/.test(l) && /arrange/.test(l)) return 'Please arrange the driver and vehicle for the scheduled work.';
+  if(/packing|loading/.test(l)) return 'Please complete the packing and loading work on time.';
+  t=t.replace(/\bi\b/g,'I').replace(/\bindian bank\b/ig,'Indian Bank').replace(/\batm\b/ig,'ATM').replace(/\bsrinivas\b/ig,'Srinivas');
+  if(!/^(please|kindly|[A-Z][a-z]+, please)\b/.test(t)) t='Please '+t;
+  if(!/[.!?]$/.test(t)) t+='.';
+  return capFirst(t);
+}
+function convertToOdiaText(text){
+  const english=improveEnglishText(text);
+  const l=normalizeEnglishWords(cleanTaskText(text)).toLowerCase();
+  if(!l) return '';
+  if(/remind me/.test(l) && /medicine/.test(l)) return 'ଦୟାକରି ମୋତେ ଔଷଧ କିଣିବାକୁ ମନେ ପକାଇଦିଅନ୍ତୁ।';
+  if(/srinivas/.test(l) && /puja mam/.test(l) && /not to come/.test(l) && /office/.test(l)) return 'ଶ୍ରୀନିବାସ, ଦୟାକରି ପୂଜା ମାମଙ୍କୁ ଅଫିସକୁ ନ ଆସିବାକୁ କୁହନ୍ତୁ, ମୁଁ ପରବର୍ତ୍ତୀ ସୂଚନା ଦେଉଯାଏ ପର୍ଯ୍ୟନ୍ତ।';
+  if(/srinivas/.test(l) && /indian bank/.test(l) && /atm/.test(l)) return 'ଶ୍ରୀନିବାସ, ଦୟାକରି ଇଣ୍ଡିଆନ୍ ବ୍ୟାଙ୍କକୁ ଯାଇ ATM ଆବେଦନ ଫର୍ମ ସଂଗ୍ରହ କରନ୍ତୁ।';
+  if(/call/.test(l) && /payment/.test(l)) return 'ଦୟାକରି ଗ୍ରାହକଙ୍କୁ ଫୋନ୍ କରି ବକେୟା ପେମେଣ୍ଟ ଆଜି ହିଁ କଲେକ୍ଟ କରନ୍ତୁ।';
+  if(/call/.test(l) && /confirm/.test(l)) return 'ଦୟାକରି ଗ୍ରାହକଙ୍କୁ ଫୋନ୍ କରି କାମର ବିବରଣୀ ନିଶ୍ଚିତ କରନ୍ତୁ।';
+  if(/quotation|quote/.test(l) && /send/.test(l)) return 'ଦୟାକରି ଗ୍ରାହକଙ୍କ ପାଇଁ କୋଟେସନ୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।';
+  if(/follow/.test(l)) return 'ଦୟାକରି ଗ୍ରାହକଙ୍କ ସହ ଫଲୋ-ଅପ୍ କରି ଉତ୍ତର ଅପଡେଟ୍ କରନ୍ତୁ।';
+  if(/vehicle|driver/.test(l) && /arrange/.test(l)) return 'ଦୟାକରି ନିର୍ଦ୍ଧାରିତ କାମ ପାଇଁ ଡ୍ରାଇଭର ଏବଂ ଗାଡ଼ି ବ୍ୟବସ୍ଥା କରନ୍ତୁ।';
+  if(/packing|loading/.test(l)) return 'ଦୟାକରି ପ୍ୟାକିଂ ଏବଂ ଲୋଡିଂ କାମ ସମୟରେ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ।';
+  if(/customer|party|ଗ୍ରାହକ/.test(l)) return 'ଦୟାକରି ଗ୍ରାହକ ସମ୍ବନ୍ଧୀୟ ଏହି କାମଟି ସଠିକ୍ ଭାବରେ ସମ୍ପୂର୍ଣ୍ଣ କରି ଅପଡେଟ୍ ଦିଅନ୍ତୁ।';
+  return 'ଦୟାକରି ଏହି କାମଟି ସମୟରେ ଏବଂ ଠିକ୍ ଭାବରେ ସମ୍ପୂର୍ଣ୍ଣ କରି ଟାସ୍କ ଆପ୍‌ରେ ଅପଡେଟ୍ କରନ୍ତୁ।';
+}
+function wantsOdia(text){return /(?:\bin\s+odia\b|\bin\s+odiya\b|\bin\s+udia\b|\bodia\s+re\b|\bodia\b|\budia\b|\budiya\b|\bodiya\b|\boriya\b|ଓଡ଼ିଆ|ଓଡିଆ)\s*$/i.test(String(text||'').trim())}
+function hasOdiaScript(text){return /[\u0B00-\u0B7F]/.test(String(text||''))}
+function autoProfessionalTaskText(text){
+  const raw=String(text||'').trim();
+  if(!raw) return '';
+  if(wantsOdia(raw)) return convertToOdiaText(raw);
+  if(hasOdiaScript(raw)) return cleanTaskText(raw);
+  return improveEnglishText(raw);
+}
+function waDate(d){if(!d)return '-'; const a=d.split('-'); return a.length===3?`${a[2]}-${a[1]}-${a[0]}`:d}
+function underlineText(s){return String(s||'').split('').map(ch=>ch===' ' ? ' ' : ch+'\u0332').join('')}
+
+function callStaff(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  let phone=(t.phone||'').replace(/\D/g,'');
+  if(!phone) return toast('Staff mobile number not available');
+  window.location.href='tel:'+phone;
+}
+function message(t){
+  const rawTask=String(t.title||'').trim();
+  const isOdia=hasOdiaScript(rawTask);
+  const task=isOdia ? rawTask : underlineText(rawTask);
+  const due=[waDate(t.dueDate),t.dueTime].filter(x=>x&&x!=='-').join(' | ')||'-';
+  return `📦 *A TO Z PACKERS & MOVERS*\n\n👤 *Staff:* ${t.staffName||'-'}\n\n📌 *Task:*\n*${task}*\n\n📅 *Due:* ${due}\n⚠️ *Priority:* ${t.priority||'Normal'}\n\n✅ *Complete this task and update your Task App.*`;
+}
+function sendWATask(t){let phone=(t.phone||'').replace(/\D/g,'');if(phone.length===10)phone='91'+phone;if(!phone)return toast('Staff WhatsApp number missing');window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message(t))}`,'_blank')}
+function sendWA(id){const t=tasks.find(x=>x.id===id);if(!t)return;sendWATask(t)}
+function copyMsg(id){const t=tasks.find(x=>x.id===id);if(!t)return;navigator.clipboard.writeText(message(t));toast('Task message copied')}function pad(n){return String(n).padStart(2,'0')}function openCal(id){const t=tasks.find(x=>x.id===id);if(!t)return;let d=t.dueDate||todayStr(),tm=t.dueTime||'10:00';let start=d.replaceAll('-','')+'T'+tm.replace(':','')+'00';let dt=new Date(d+'T'+tm);dt.setHours(dt.getHours()+1);let end=`${dt.getFullYear()}${pad(dt.getMonth()+1)}${pad(dt.getDate())}T${pad(dt.getHours())}${pad(dt.getMinutes())}00`;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(t.title)}&dates=${start}/${end}&details=${encodeURIComponent(message(t))}`,'_blank')}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===id));renderAll()}function openModal(){initForms();taskModal.classList.add('show');setTimeout(()=>document.getElementById('m_taskTitle').focus(),120)}function closeModal(){taskModal.classList.remove('show')}
+function renderAll(){renderDashboard();renderTasks();renderStaff()}
+document.addEventListener('click',e=>{const op=e.target.closest('.openQuick');if(op){e.preventDefault();openModal();return}const tab=e.target.closest('.tab:not(.openQuick)');if(tab){showPage(tab.dataset.page);return}const more=e.target.closest('.more-toggle');if(more){document.getElementById(more.dataset.prefix+'more').classList.toggle('show');return}const chip=e.target.closest('.chip');if(chip){if(chip.dataset.gcal){window.open('https://calendar.google.com/calendar/u/0/r/eventedit','_blank')}else setDue(chip.dataset.prefix,chip.dataset.q);return}const sug=e.target.closest('.suggestion');if(sug){const box=sug.closest('.suggestions');const p=box.id.replace('suggestions','');document.getElementById(p+'taskTitle').value=sug.dataset.title;box.classList.remove('show');return}const send=e.target.closest('.saveSend');if(send){saveTask(send.dataset.prefix,true);return}const only=e.target.closest('.saveOnly');if(only){saveTask(only.dataset.prefix,false);return}const filter=e.target.closest('.filter');if(filter){currentFilter=filter.dataset.filter;renderTasks();return}const act=e.target.closest('[data-action]');if(act){const id=act.dataset.id,a=act.dataset.action;if(a==='edit')editTask(id);if(a==='wa')sendWA(id);if(a==='call')callStaff(id);if(a==='copy')copyMsg(id);if(a==='cal')openCal(id);if(a==='complete')completeTask(id);if(a==='delete')deleteTask(id);if(a==='staffEdit')editStaff(id);if(a==='staffDelete')deleteStaff(id)}});
+document.getElementById('closeModal')?.addEventListener('click',closeModal);document.getElementById('taskModal')?.addEventListener('click',e=>{if(e.target.id==='taskModal')closeModal()});document.getElementById('searchInput')?.addEventListener('input',renderTasks);document.getElementById('saveStaffBtn')?.addEventListener('click',saveStaff);
+initForms();renderAll();initFirebase();
+</script>
+</body>
+</html>
