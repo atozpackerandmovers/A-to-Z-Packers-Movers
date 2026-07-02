@@ -1,0 +1,1895 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>A TO Z Staff App - Clean Final</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>
+:root{--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--purple:#6d28d9;--green:#059669;--red:#dc2626;--amber:#d97706;--soft:#f6f8fc}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#0f766e,#1d4ed8 50%,#6d28d9);color:var(--ink)}button,input,select{font:inherit}button{border:0;cursor:pointer}.app{width:min(760px,100%);margin:0 auto;min-height:100vh;background:var(--soft);box-shadow:0 24px 80px rgba(2,6,23,.25);padding-bottom:50px}.hero{background:linear-gradient(135deg,#07182f,#17345f 65%,#0f766e);color:white;padding:18px}.brand{display:flex;gap:13px;align-items:center}.logo{width:54px;height:54px;border-radius:18px;background:rgba(255,255,255,.13);display:grid;place-items:center;font-size:30px}h1{font-size:22px;margin:0 0 4px;font-weight:950}.sub{margin:0;color:#cbd5e1;font-weight:650}.pill{display:inline-flex;margin-top:12px;border-radius:999px;padding:8px 12px;background:rgba(187,247,208,.18);color:#dcfce7;font-size:12px;font-weight:900}.wrap{padding:14px}.panel,.login{background:#fff;border:1px solid #edf2f7;border-radius:24px;box-shadow:0 14px 34px rgba(15,23,42,.08);padding:16px;margin-bottom:14px}.field{margin:12px 0}.field label{display:block;font-size:13px;font-weight:900;color:#334155;margin-bottom:7px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:16px;padding:14px;background:white;outline:none;font-weight:750}.btn{border-radius:16px;padding:13px 12px;font-weight:950;color:#fff;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 10px 22px rgba(79,53,232,.18)}.btn.full{width:100%}.btn.green{background:var(--green)}.btn.red{background:var(--red)}.btn.amber{background:var(--amber)}.btn.gray{background:#f1f5f9;color:#334155;box-shadow:none}.hidden{display:none!important}.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}.who{font-size:20px;font-weight:950}.role{color:#64748b;font-size:12px;font-weight:850}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.stat{background:white;border:1px solid #edf2f7;border-radius:18px;text-align:center;padding:12px}.stat b{display:block;font-size:23px;font-weight:950}.stat span{font-size:12px;color:#64748b;font-weight:850}.search{width:100%;border:1px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;font-weight:850}.filters{display:flex;gap:8px;overflow:auto}.filter{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-weight:900}.filter.active{background:var(--blue);color:white}.task{background:white;border:1px solid #edf2f7;border-left:6px solid var(--blue);border-radius:22px;padding:14px;margin-bottom:12px;box-shadow:0 10px 24px rgba(15,23,42,.07)}.task.hot{border-left-color:#dc2626}.task.warm{border-left-color:#d97706}.task.cold{border-left-color:#0284c7}.task.future{opacity:.8}.task h3{font-size:18px;line-height:1.3;margin:0 0 8px;font-weight:950}.meta{color:#64748b;font-size:13px;font-weight:750;line-height:1.55}.badges{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}.badge{border-radius:999px;background:#eef2ff;color:#1e40af;padding:6px 10px;font-size:12px;font-weight:950}.badge.hot{background:#ffe4e6;color:#be123c}.badge.warm{background:#ffedd5;color:#c2410c}.badge.green{background:#dcfce7;color:#166534}.badge.gray{background:#f1f5f9;color:#334155}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.empty{padding:30px;border:1px dashed #cbd5e1;border-radius:18px;text-align:center;color:#64748b;font-weight:850;background:white}.decision{border:1px solid #fed7aa;background:#fff7ed;border-radius:18px;padding:12px;margin:10px 0}.decision b{display:block;color:#9a3412;margin-bottom:8px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0f172a;color:white;border-radius:16px;padding:12px 16px;font-weight:900;display:none;z-index:50}.toast.show{display:block}.small{font-size:12px;color:#64748b;font-weight:850}.task-guide{border:1px solid #dbeafe;background:#f8fbff;border-radius:16px;padding:10px 12px;margin:9px 0;font-size:12.5px;font-weight:850;line-height:1.45}.task-guide .en{color:#0f172a;margin-bottom:5px}.task-guide .od{color:#1d4ed8}.task-guide b{font-weight:950}
+@media(max-width:520px){.actions,.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+</style></head><body><div class="app"><header class="hero"><div class="brand"><div class="logo">👷</div><div><h1>A TO Z Staff App</h1><p class="sub">Compact • Advance Workflow • Bilingual Task</p></div></div><div id="fbStatus" class="pill">Connecting Firebase...</div></header><div class="wrap"><section id="loginBox" class="login"><h2>Staff Login</h2><div class="field"><label>Role</label><select id="loginRole"><option>Indoor</option><option>Outdoor</option><option>Driver</option><option>Worker</option><option>Office</option><option>Team Leader</option></select></div><div class="field"><label>Staff Name</label><input id="loginName" placeholder="Srinivas / Gayatri"></div><div class="field"><label>Mobile optional</label><input id="loginPhone" inputmode="tel"></div><button class="btn full" onclick="login()">Open My Dashboard</button></section><section id="dash" class="hidden"><div class="panel"><div class="topbar"><div><div class="who" id="who">Staff</div><div class="role" id="role">Role</div></div><button class="btn gray" onclick="logout()">Logout</button></div><div class="stats"><div class="stat"><b id="total">0</b><span>Total</span></div><div class="stat"><b id="pending">0</b><span>Pending</span></div><div class="stat"><b id="todayCnt">0</b><span>Today</span></div></div><input class="search" id="search" placeholder="Search your tasks..." oninput="render()"><div class="filters" id="filters"></div></div><div id="taskList"></div></section></div></div><div id="toast" class="toast"></div><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+/* ===== AZP STAFF CARD DISPLAY FIX FOR QUICK PASTE ===== */
+function azpDisplayCustomerTitle(t,stage){
+  let name=String(t.customer_name||t.customerName||'').trim();
+  if(!name || name.toLowerCase()==='customer'){
+    const route=[t.from||t.fromLocation||'', t.to||t.toLocation||''].filter(Boolean).join(' to ');
+    name=route || 'Customer';
+  }
+  return esc(name+' - '+stage);
+}
+if(typeof card==='function'){
+  const azpOldCardForDisplay=card;
+  card=function(t){
+    let html=azpOldCardForDisplay(t);
+    try{
+      const stage=t.workflow_stage||t.stage||'New Lead';
+      html=html.replace(/<h3>.*?<\/h3>/, '<h3>'+azpDisplayCustomerTitle(t,stage)+'</h3>');
+    }catch(e){}
+    return html;
+  };
+}
+
+</script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script><script>
+const firebaseConfig = {
+  apiKey: 'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',
+  authDomain: 'az-packers-quotation.firebaseapp.com',
+  projectId: 'az-packers-quotation',
+  storageBucket: 'az-packers-quotation.firebasestorage.app',
+  messagingSenderId: '682004383688',
+  appId: '1:682004383688:web:b795a19579dba9a612a2fd'
+};
+let db=null, me=null, allTasks=[], currentFilter='All'; const $=id=>document.getElementById(id); const STAGES=['New Lead','Item List','Quotation','Advance','Planning','Execution','Balance Payment','Feedback','Review'];
+function norm(v){return String(v||'').trim().toLowerCase()} function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))} function today(){return new Date().toISOString().slice(0,10)} function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function init(){try{firebase.initializeApp(firebaseConfig);db=firebase.firestore();$('fbStatus').textContent='Firebase Connected'}catch(e){$('fbStatus').textContent='Firebase Error';console.error(e)} setInterval(()=>{if(me)render()},60000); const saved=localStorage.getItem('azp_staff_login_clean'); if(saved){const s=JSON.parse(saved); $('loginName').value=s.name;$('loginRole').value=s.role;$('loginPhone').value=s.phone||''; login()}}
+function login(){const name=$('loginName').value.trim(); if(!name)return toast('Name required'); me={name,role:$('loginRole').value,phone:$('loginPhone').value.replace(/\D/g,'')}; localStorage.setItem('azp_staff_login_clean',JSON.stringify(me)); $('loginBox').classList.add('hidden'); $('dash').classList.remove('hidden'); $('who').textContent=me.name; $('role').textContent=me.role+(me.phone?' • '+me.phone:''); startSync()}
+function logout(){localStorage.removeItem('azp_staff_login_clean'); location.reload()}
+function cleanStatus(s){s=String(s||'Pending'); if(s==='WaitingAdminApproval')return 'Waiting Admin Approval'; return s}
+function matches(t){
+  const n=norm(me.name), r=norm(me.role), p=me.phone.slice(-10);
+  const tn=norm(t.assigned_staff||t.staffName||t.assignedStaff||t.assignedTo||t.assignTo||t.targetStaffName);
+  const tr=norm(t.assign_role||t.role);
+  const tp=String(t.staff_mobile||t.staffPhone||t.targetStaffPhone||t.phone||'').replace(/\D/g,'').slice(-10);
+  return (tn===n)||(tn.includes(n)&&n.length>2)||(n.includes(tn)&&tn.length>2)||(p&&tp&&p===tp)||(tr===r&&!tn)
+}
+function docToTask(doc){
+  const d={_docId:doc.id,...doc.data()};
+  if(d.module!=='taskManagement')return null;
+
+  // Accept CRM tasks saved from Task CRM software in both old and new formats.
+  const src=String(d.source||'');
+  const hasCRMIdentity=!!(d.leadId||d.crmLeadId||d.customer_name||d.customerName||String(d.id||'').startsWith('CRM_TASK_'));
+  if(src && !['CRM_SINGLE_LIVE','crm','task_crm','crmLead'].includes(src) && !hasCRMIdentity)return null;
+  if(!src && !hasCRMIdentity)return null;
+
+  // Normalize fields so this staff app can display old/new CRM records.
+  d.source='CRM_SINGLE_LIVE';
+  d.leadId=d.leadId||d.crmLeadId||String(d.id||doc.id).replace(/^CRM_TASK_/,'');
+  d.workflow_stage=d.workflow_stage||d.stage||'New Lead';
+  d.customer_name=d.customer_name||d.customerName||d.writeTo||'Customer';
+  d.customer_mobile=d.customer_mobile||d.customerMobile||d.mobile||'';
+  d.from=d.from||d.fromLocation||'';
+  d.to=d.to||d.toLocation||'';
+  d.assigned_staff=d.assigned_staff||d.staffName||d.assignedStaff||d.assignedTo||d.assignTo||d.targetStaffName||'';
+  d.assign_role=d.assign_role||d.role||'';
+  d.staff_mobile=d.staff_mobile||d.staffPhone||d.targetStaffPhone||d.phone||'';
+  d.due_date=d.due_date||d.dueDate||'';
+  d.due_time=d.due_time||d.dueTime||'11:00';
+  d.customer_priority=d.customer_priority||d.crmPriority||d.priority||'Warm';
+
+  if(['Approved','Completed','Cancelled'].includes(cleanStatus(d.status)))return null;
+  return d
+}
+function startSync(){if(!db)return; db.collection('azpExecutionRecords').onSnapshot(s=>{const map=new Map(); s.forEach(doc=>{const t=docToTask(doc); if(!t||!matches(t))return; const key=t.leadId||t.id||doc.id; const old=map.get(key); if(!old||(t.updatedAtMs||0)>(old.updatedAtMs||0))map.set(key,t)}); allTasks=[...map.values()].sort((a,b)=>(b.priorityScore||0)-(a.priorityScore||0)||dueMs(a)-dueMs(b)); render()},e=>{console.error(e);toast('Firebase read issue')})}
+function dueMs(t){const n=new Date((t.due_date||today())+'T'+(t.due_time||'23:59')).getTime(); return isNaN(n)?9999999999999:n} function isFuture(t){return dueMs(t)>Date.now()+60000} function isScheduledHold(t){return (t.scheduled_hold===true||t.status==='Scheduled')&&isFuture(t)} function isToday(t){return t.due_date===today()}
+function nextStage(stage){const i=STAGES.indexOf(stage); return i>=0&&i<STAGES.length-1?STAGES[i+1]:stage}
+function nextTaskTitle(t,stage){return `CRM TASK: ${t.customer_name||'Customer'} - ${stage} (${t.customer_priority||'Warm'})`}
+function nextComment(t,stage){return `[CRM:${t.leadId}] ${stage} task for ${t.customer_name||'Customer'}. Route: ${t.from||'-'} to ${t.to||'-'}. Mobile: ${t.customer_mobile||'-'}.`}
+async function updateTask(t,patch){await db.collection('azpExecutionRecords').doc(t._docId).set({...patch,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); try{await db.collection('taskMaster').doc(t.id).set(patch,{merge:true})}catch(e){}}
+async function startTask(id){const t=allTasks.find(x=>x._docId===id); if(t)await updateTask(t,{status:'In Progress'}); toast('Started')}
+async function completeNext(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; const st=t.workflow_stage||'New Lead'; if(st==='Item List'){toast('Choose Item Received / Item Later / Cancel'); return} if(st==='Negotiation'){toast('Choose Confirm / Cancel / Follow-up Later'); return} const ns=nextStage(st); const patch={workflow_stage:ns,status:'Pending',scheduled_hold:false,task_title:nextTaskTitle(t,ns),title:nextTaskTitle(t,ns),comments:nextComment(t,ns),comment:nextComment(t,ns),due_date:today(),due_time:'11:00',priority: t.customer_priority==='Hot'?'Very Urgent':'Urgent'}; await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:today(),dueTime:'11:00'}); toast('Moved to '+ns)}
+async function updateLead(t,patch){if(!t.leadId)return; await db.collection('azpExecutionRecords').doc('CRM_LEAD_'+t.leadId).set({...patch,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}
+async function itemReceived(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; const ns='Quotation'; const patch={workflow_stage:ns,status:'Pending',scheduled_hold:false,task_title:nextTaskTitle(t,ns),title:nextTaskTitle(t,ns),comments:nextComment(t,ns)+' Item list received.',comment:nextComment(t,ns)+' Item list received.',due_date:today(),due_time:'11:00',priority:t.customer_priority==='Hot'?'Very Urgent':'Urgent'}; await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:today(),dueTime:'11:00',followupHold:false}); toast('Item received. Quotation task created')}
+async function itemLater(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; const d=prompt('Item List follow-up date YYYY-MM-DD', today()); if(!d)return; const tm=prompt('Item List follow-up time HH:MM','11:00'); if(!tm)return; const reason=prompt('Reason','Customer will send item list later')||''; const future=new Date(d+'T'+tm).getTime()>Date.now()+60000; const patch={workflow_stage:'Item List',status:future?'Scheduled':'Pending',scheduled_hold:future,task_title:nextTaskTitle(t,'Item List'),title:nextTaskTitle(t,'Item List'),comments:nextComment(t,'Item List')+' Reason: '+reason,comment:nextComment(t,'Item List')+' Reason: '+reason,due_date:d,due_time:tm,priority:future?'Scheduled':(t.customer_priority==='Hot'?'Very Urgent':'Urgent')}; await updateTask(t,patch); await updateLead(t,{stage:'Item List',dueDate:d,dueTime:tm,remarks:reason,followupHold:future,followReason:reason}); toast(future?'Item List task scheduled. Due time par show hoga.':'Item List follow-up due now')}
+async function confirmTask(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; await updateTask(t,{workflow_stage:'Confirmed',status:'Pending',task_title:nextTaskTitle(t,'Confirmed'),comments:nextComment(t,'Confirmed'),due_date:today(),due_time:'11:00'}); await updateLead(t,{stage:'Confirmed',status:'Active'}); toast('Confirmed')}
+async function cancelTask(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; const reason=prompt('Cancel reason?')||'Cancelled by customer'; await updateTask(t,{status:'Cancelled',workflow_stage:'Cancelled',comments:'Cancelled: '+reason}); await updateLead(t,{stage:'Cancelled',status:'Cancelled',remarks:reason}); toast('Cancelled - no next task')}
+async function laterTask(id){const t=allTasks.find(x=>x._docId===id); if(!t)return; const d=prompt('Follow-up date YYYY-MM-DD', today()); if(!d)return; const tm=prompt('Follow-up time HH:MM','11:00'); if(!tm)return; const reason=prompt('Reason','Customer asked to call later')||''; const future=new Date(d+'T'+tm).getTime()>Date.now()+60000; await updateTask(t,{workflow_stage:'Follow-up',status:future?'Scheduled':'Pending',scheduled_hold:future,task_title:nextTaskTitle(t,'Follow-up'),comments:nextComment(t,'Follow-up')+' Reason: '+reason,due_date:d,due_time:tm,priority:future?'Scheduled':(t.customer_priority==='Hot'?'Very Urgent':'Urgent')}); await updateLead(t,{stage:'Follow-up',dueDate:d,dueTime:tm,remarks:reason,followupHold:future,followReason:reason}); toast(future?'Follow-up scheduled. Task due time par show hoga.':'Follow-up due now')}
+function copyMsg(t){navigator.clipboard.writeText(`A TO Z Task\nCustomer: ${t.customer_name||'-'}\nMobile: ${t.customer_mobile||'-'}\nStage: ${t.workflow_stage||'-'}\nFrom-To: ${t.from||'-'} to ${t.to||'-'}\nDue: ${t.due_date||'-'} ${t.due_time||''}`); toast('Copied')}
+function wa(t){let p=String(t.customer_mobile||'').replace(/\D/g,''); if(p.length===10)p='91'+p; if(!p)return toast('Customer mobile missing'); window.open(`https://wa.me/${p}`,'_blank')}
+function renderFilters(){const arr=['All','Pending','In Progress','Today','Scheduled']; $('filters').innerHTML=arr.map(f=>`<button class="filter ${currentFilter===f?'active':''}" onclick="currentFilter='${f}';render()">${f}</button>`).join('')}
+function filterTask(t){const st=cleanStatus(t.status); if(isScheduledHold(t)) return currentFilter==='Scheduled'; if(currentFilter==='All')return true; if(currentFilter==='Today')return isToday(t); if(currentFilter==='Scheduled')return false; return st===currentFilter}
+function render(){renderFilters(); const q=norm($('search').value); const visibleBase=allTasks.filter(t=>!isScheduledHold(t)); let list=allTasks.filter(t=>filterTask(t)).filter(t=>!q||[t.task_title,t.customer_name,t.customer_mobile,t.from,t.to,t.comments].join(' ').toLowerCase().includes(q)); $('total').textContent=visibleBase.length; $('pending').textContent=visibleBase.filter(t=>cleanStatus(t.status)==='Pending').length; $('todayCnt').textContent=visibleBase.filter(isToday).length; $('taskList').innerHTML=list.length?list.map(card).join(''):'<div class="empty">No task found for your login.</div>'}
+function taskGuideEnglish(stage){
+ const m={
+  'New Lead':'Call the customer and understand the shifting requirement clearly.',
+  'Item List':'Call the customer and collect the complete household item list.',
+  'Quotation':'Prepare and send the quotation after verifying the item list.',
+  'Follow-up':'Contact the customer and discuss the quotation details.',
+  'Negotiation':'Speak with the customer and try to finalize the booking decision.',
+  'Confirmed':'Obtain the customer\'s final booking confirmation.',
+  'Planning':'Finalize the vehicle, driver, workers, and work schedule.',
+  'Payment':'Verify and collect the pending payment from the customer.',
+  'Execution':'Monitor the shifting work from loading to delivery.',
+  'Feedback':'Collect the customer\'s service feedback.',
+  'Review':'Request the customer to submit a Google review.',
+  'Cancelled':'This customer workflow is cancelled and no further task is required.'
+ };
+ return m[stage]||'Complete this customer task and update the latest status.';
+}
+function taskGuideOdia(stage){
+ const m={
+  'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+  'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+  'Follow-up':'ଗ୍ରାହକଙ୍କୁ ଯୋଗାଯୋଗ କରି କୋଟେସନ୍ ବିଷୟରେ ଆଲୋଚନା କରନ୍ତୁ।',
+  'Negotiation':'ଗ୍ରାହକଙ୍କ ସହ କଥା ହୋଇ ବୁକିଂ ନିଷ୍ପତ୍ତି ଚୂଡ଼ାନ୍ତ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ।',
+  'Confirmed':'ଗ୍ରାହକଙ୍କ ଅନ୍ତିମ ବୁକିଂ ନିଶ୍ଚିତକରଣ ନିଅନ୍ତୁ।',
+  'Planning':'ଗାଡ଼ି, ଡ୍ରାଇଭର, କର୍ମଚାରୀ ଏବଂ କାର୍ଯ୍ୟ ସମୟସୂଚୀ ଚୂଡ଼ାନ୍ତ କରନ୍ତୁ।',
+  'Payment':'ଗ୍ରାହକଙ୍କ ବକେୟା ଅର୍ଥ ଯାଞ୍ଚ କରି ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Execution':'ଲୋଡିଂରୁ ଡେଲିଭରି ପର୍ଯ୍ୟନ୍ତ ଶିଫ୍ଟିଂ କାମ ନିରୀକ୍ଷଣ କରନ୍ତୁ।',
+  'Feedback':'ଗ୍ରାହକଙ୍କ ସେବା ସମ୍ପର୍କିତ ମତାମତ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Review':'ଗ୍ରାହକଙ୍କୁ Google Review ଦେବାକୁ ଅନୁରୋଧ କରନ୍ତୁ।',
+  'Cancelled':'ଏହି ଗ୍ରାହକଙ୍କ କାର୍ଯ୍ୟ ବାତିଲ୍ ହୋଇଛି, ଆଗକୁ କୌଣସି କାମ ନାହିଁ।'
+ };
+ return m[stage]||'ଏହି ଗ୍ରାହକଙ୍କ କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି ନୂତନ ସ୍ଥିତି ଅପଡେଟ୍ କରନ୍ତୁ।';
+}
+function taskGuideHTML(stage){return `<div class="task-guide"><div class="en"><b>🇬🇧 Task:</b> ${esc(taskGuideEnglish(stage))}</div><div class="od"><b>🇮🇳 କାର୍ଯ୍ୟ:</b> ${esc(taskGuideOdia(stage))}</div></div>`}
+function card(t){const pr=(t.customer_priority||'Warm').toLowerCase(); const stage=t.workflow_stage||'New Lead'; let decision=''; if(stage==='Item List'){decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div><div class="small">Item Later चुनने पर date/time compulsory रहेगा और task उसी समय staff app में दिखेगा.</div></div>`} else if(stage==='Negotiation'){decision=`<div class="decision"><b>Customer decision</b><div class="actions"><button class="btn green" onclick="confirmTask('${t._docId}')">Confirm</button><button class="btn amber" onclick="laterTask('${t._docId}')">Follow Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`} return `<div class="task ${pr} ${isFuture(t)?'future':''}"><h3>${esc(t.customer_name||'Customer')} - ${esc(stage)}</h3>${taskGuideHTML(stage)}<div class="meta">🚚 ${esc(t.from||'-')} → ${esc(t.to||'-')}<br>📱 ${esc(t.customer_mobile||'-')}<br>📅 ${esc(t.due_date||'-')} ⏰ ${esc(t.due_time||'-')}</div><div class="badges">${isScheduledHold(t)?'<span class="badge gray">Scheduled Hidden</span>':'<span class="badge green">Single Live</span>'}<span class="badge ${pr}">${esc(t.customer_priority||'Warm')}</span><span class="badge gray">${esc(cleanStatus(t.status))}</span></div>${decision}<div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div></div>`}
+
+
+/* ===== AZP ADVANCE + SMART NEXT TASK FINAL PATCH ===== */
+const AZP_STAGES_FINAL=['New Lead','Item List','Quotation','Advance','Planning','Execution','Balance Payment','Feedback','Review'];
+nextStage = function(stage){ const i=AZP_STAGES_FINAL.indexOf(stage); return i>=0&&i<AZP_STAGES_FINAL.length-1?AZP_STAGES_FINAL[i+1]:stage; };
+nextTaskTitle = function(t,stage){return `CRM TASK: ${t.customer_name||'Customer'} - ${stage} (${t.customer_priority||'Warm'})`};
+nextComment = function(t,stage){
+  const guide={
+    'New Lead':'Call customer, verify shifting requirement and move to Item List stage.',
+    'Item List':'Collect the complete item list from customer.',
+    'Quotation':'Prepare and send quotation after item list verification.',
+    'Advance':'Collect advance/token payment before planning sheet.',
+    'Planning':'Prepare planning sheet after advance is received.',
+    'Execution':'Monitor execution and update work status.',
+    'Balance Payment':'Collect balance payment and update status.',
+    'Feedback':'Collect service feedback from customer.',
+    'Review':'Request Google review from customer.'
+  };
+  return `[CRM:${t.leadId}] ${guide[stage]||stage+' task for customer.'} Route: ${t.from||'-'} to ${t.to||'-'}. Mobile: ${t.customer_mobile||'-'}.`;
+};
+completeNext = async function(id){
+  const t=allTasks.find(x=>x._docId===id); if(!t)return;
+  const st=t.workflow_stage||'New Lead';
+  if(st==='Item List'){toast('Choose Item Received / Item Later / Cancel'); return;}
+  if(st==='Advance'){toast('Choose Advance Received / Advance Later / Cancel'); return;}
+  const ns=nextStage(st);
+  const patch={workflow_stage:ns,status:'Pending',scheduled_hold:false,task_title:nextTaskTitle(t,ns),title:nextTaskTitle(t,ns),comments:nextComment(t,ns),comment:nextComment(t,ns),due_date:today(),due_time:'11:00',priority:t.customer_priority==='Hot'?'Very Urgent':'Urgent'};
+  await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:today(),dueTime:'11:00',followupHold:false}); toast('Moved to '+ns);
+};
+itemReceived = async function(id){
+  const t=allTasks.find(x=>x._docId===id); if(!t)return; const ns='Quotation';
+  const patch={workflow_stage:ns,status:'Pending',scheduled_hold:false,task_title:nextTaskTitle(t,ns),title:nextTaskTitle(t,ns),comments:nextComment(t,ns)+' Item list received.',comment:nextComment(t,ns)+' Item list received.',due_date:today(),due_time:'11:00',priority:t.customer_priority==='Hot'?'Very Urgent':'Urgent'};
+  await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:today(),dueTime:'11:00',followupHold:false}); toast('Item received. Quotation task created');
+};
+async function scheduleSameStage(t,stage,label){
+  const d=prompt(label+' date YYYY-MM-DD', today()); if(!d)return;
+  const tm=prompt(label+' time HH:MM','11:00'); if(!tm)return;
+  const reason=prompt('Reason', label+' later')||'';
+  const future=new Date(d+'T'+tm).getTime()>Date.now()+60000;
+  const patch={workflow_stage:stage,status:future?'Scheduled':'Pending',scheduled_hold:future,task_title:nextTaskTitle(t,stage),title:nextTaskTitle(t,stage),comments:nextComment(t,stage)+' Reason: '+reason,comment:nextComment(t,stage)+' Reason: '+reason,due_date:d,due_time:tm,priority:future?'Scheduled':(t.customer_priority==='Hot'?'Very Urgent':'Urgent')};
+  await updateTask(t,patch); await updateLead(t,{stage:stage,dueDate:d,dueTime:tm,remarks:reason,followupHold:future,followReason:reason});
+  toast(future?label+' scheduled. Staff will get next priority task now.':'Task due now');
+}
+itemLater = async function(id){ const t=allTasks.find(x=>x._docId===id); if(t) await scheduleSameStage(t,'Item List','Item List follow-up'); };
+async function advanceReceived(id){
+  const t=allTasks.find(x=>x._docId===id); if(!t)return; const ns='Planning';
+  const patch={workflow_stage:ns,status:'Pending',scheduled_hold:false,task_title:nextTaskTitle(t,ns),title:nextTaskTitle(t,ns),comments:nextComment(t,ns)+' Advance received.',comment:nextComment(t,ns)+' Advance received.',due_date:today(),due_time:'11:00',priority:t.customer_priority==='Hot'?'Very Urgent':'Urgent'};
+  await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:today(),dueTime:'11:00',followupHold:false}); toast('Advance received. Planning task created');
+}
+async function advanceLater(id){ const t=allTasks.find(x=>x._docId===id); if(t) await scheduleSameStage(t,'Advance','Advance follow-up'); }
+// If customer asks later at any stage, task is scheduled and hidden until due; queue immediately shows next task.
+laterTask = async function(id){ const t=allTasks.find(x=>x._docId===id); if(t) await scheduleSameStage(t,t.workflow_stage||'Follow-up',(t.workflow_stage||'Follow-up')+' follow-up'); };
+confirmTask = async function(id){ if(allTasks.find(x=>x._docId===id)) await advanceReceived(id); };
+taskGuideEnglish = function(stage){
+ const m={
+  'New Lead':'Call the customer and understand the shifting requirement clearly.',
+  'Item List':'Call the customer and collect the complete household item list.',
+  'Quotation':'Prepare and send the quotation after verifying the item list.',
+  'Advance':'Collect advance/token payment before creating the planning sheet.',
+  'Planning':'Finalize the vehicle, driver, workers, and work schedule.',
+  'Execution':'Monitor the shifting work from loading to delivery.',
+  'Balance Payment':'Verify and collect the remaining balance payment from the customer.',
+  'Feedback':'Collect the customer service feedback.',
+  'Review':'Request the customer to submit a Google review.',
+  'Cancelled':'This customer workflow is cancelled and no further task is required.'
+ }; return m[stage]||'Complete this customer task and update the latest status.';
+};
+taskGuideOdia = function(stage){
+ const m={
+  'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+  'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+  'Advance':'ପ୍ଲାନିଂ ସିଟ୍ ପୂର୍ବରୁ ଗ୍ରାହକଙ୍କଠାରୁ ଅଗ୍ରିମ/ଟୋକେନ୍ ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Planning':'ଗାଡ଼ି, ଡ୍ରାଇଭର, କର୍ମଚାରୀ ଏବଂ କାର୍ଯ୍ୟ ସମୟସୂଚୀ ଚୂଡ଼ାନ୍ତ କରନ୍ତୁ।',
+  'Execution':'ଲୋଡିଂରୁ ଡେଲିଭରି ପର୍ଯ୍ୟନ୍ତ ଶିଫ୍ଟିଂ କାମ ନିରୀକ୍ଷଣ କରନ୍ତୁ।',
+  'Balance Payment':'ଗ୍ରାହକଙ୍କ ବାକି ଅର୍ଥ ଯାଞ୍ଚ କରି ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Feedback':'ଗ୍ରାହକଙ୍କ ସେବା ସମ୍ପର୍କିତ ମତାମତ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Review':'ଗ୍ରାହକଙ୍କୁ Google Review ଦେବାକୁ ଅନୁରୋଧ କରନ୍ତୁ।',
+  'Cancelled':'ଏହି ଗ୍ରାହକଙ୍କ କାର୍ଯ୍ୟ ବାତିଲ୍ ହୋଇଛି, ଆଗକୁ କୌଣସି କାମ ନାହିଁ।'
+ }; return m[stage]||'ଏହି ଗ୍ରାହକଙ୍କ କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି ନୂତନ ସ୍ଥିତି ଅପଡେଟ୍ କରନ୍ତୁ।';
+};
+card = function(t){
+  const pr=(t.customer_priority||'Warm').toLowerCase(); const stage=t.workflow_stage||'New Lead'; let decision='';
+  if(stage==='Item List'){
+    decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div><div class="small">Item Later चुनने पर date/time compulsory रहेगा और task उसी समय staff app में दिखेगा.</div></div>`;
+  } else if(stage==='Advance'){
+    decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div><div class="small">Advance Later चुनने पर date/time compulsory रहेगा. तब तक staff को next priority task मिलेगा.</div></div>`;
+  }
+  return `<div class="task ${pr} ${isFuture(t)?'future':''}"><h3>${esc(t.customer_name||'Customer')} - ${esc(stage)}</h3>${taskGuideHTML(stage)}<div class="meta">🚚 ${esc(t.from||'-')} → ${esc(t.to||'-')}<br>📱 ${esc(t.customer_mobile||'-')}<br>📅 ${esc(t.due_date||'-')} ⏰ ${esc(t.due_time||'-')}</div><div class="badges">${isScheduledHold(t)?'<span class="badge gray">Scheduled Hidden</span>':'<span class="badge green">Single Live</span>'}<span class="badge ${pr}">${esc(t.customer_priority||'Warm')}</span><span class="badge gray">${esc(cleanStatus(t.status))}</span></div>${decision}<div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div></div>`;
+};
+
+
+
+/* ===== AZP PERMANENT WORKFLOW STAGE UPDATE FIX - SAME CARD NEXT STAGE =====
+   Fixes: Complete & Next toast appears but task remains same.
+   Method: update BOTH CRM lead document and task document using every possible ID,
+   then update local card immediately before Firestore snapshot returns.
+*/
+function azpTaskLeadId(t){
+  if(!t) return '';
+  let lid = String(t.leadId || t.lead_id || t.crmLeadId || '').trim();
+  if(!lid && t.id) lid = String(t.id).replace(/^TASK_/,'').trim();
+  if(!lid && t._docId) lid = String(t._docId).replace(/^CRM_TASK_/,'').replace(/^TASK_/,'').trim();
+  if(!lid){
+    const m = String(t.comments || t.comment || '').match(/\[CRM:([^\]]+)\]/i);
+    if(m) lid = m[1].trim();
+  }
+  return lid;
+}
+function azpTaskDocIds(t){
+  const ids = new Set();
+  const lid = azpTaskLeadId(t);
+  if(t && t._docId) ids.add(String(t._docId));
+  if(t && t.id) ids.add(String(t.id));
+  if(lid){ ids.add('CRM_TASK_'+lid); ids.add('TASK_'+lid); }
+  return [...ids].filter(Boolean);
+}
+function azpLeadDocIds(t){
+  const lid = azpTaskLeadId(t);
+  const ids = new Set();
+  if(lid){ ids.add('CRM_LEAD_'+lid); ids.add(lid); }
+  return [...ids].filter(Boolean);
+}
+function azpBuildPatch(t, stage){
+  const lid = azpTaskLeadId(t);
+  const title = nextTaskTitle(t, stage);
+  const comment = nextComment(t, stage);
+  return {
+    leadId: lid,
+    workflow_stage: stage,
+    stage: stage,
+    status: 'Pending',
+    staff_app_status: 'Pending',
+    task_status: 'Pending',
+    admin_approval: '',
+    scheduled_hold: false,
+    followupHold: false,
+    task_title: title,
+    title: title,
+    comments: comment,
+    comment: comment,
+    due_date: today(),
+    dueDate: today(),
+    due_time: '11:00',
+    dueTime: '11:00',
+    priority: (t.customer_priority === 'Hot' ? 'Very Urgent' : 'Urgent'),
+    updatedAtMs: Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+async function azpSaveStageEverywhere(t, stage){
+  if(!db || !t) throw new Error('Firebase/task missing');
+  const lid = azpTaskLeadId(t);
+  const taskPatch = azpBuildPatch(t, stage);
+  const leadPatch = {
+    id: lid,
+    stage: stage,
+    workflow_stage: stage,
+    status: 'Active',
+    dueDate: today(),
+    due_date: today(),
+    dueTime: '11:00',
+    due_time: '11:00',
+    followupHold: false,
+    scheduled_hold: false,
+    updatedAtMs: Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const writes = [];
+  azpTaskDocIds(t).forEach(id => writes.push(db.collection('azpExecutionRecords').doc(id).set(taskPatch,{merge:true})));
+  azpLeadDocIds(t).forEach(id => writes.push(db.collection('azpExecutionRecords').doc(id).set(leadPatch,{merge:true})));
+  if(lid) writes.push(db.collection('taskMaster').doc('TASK_'+lid).set(taskPatch,{merge:true}).catch(()=>{}));
+  await Promise.all(writes);
+  // Immediate local update so user sees change without waiting for network snapshot
+  Object.assign(t, taskPatch);
+  const idx = allTasks.findIndex(x => x._docId === t._docId || azpTaskLeadId(x) === lid);
+  if(idx >= 0) Object.assign(allTasks[idx], taskPatch);
+  render();
+}
+completeNext = async function(id){
+  try{
+    let t = allTasks.find(x => x._docId===id || x.id===id || azpTaskLeadId(x)===id);
+    if(!t){ toast('Record not found. Please refresh.'); return; }
+    const st = t.workflow_stage || t.stage || 'New Lead';
+    if(st === 'Item List'){ toast('Choose Item Received / Item Later / Cancel'); return; }
+    if(st === 'Advance'){ toast('Choose Advance Received / Advance Later / Cancel'); return; }
+    const ns = nextStage(st);
+    if(ns === st){ toast('Workflow already at final stage'); return; }
+    await azpSaveStageEverywhere(t, ns);
+    toast('Moved to '+ns);
+  }catch(e){ console.error(e); toast('Stage update failed: '+(e.message||e)); }
+};
+itemReceived = async function(id){
+  try{
+    const t = allTasks.find(x => x._docId===id || x.id===id || azpTaskLeadId(x)===id);
+    if(!t){ toast('Record not found. Please refresh.'); return; }
+    await azpSaveStageEverywhere(t, 'Quotation');
+    toast('Item received. Quotation task created');
+  }catch(e){ console.error(e); toast('Item update failed'); }
+};
+advanceReceived = async function(id){
+  try{
+    const t = allTasks.find(x => x._docId===id || x.id===id || azpTaskLeadId(x)===id);
+    if(!t){ toast('Record not found. Please refresh.'); return; }
+    await azpSaveStageEverywhere(t, 'Planning');
+    toast('Advance received. Planning task created');
+  }catch(e){ console.error(e); toast('Advance update failed'); }
+};
+
+
+/* ===== AZP BULLETPROOF SAME-CARD WORKFLOW FIX v2 =====
+   Fixes: Complete & Next shows toast but card returns/disappears.
+   Rule: update SAME live task, keep Pending, apply local stage override so old snapshot cannot pull it back.
+*/
+const AZP_FLOW_SAFE = ['New Lead','Item List','Quotation','Advance','Planning','Confirmation Message','Agreement Paper','White Board Entry','Vendor Arrangement','Driver Call','WhatsApp Job Allotment','Uniform Verification','Vendor Follow-up','Item Video + Bill + 90% Payment','10% Payment','Online Review','Physical Feedback','Reference Follow-up','Review'];
+function azpSafeLeadId(t){
+  let lid = String((t && (t.leadId || t.lead_id || t.customerId || t.crmId)) || '').trim();
+  if(!lid && t){
+    const txt = [t.comments,t.comment,t.task_title,t.title,t.id,t._docId].join(' ');
+    const m = txt.match(/(?:CRM:|AZL)([A-Za-z0-9_-]+)/i);
+    if(m) lid = (m[0].startsWith('CRM:')?m[1]:'AZL'+m[1]).replace(/\]/g,'');
+  }
+  return lid;
+}
+function azpStageKey(t){ return 'azp_stage_override_'+azpSafeLeadId(t); }
+function azpSetLocalStage(t,stage){
+  try{ localStorage.setItem(azpStageKey(t), JSON.stringify({stage,ts:Date.now()})); }catch(e){}
+}
+function azpGetLocalStage(t){
+  try{
+    const raw=localStorage.getItem(azpStageKey(t)); if(!raw)return '';
+    const o=JSON.parse(raw); if(!o||!o.stage)return '';
+    // keep override for 24 hours; prevents old Firebase snapshot from reverting the card during testing
+    if(Date.now()-(o.ts||0)>86400000){ localStorage.removeItem(azpStageKey(t)); return ''; }
+    return o.stage;
+  }catch(e){return ''}
+}
+function azpNextStageSafe(stage){
+  stage=String(stage||'New Lead').trim();
+  const i=AZP_FLOW_SAFE.indexOf(stage);
+  if(i>=0 && i<AZP_FLOW_SAFE.length-1) return AZP_FLOW_SAFE[i+1];
+  const fallback = {'Confirmed':'Planning','Payment':'Execution','Balance Payment':'Feedback'};
+  return fallback[stage] || stage;
+}
+function azpGuideForStage(stage){
+  const en={
+    'New Lead':'Call the customer and understand the shifting requirement clearly.',
+    'Item List':'Call the customer and collect the complete household item list.',
+    'Quotation':'Prepare and send the quotation after verifying the item list.',
+    'Advance':'Collect advance/token payment before creating the planning sheet.',
+    'Planning':'Finalize the vehicle, driver, workers, and work schedule.',
+    'Confirmation Message':'Send the booking confirmation message to the customer.',
+    'Agreement Paper':'Prepare and send the agreement paper to the customer.',
+    'White Board Entry':'Update the confirmed job details on the office white board.',
+    'Vendor Arrangement':'Arrange the required vendor or electrician for the job.',
+    'Driver Call':'Inform the driver to call and coordinate with the customer.',
+    'WhatsApp Job Allotment':'Send the job allotment details through WhatsApp.',
+    'Uniform Verification':'Verify staff uniform and team readiness before execution.',
+    'Vendor Follow-up':'Follow up with the vendor for dismantling or fitting work.',
+    'Item Video + Bill + 90% Payment':'Collect item video, generate bill, and collect 90% payment.',
+    '10% Payment':'Collect the remaining 10% payment before installation.',
+    'Online Review':'Request the customer to submit an online review.',
+    'Physical Feedback':'Collect physical feedback from the customer.',
+    'Reference Follow-up':'Call the customer for references and repeat business.',
+    'Review':'Request the customer to submit a Google review.'
+  };
+  const od={
+    'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+    'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+    'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+    'Advance':'ପ୍ଲାନିଂ ସିଟ୍ ପୂର୍ବରୁ ଗ୍ରାହକଙ୍କଠାରୁ ଅଗ୍ରିମ/ଟୋକେନ୍ ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+    'Planning':'ଗାଡ଼ି, ଡ୍ରାଇଭର, କର୍ମଚାରୀ ଏବଂ କାର୍ଯ୍ୟ ସମୟସୂଚୀ ଚୂଡ଼ାନ୍ତ କରନ୍ତୁ।',
+    'Confirmation Message':'ଗ୍ରାହକଙ୍କୁ ବୁକିଂ କନଫର୍ମେସନ୍ ମେସେଜ୍ ପଠାନ୍ତୁ।',
+    'Agreement Paper':'ଗ୍ରାହକଙ୍କ ପାଇଁ ଏଗ୍ରିମେଣ୍ଟ ପେପର୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+    'White Board Entry':'ଅଫିସ୍ ହ୍ୱାଇଟ୍ ବୋର୍ଡରେ କାମର ବିବରଣୀ ଲେଖନ୍ତୁ।',
+    'Vendor Arrangement':'କାମ ପାଇଁ ଆବଶ୍ୟକ ଭେଣ୍ଡର୍ କିମ୍ବା ଇଲେକ୍ଟ୍ରିସିଆନ୍ ବ୍ୟବସ୍ଥା କରନ୍ତୁ।',
+    'Driver Call':'ଡ୍ରାଇଭରକୁ ଗ୍ରାହକଙ୍କ ସହ କଥା ହେବାକୁ ସୂଚନା ଦିଅନ୍ତୁ।',
+    'WhatsApp Job Allotment':'WhatsApp ମାଧ୍ୟମରେ କାମ ଆଲଟମେଣ୍ଟ ବିବରଣୀ ପଠାନ୍ତୁ।',
+    'Uniform Verification':'କାମ ପୂର୍ବରୁ ଷ୍ଟାଫ୍ ୟୁନିଫର୍ମ ଏବଂ ଟିମ୍ ରେଡିନେସ୍ ଯାଞ୍ଚ କରନ୍ତୁ।',
+    'Vendor Follow-up':'ଡିସମାଣ୍ଟଲିଂ କିମ୍ବା ଫିଟିଂ କାମ ପାଇଁ ଭେଣ୍ଡର୍ ଫଲୋଅପ୍ କରନ୍ତୁ।',
+    'Item Video + Bill + 90% Payment':'ଆଇଟମ୍ ଭିଡିଓ, ବିଲ୍ ଏବଂ 90% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+    '10% Payment':'ଇନ୍‌ଷ୍ଟଲେସନ୍ ପୂର୍ବରୁ ବାକି 10% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+    'Online Review':'ଗ୍ରାହକଙ୍କୁ ଅନଲାଇନ୍ ରିଭ୍ୟୁ ଦେବାକୁ ଅନୁରୋଧ କରନ୍ତୁ।',
+    'Physical Feedback':'ଗ୍ରାହକଙ୍କ ଠାରୁ ଫିଜିକାଲ୍ ଫିଡବ୍ୟାକ୍ ସଂଗ୍ରହ କରନ୍ତୁ।',
+    'Reference Follow-up':'ରେଫରେନ୍ସ ଏବଂ ରିପିଟ୍ ବିଜନେସ୍ ପାଇଁ ଗ୍ରାହକଙ୍କୁ କଲ୍ କରନ୍ତୁ।',
+    'Review':'ଗ୍ରାହକଙ୍କୁ Google Review ଦେବାକୁ ଅନୁରୋଧ କରନ୍ତୁ।'
+  };
+  return {en:en[stage]||'Complete this customer task and update the latest status.', od:od[stage]||'ଏହି ଗ୍ରାହକଙ୍କ କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି ନୂତନ ସ୍ଥିତି ଅପଡେଟ୍ କରନ୍ତୁ।'};
+}
+// Override guides so new stages also show correct bilingual task text.
+taskGuideEnglish = function(stage){ return azpGuideForStage(stage).en; };
+taskGuideOdia = function(stage){ return azpGuideForStage(stage).od; };
+// Apply local override to incoming Firebase snapshot.
+const azpOriginalDocToTask = docToTask;
+docToTask = function(doc){
+  const t = azpOriginalDocToTask(doc);
+  if(!t) return t;
+  const localStage = azpGetLocalStage(t);
+  if(localStage){ t.workflow_stage=localStage; t.stage=localStage; t.status='Pending'; }
+  return t;
+};
+function azpBuildSafePatch(t,stage){
+  const lid=azpSafeLeadId(t);
+  const title=(t.customer_name||'Customer')+' - '+stage;
+  const comment='[CRM:'+lid+'] '+taskGuideEnglish(stage)+' Route: '+(t.from||'-')+' to '+(t.to||'-')+'. Mobile: '+(t.customer_mobile||'-')+'.';
+  return {
+    module:'taskManagement', collection:'taskManagement', source:'CRM_SINGLE_LIVE',
+    leadId:lid, workflow_stage:stage, stage:stage,
+    status:'Pending', staff_app_status:'Pending', task_status:'Pending', admin_approval:'',
+    scheduled_hold:false, followupHold:false,
+    task_title:title, title:title, comments:comment, comment:comment,
+    due_date:today(), dueDate:today(), due_time:'11:00', dueTime:'11:00',
+    priority:(t.customer_priority==='Hot'?'Very Urgent':'Urgent'), updatedAtMs:Date.now(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+async function azpWriteSafeStage(t,stage){
+  const lid=azpSafeLeadId(t); if(!lid) throw new Error('Lead ID missing');
+  const patch=azpBuildSafePatch(t,stage);
+  azpSetLocalStage(t,stage);
+  // immediate UI change
+  Object.assign(t,patch);
+  allTasks = allTasks.map(x => (azpSafeLeadId(x)===lid ? Object.assign(x,patch) : x));
+  render();
+  const writes=[];
+  // Update actual visible doc and canonical CRM task doc. Use set merge so document never disappears.
+  if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set(patch,{merge:true}));
+  const leadPatch={id:lid,module:'crmLead',stage:stage,workflow_stage:stage,status:'Active',dueDate:today(),dueTime:'11:00',due_date:today(),due_time:'11:00',followupHold:false,scheduled_hold:false,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set(leadPatch,{merge:true}));
+  try{ writes.push(db.collection('taskMaster').doc('TASK_'+lid).set(patch,{merge:true})); }catch(e){}
+  await Promise.all(writes);
+}
+completeNext = async function(id){
+  try{
+    const t = allTasks.find(x=>x._docId===id || x.id===id || azpSafeLeadId(x)===id);
+    if(!t){ toast('Record not found. Please refresh once.'); return; }
+    const st = t.workflow_stage || t.stage || 'New Lead';
+    if(st==='Item List'){ toast('Choose Item Received / Item Later / Cancel'); return; }
+    if(st==='Advance'){ toast('Choose Advance Received / Advance Later / Cancel'); return; }
+    const ns = azpNextStageSafe(st);
+    if(ns===st){ toast('Workflow already completed'); return; }
+    await azpWriteSafeStage(t,ns);
+    toast('Moved to '+ns);
+  }catch(e){ console.error(e); toast('Stage update failed: '+(e.message||e)); }
+};
+itemReceived = async function(id){
+  try{ const t=allTasks.find(x=>x._docId===id || x.id===id || azpSafeLeadId(x)===id); if(!t){toast('Record not found');return;} await azpWriteSafeStage(t,'Quotation'); toast('Moved to Quotation'); }catch(e){console.error(e);toast('Item update failed');}
+};
+advanceReceived = async function(id){
+  try{ const t=allTasks.find(x=>x._docId===id || x.id===id || azpSafeLeadId(x)===id); if(!t){toast('Record not found');return;} await azpWriteSafeStage(t,'Planning'); toast('Moved to Planning'); }catch(e){console.error(e);toast('Advance update failed');}
+};
+
+
+/* ===== AZP STAGE-SPECIFIC FOLLOW-UP + SLA SCHEDULE PATCH ===== */
+function azpPad(n){return String(n).padStart(2,'0')}
+function azpDateObj(dateStr,timeStr){
+  const d = new Date((dateStr||today())+'T'+(timeStr||'11:00'));
+  return isNaN(d.getTime()) ? new Date() : d;
+}
+function azpAddDays(dateStr,days){
+  const d = new Date((dateStr||today())+'T00:00');
+  d.setDate(d.getDate()+Number(days||0));
+  return d.toISOString().slice(0,10);
+}
+function azpTimePlusMinutes(mins){
+  const d=new Date(Date.now()+Number(mins||15)*60000);
+  return azpPad(d.getHours())+':'+azpPad(d.getMinutes());
+}
+function azpIsFutureDT(d,t){ return azpDateObj(d,t).getTime() > Date.now()+60000; }
+function azpStageSlaMinutes(stage){
+  const s=String(stage||'');
+  if(s==='Vendor Arrangement') return 24*60;
+  if(s==='WhatsApp Job Allotment') return 60;
+  return 0;
+}
+function azpIsOverdueStage(t){
+  const due=azpDateObj(t.due_date||t.dueDate,t.due_time||t.dueTime).getTime();
+  return due < Date.now()-60000;
+}
+function azpDefaultNextDue(t,stage){
+  const baseDate=t.due_date||t.dueDate||today();
+  const baseTime=t.due_time||t.dueTime||'11:00';
+  if(stage==='Vendor Follow-up') return {date:baseDate,time:baseTime};
+  if(stage==='Item Video + Bill + 90% Payment') return {date:azpAddDays(baseDate,1),time:'11:00'};
+  if(stage==='Online Review') return {date:baseDate,time:baseTime};
+  if(stage==='Physical Feedback') return {date:azpAddDays(baseDate,2),time:'11:00'};
+  if(stage==='Reference Follow-up') return {date:azpAddDays(baseDate,3),time:'11:00'};
+  return {date:today(),time:'11:00'};
+}
+function azpBuildScheduledPatch(t,stage,date,time,reason){
+  const lid=azpSafeLeadId(t);
+  const future=azpIsFutureDT(date,time);
+  const title=(t.customer_name||'Customer')+' - '+stage;
+  const guide=taskGuideEnglish(stage);
+  const comment='[CRM:'+lid+'] '+guide+' Route: '+(t.from||'-')+' to '+(t.to||'-')+'. Mobile: '+(t.customer_mobile||'-')+'. '+(reason?('Note: '+reason):'');
+  return {
+    module:'taskManagement',collection:'taskManagement',source:'CRM_SINGLE_LIVE',
+    leadId:lid,workflow_stage:stage,stage:stage,
+    status:future?'Scheduled':'Pending',staff_app_status:future?'Scheduled':'Pending',task_status:future?'Scheduled':'Pending',admin_approval:'',
+    scheduled_hold:future,followupHold:future,followReason:reason||'',
+    task_title:title,title:title,comments:comment,comment:comment,
+    due_date:date,dueDate:date,due_time:time,dueTime:time,
+    priority:future?'Scheduled':(t.customer_priority==='Hot'?'Very Urgent':'Urgent'),
+    updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+async function azpWriteStageWithDue(t,stage,date,time,reason){
+  const lid=azpSafeLeadId(t); if(!lid) throw new Error('Lead ID missing');
+  const patch=azpBuildScheduledPatch(t,stage,date,time,reason||'');
+  // Keep local override only for visible/non-future task. Future tasks should hide until due.
+  if(!patch.scheduled_hold) azpSetLocalStage(t,stage);
+  Object.assign(t,patch);
+  allTasks = allTasks.map(x => (azpSafeLeadId(x)===lid ? Object.assign(x,patch) : x));
+  render();
+  const leadPatch={id:lid,module:'crmLead',stage:stage,workflow_stage:stage,status:'Active',dueDate:date,dueTime:time,due_date:date,due_time:time,followupHold:patch.scheduled_hold,scheduled_hold:patch.scheduled_hold,followReason:reason||'',remarks:reason||'',updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const writes=[];
+  if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set(patch,{merge:true}));
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set(leadPatch,{merge:true}));
+  try{writes.push(db.collection('taskMaster').doc('TASK_'+lid).set(patch,{merge:true}));}catch(e){}
+  await Promise.all(writes);
+}
+// Override writer so normal Complete & Next can also use stage-specific dates.
+azpWriteSafeStage = async function(t,stage){
+  const d=azpDefaultNextDue(t,stage);
+  await azpWriteStageWithDue(t,stage,d.date,d.time,'');
+};
+// Follow Up Next rules requested by Manoj ji.
+async function followNextStage(id,mode){
+  try{
+    const t=allTasks.find(x=>x._docId===id || x.id===id || azpSafeLeadId(x)===id);
+    if(!t){toast('Record not found');return;}
+    const stage=t.workflow_stage||t.stage||'New Lead';
+    let d=today(), tm='11:00', label='Follow-up';
+    if(mode==='timeOnly15'){
+      label='Job allotment follow-up';
+      tm=prompt('Next follow-up time HH:MM (15 minutes gap recommended)', azpTimePlusMinutes(15));
+      if(!tm)return;
+      d=today();
+      if(!/^\d{2}:\d{2}$/.test(tm)){toast('Enter valid time like 11:15');return;}
+    }else{
+      label=stage+' follow-up';
+      d=prompt(label+' date YYYY-MM-DD', t.due_date||t.dueDate||today());
+      if(!d)return;
+      tm=prompt(label+' time HH:MM', t.due_time||t.dueTime||'11:00');
+      if(!tm)return;
+    }
+    let reason=prompt('Remark / reason', label)||'';
+    await azpWriteStageWithDue(t,stage,d,tm,reason);
+    const future=azpIsFutureDT(d,tm);
+    toast(future ? 'Follow-up scheduled. It will show at selected time.' : 'Follow-up due now.');
+  }catch(e){console.error(e);toast('Follow-up schedule failed: '+(e.message||e));}
+}
+// More practical stage title in card: customer - stage, not always New Lead - stage.
+function azpCardTitle(t,stage){
+  return esc((t.customer_name && t.customer_name!=='Customer'?t.customer_name:'Customer')+' - '+stage);
+}
+// Patch card to add Follow Up Next buttons for selected stages and show overdue badge correctly.
+card = function(t){
+  const pr=(t.customer_priority||'Warm').toLowerCase();
+  const stage=t.workflow_stage||'New Lead';
+  let decision='';
+  if(stage==='Item List'){
+    decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div><div class="small">Item Later चुनने पर date/time compulsory रहेगा और task उसी समय staff app में दिखेगा.</div></div>`;
+  } else if(stage==='Advance'){
+    decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div><div class="small">Advance Later चुनने पर date/time compulsory रहेगा. तब तक staff को next priority task मिलेगा.</div></div>`;
+  } else if(stage==='Vendor Arrangement'){
+    decision=`<div class="decision"><b>Vendor / Electrician follow-up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. 24 hours से ज्यादा delay होगा तो overdue माना जाएगा.</div></div>`;
+  } else if(stage==='WhatsApp Job Allotment'){
+    decision=`<div class="decision"><b>Job Allotment follow-up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','timeOnly15')">Follow Up Next</button></div><div class="small">केवल time set करें. हर 15 minutes follow-up रख सकते हैं. 1 hour के बाद overdue.</div></div>`;
+  } else if(stage==='Uniform Verification'){
+    decision=`<div class="decision"><b>Uniform verification follow-up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. Vendor Follow-up इसी selected duty date पर आगे आएगा.</div></div>`;
+  } else if(stage==='10% Payment'){
+    decision=`<div class="decision"><b>10% payment follow-up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. Online Review उसी selected date पर आएगा.</div></div>`;
+  }
+  const isOver=azpIsOverdueStage(t);
+  const statusLabel=isOver && !isScheduledHold(t) ? 'OVERDUE' : cleanStatus(t.status);
+  return `<div class="task ${pr} ${isFuture(t)?'future':''}"><h3>${azpCardTitle(t,stage)}</h3>${taskGuideHTML(stage)}<div class="meta">🚚 ${esc(t.from||'-')} → ${esc(t.to||'-')}<br>📱 ${esc(t.customer_mobile||'-')}<br>📅 ${esc(t.due_date||'-')} ⏰ ${esc(t.due_time||'-')}</div><div class="badges">${isScheduledHold(t)?'<span class="badge gray">Scheduled Hidden</span>':'<span class="badge green">Single Live</span>'}<span class="badge ${pr}">${esc(t.customer_priority||'Warm')}</span><span class="badge ${isOver?'hot':'gray'}">${esc(statusLabel)}</span></div>${decision}<div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div></div>`;
+};
+// Override Complete & Next so dependent future stages are scheduled accurately.
+completeNext = async function(id){
+  try{
+    const t=allTasks.find(x=>x._docId===id || x.id===id || azpSafeLeadId(x)===id);
+    if(!t){toast('Record not found. Please refresh once.');return;}
+    const st=t.workflow_stage||t.stage||'New Lead';
+    if(st==='Item List'){toast('Choose Item Received / Item Later / Cancel');return;}
+    if(st==='Advance'){toast('Choose Advance Received / Advance Later / Cancel');return;}
+    const ns=azpNextStageSafe(st);
+    if(ns===st){toast('Workflow already completed');return;}
+    await azpWriteSafeStage(t,ns);
+    toast('Moved to '+ns);
+  }catch(e){console.error(e);toast('Stage update failed: '+(e.message||e));}
+};
+
+
+/* ===== AZP FINAL NO-HIDE WORKFLOW PATCH v5 - REAL FIX =====
+   Root fix: old docToTask filtered Completed/Approved before local stage override.
+   This made the card disappear after Complete & Next on some devices/snapshots.
+   New rule: CRM_SINGLE_LIVE task is never hidden after Complete & Next; same task stays Pending and moves stage.
+*/
+function azpFindTaskByAnyId(id){
+  return allTasks.find(x => x._docId===id || x.id===id || x.leadId===id || azpSafeLeadId(x)===id) || null;
+}
+function azpRawDocToTask(doc){
+  const d={_docId:doc.id,...doc.data()};
+  if(d.module!=='taskManagement') return null;
+  if(d.source!=='CRM_SINGLE_LIVE') return null;
+  const st=cleanStatus(d.status);
+  if(st==='Cancelled') return null;
+  // Important: Do NOT hide Completed/Approved snapshots for CRM workflow.
+  // The workflow card must remain visible and move to next stage.
+  if(st==='Completed' || st==='Approved' || d.task_status==='Completed' || d.staff_app_status==='Completed'){
+    d.status='Pending'; d.task_status='Pending'; d.staff_app_status='Pending';
+  }
+  const localStage = azpGetLocalStage ? azpGetLocalStage(d) : '';
+  if(localStage){ d.workflow_stage=localStage; d.stage=localStage; d.status='Pending'; d.task_status='Pending'; d.staff_app_status='Pending'; d.scheduled_hold=false; }
+  return d;
+}
+docToTask = azpRawDocToTask;
+startSync = function(){
+  if(!db) return;
+  db.collection('azpExecutionRecords').onSnapshot(s=>{
+    const map=new Map();
+    s.forEach(doc=>{
+      const t=docToTask(doc);
+      if(!t || !matches(t)) return;
+      const key=azpSafeLeadId(t) || t.leadId || t.id || doc.id;
+      const old=map.get(key);
+      const localStage = azpGetLocalStage ? azpGetLocalStage(t) : '';
+      const scoreNew=(localStage?9999999999999:0)+(t.updatedAtMs||0);
+      const scoreOld=old?((azpGetLocalStage && azpGetLocalStage(old)?9999999999999:0)+(old.updatedAtMs||0)):0;
+      if(!old || scoreNew>=scoreOld) map.set(key,t);
+    });
+    allTasks=[...map.values()].sort((a,b)=>(b.priorityScore||0)-(a.priorityScore||0)||dueMs(a)-dueMs(b));
+    render();
+  },e=>{console.error(e);toast('Firebase read issue')});
+};
+function azpForceVisiblePatch(t,stage){
+  const lid=azpSafeLeadId(t);
+  const title=(t.customer_name||t.name||'Customer')+' - '+stage;
+  const guide=taskGuideEnglish(stage);
+  const comment='[CRM:'+lid+'] '+guide+' Route: '+(t.from||'-')+' to '+(t.to||'-')+'. Mobile: '+(t.customer_mobile||t.phone||'-')+'.';
+  return {
+    module:'taskManagement', collection:'taskManagement', source:'CRM_SINGLE_LIVE',
+    leadId:lid, id:t.id || ('TASK_'+lid),
+    workflow_stage:stage, stage:stage,
+    status:'Pending', task_status:'Pending', staff_app_status:'Pending', admin_approval:'',
+    completed:false, isCompleted:false, isDone:false,
+    scheduled_hold:false, followupHold:false, follow_reason:'', followReason:'',
+    task_title:title, title:title, comments:comment, comment:comment,
+    due_date:today(), dueDate:today(), due_time:'11:00', dueTime:'11:00',
+    priority:(t.customer_priority==='Hot'?'Very Urgent':'Urgent'),
+    updatedAtMs:Date.now(), updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+async function azpForceMoveStage(t,stage){
+  const lid=azpSafeLeadId(t); if(!lid) throw new Error('Lead ID missing');
+  const patch=azpForceVisiblePatch(t,stage);
+  azpSetLocalStage(t,stage);
+  Object.assign(t,patch);
+  const idx=allTasks.findIndex(x=>x._docId===t._docId || azpSafeLeadId(x)===lid);
+  if(idx>=0) Object.assign(allTasks[idx],patch); else allTasks.unshift({...t,...patch});
+  render();
+  const leadPatch={id:lid,module:'crmLead',stage:stage,workflow_stage:stage,status:'Active',dueDate:today(),dueTime:'11:00',due_date:today(),due_time:'11:00',followupHold:false,scheduled_hold:false,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  const writes=[];
+  if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set(patch,{merge:true}));
+  writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set(leadPatch,{merge:true}));
+  try{writes.push(db.collection('taskMaster').doc('TASK_'+lid).set(patch,{merge:true}));}catch(e){}
+  await Promise.all(writes);
+}
+completeNext = async function(id){
+  try{
+    const t=azpFindTaskByAnyId(id);
+    if(!t){toast('Record not found. Please refresh once.');return;}
+    const st=azpGetLocalStage(t) || t.workflow_stage || t.stage || 'New Lead';
+    if(st==='Item List'){toast('Please choose Item Received / Item Later / Cancel');return;}
+    if(st==='Advance'){toast('Please choose Advance Received / Advance Later / Cancel');return;}
+    const ns=azpNextStageSafe(st);
+    if(ns===st){toast('Workflow already completed');return;}
+    await azpForceMoveStage(t,ns);
+    toast('Moved to '+ns);
+  }catch(e){console.error(e);toast('Stage update failed: '+(e.message||e));}
+};
+itemReceived = async function(id){
+  try{const t=azpFindTaskByAnyId(id); if(!t){toast('Record not found');return;} await azpForceMoveStage(t,'Quotation'); toast('Moved to Quotation');}
+  catch(e){console.error(e);toast('Item update failed: '+(e.message||e));}
+};
+advanceReceived = async function(id){
+  try{const t=azpFindTaskByAnyId(id); if(!t){toast('Record not found');return;} await azpForceMoveStage(t,'Planning'); toast('Moved to Planning');}
+  catch(e){console.error(e);toast('Advance update failed: '+(e.message||e));}
+};
+
+
+
+/* ===== AZP FINAL STABLE FOLLOW-UP + NO-JUMP + PERMISSION-SAFE PATCH v6 =====
+   Purpose:
+   1) Complete & Next never hides/deletes the card.
+   2) Same task stays in place and moves to next stage immediately.
+   3) Stage-specific Follow Up Next buttons with date/time rules.
+   4) Suppress noisy "insufficient / missing permission" messages from optional mirror writes.
+*/
+const AZP_WORKFLOW_V6 = [
+  'New Lead','Item List','Quotation','Advance','Planning','Confirmation Message','Agreement Paper','White Board Entry',
+  'Vendor Arrangement','Driver Call Before Execution','WhatsApp Job Allotment','Uniform Verification','Vendor Follow-up',
+  'Item Video + Bill + 90% Payment','10% Payment','Online Review','Physical Feedback','Reference Follow-up','Workflow Completed'
+];
+const AZP_FOLLOW_STAGES_V6 = ['Vendor Arrangement','WhatsApp Job Allotment','Uniform Verification','10% Payment'];
+function azpFindTaskV6(key){
+  return allTasks.find(x=>x && (x._docId===key || x.id===key || x.leadId===key || ('TASK_'+x.leadId)===key)) || null;
+}
+function azpNextStageV6(stage){
+  const s=String(stage||'New Lead'); const i=AZP_WORKFLOW_V6.indexOf(s);
+  return (i>=0 && i<AZP_WORKFLOW_V6.length-1) ? AZP_WORKFLOW_V6[i+1] : 'Workflow Completed';
+}
+function azpPlusDaysV6(dateStr, days){
+  const d=new Date((dateStr||today())+'T00:00'); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10);
+}
+function azpTargetMsV6(d,t){ return new Date((d||today())+'T'+(t||'11:00')).getTime(); }
+function azpCustomerTitleV6(t,stage){ return `${esc(t.customer_name||'Customer')} - ${esc(stage||t.workflow_stage||'Task')}`; }
+function azpTitleV6(t,stage){ return `CRM TASK: ${t.customer_name||'Customer'} - ${stage} (${t.customer_priority||'Warm'})`; }
+function azpCommentV6(t,stage){
+ const guide={
+  'New Lead':'Call customer, verify shifting requirement and move to Item List stage.',
+  'Item List':'Collect the complete item list from customer.',
+  'Quotation':'Prepare and send quotation after item list verification.',
+  'Advance':'Collect advance/token payment before planning sheet.',
+  'Planning':'Prepare planning sheet after advance is received.',
+  'Confirmation Message':'Send booking confirmation message to the customer.',
+  'Agreement Paper':'Prepare and send agreement paper to the customer.',
+  'White Board Entry':'Mention the confirmed job on the office white board.',
+  'Vendor Arrangement':'Arrange the required vendor or electrician for the job.',
+  'Driver Call Before Execution':'Intimate driver before execution and ensure driver talks with the party.',
+  'WhatsApp Job Allotment':'Send the job allotment details through WhatsApp.',
+  'Uniform Verification':'Verify staff uniform and team readiness before execution.',
+  'Vendor Follow-up':'Follow up with the vendor for dismantling or fitting work.',
+  'Item Video + Bill + 90% Payment':'Collect item video, generate bill, and collect 90% payment.',
+  '10% Payment':'Collect remaining 10% payment before installation.',
+  'Online Review':'Request the customer to submit an online review.',
+  'Physical Feedback':'Collect physical feedback from the customer.',
+  'Reference Follow-up':'Call the customer for references and repeat business.',
+  'Workflow Completed':'Customer workflow completed.'
+ };
+ return `[CRM:${t.leadId||''}] ${guide[stage]||stage}. Route: ${t.from||'-'} to ${t.to||'-'}. Mobile: ${t.customer_mobile||'-'}.`;
+}
+function azpOptimisticUpdateV6(t, patch){
+  Object.assign(t, patch, {updatedAtMs:Date.now()});
+  const i=allTasks.findIndex(x=>x._docId===t._docId || x.id===t.id || x.leadId===t.leadId);
+  if(i>=0) allTasks[i]=t;
+  const y=window.scrollY;
+  render();
+  setTimeout(()=>window.scrollTo(0,y),0);
+}
+async function azpSafeSetDocV6(collection, docId, data){
+  try{ await db.collection(collection).doc(docId).set(data,{merge:true}); return true; }
+  catch(e){
+    const msg=String(e&&e.message||e||'');
+    console.warn('Optional Firebase write skipped:', collection, docId, msg);
+    // Do not show scary missing-permission popup for optional/mirror writes.
+    return false;
+  }
+}
+updateTask = async function(t,patch){
+  if(!t) return false;
+  const docId=t._docId || (t.leadId?'CRM_TASK_'+t.leadId:(t.id||''));
+  if(!docId){ toast('Task ID missing'); return false; }
+  const payload={...patch, updatedAtMs:Date.now(), updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  try{
+    await db.collection('azpExecutionRecords').doc(docId).set(payload,{merge:true});
+    Object.assign(t,payload,{_docId:docId});
+    try{ if(t.id) await db.collection('taskMaster').doc(t.id).set(payload,{merge:true}); }catch(e){console.warn('taskMaster mirror skipped',e)}
+    return true;
+  }catch(e){
+    const msg=String(e&&e.message||e||'');
+    console.error('Main task update failed',msg);
+    // Keep UI stable even if permission rule blocks write; user can still see the next stage locally.
+    Object.assign(t,payload,{_docId:docId}); render();
+    toast('Task updated locally. Firebase rule needs permission check.');
+    return false;
+  }
+};
+updateLead = async function(t,patch){
+  if(!t || !t.leadId) return false;
+  return await azpSafeSetDocV6('azpExecutionRecords','CRM_LEAD_'+t.leadId,{...patch,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+};
+function azpPatchForStageV6(t,ns,extra={}){
+  let d=extra.due_date || today(); let tm=extra.due_time || '11:00';
+  // Date dependency rules
+  if(ns==='Vendor Follow-up' && (t.uniformFollowDate || t.uniformDate)){ d=t.uniformFollowDate||t.uniformDate; tm=t.uniformFollowTime||t.uniformTime||tm; }
+  if(ns==='Item Video + Bill + 90% Payment' && (t.uniformFollowDate || t.uniformDate)){ d=t.uniformFollowDate||t.uniformDate; tm=t.uniformFollowTime||t.uniformTime||tm; }
+  if(ns==='Online Review' && (t.tenPercentDate || t.tenPaymentDate)){ d=t.tenPercentDate||t.tenPaymentDate; tm=t.tenPercentTime||t.tenPaymentTime||tm; }
+  if(ns==='Physical Feedback' && (t.tenPercentDate || t.tenPaymentDate)){ d=azpPlusDaysV6(t.tenPercentDate||t.tenPaymentDate,2); tm=t.tenPercentTime||t.tenPaymentTime||tm; }
+  if(ns==='Reference Follow-up'){
+    const base=t.physicalFeedbackDate || (t.tenPercentDate?azpPlusDaysV6(t.tenPercentDate,2):today());
+    d=azpPlusDaysV6(base,3); tm=t.physicalFeedbackTime || t.tenPercentTime || tm;
+  }
+  return {
+    workflow_stage:ns, status: ns==='Workflow Completed'?'Completed':'Pending', scheduled_hold:false,
+    task_title:azpTitleV6(t,ns), title:azpTitleV6(t,ns), comments:azpCommentV6(t,ns), comment:azpCommentV6(t,ns),
+    due_date:d, dueDate:d, due_time:tm, dueTime:tm, priority:t.customer_priority==='Hot'?'Very Urgent':'Urgent',
+    ...extra
+  };
+}
+completeNext = async function(id){
+  const t=azpFindTaskV6(id); if(!t){ toast('Record not found'); return; }
+  const y=window.scrollY;
+  const st=t.workflow_stage||'New Lead';
+  if(st==='Item List'){ toast('Please choose Item Received / Item Later / Cancel'); return; }
+  if(st==='Advance'){ toast('Please choose Advance Received / Advance Later / Cancel'); return; }
+  const ns=azpNextStageV6(st);
+  const patch=azpPatchForStageV6(t,ns);
+  azpOptimisticUpdateV6(t,patch);
+  await updateTask(t,patch);
+  await updateLead(t,{stage:ns,dueDate:patch.due_date,dueTime:patch.due_time,followupHold:false,status:ns==='Workflow Completed'?'Completed':'Active'});
+  setTimeout(()=>window.scrollTo(0,y),50);
+  toast('Moved to '+ns);
+};
+function azpAskDateTimeV6(label, mode){
+  let d=today(), tm='11:00';
+  if(mode==='timeOnly15'){
+    tm=prompt(label+' time HH:MM (15 minute gap only)','11:00');
+    if(!tm) return null;
+    const m=tm.match(/^(\d{1,2}):(\d{2})$/); if(!m){toast('Please enter valid time HH:MM'); return null;}
+    const minute=+m[2]; if(minute%15!==0){toast('Please choose 00 / 15 / 30 / 45 minutes'); return null;}
+  }else{
+    d=prompt(label+' date YYYY-MM-DD', today()); if(!d) return null;
+    tm=prompt(label+' time HH:MM','11:00'); if(!tm) return null;
+  }
+  const reason=prompt('Remark / Reason', label+' follow-up')||'';
+  return {d,tm,reason};
+}
+followNextStage = async function(id,mode){
+  const t=azpFindTaskV6(id); if(!t){ toast('Record not found'); return; }
+  const st=t.workflow_stage||'New Lead';
+  const x=azpAskDateTimeV6('Follow Up Next',mode); if(!x) return;
+  const ms=azpTargetMsV6(x.d,x.tm), now=Date.now();
+  let over=false, future=ms>now+60000;
+  if(st==='Vendor Arrangement' && ms-now>24*60*60*1000) over=true;
+  if(st==='WhatsApp Job Allotment' && ms-now>60*60*1000) over=true;
+  const extra={
+    status:over?'Overdue':(future?'Scheduled':'Pending'), scheduled_hold:over?false:future,
+    due_date:x.d, dueDate:x.d, due_time:x.tm, dueTime:x.tm,
+    comments:azpCommentV6(t,st)+' Follow-up remark: '+x.reason,
+    comment:azpCommentV6(t,st)+' Follow-up remark: '+x.reason,
+    priority:over?'Overdue':'Scheduled'
+  };
+  if(st==='Uniform Verification') Object.assign(extra,{uniformFollowDate:x.d,uniformDate:x.d,uniformFollowTime:x.tm,uniformTime:x.tm});
+  if(st==='10% Payment') Object.assign(extra,{tenPercentDate:x.d,tenPaymentDate:x.d,tenPercentTime:x.tm,tenPaymentTime:x.tm});
+  azpOptimisticUpdateV6(t,extra);
+  await updateTask(t,extra);
+  await updateLead(t,{stage:st,dueDate:x.d,dueTime:x.tm,remarks:x.reason,followupHold:extra.scheduled_hold,followReason:x.reason});
+  toast(over?'Marked overdue because selected delay is beyond rule.':'Follow-up scheduled');
+};
+// Decision handlers rebuilt on top of same-stage stable update
+itemReceived = async function(id){
+  const t=azpFindTaskV6(id); if(!t)return toast('Record not found');
+  const ns='Quotation', patch=azpPatchForStageV6(t,ns);
+  azpOptimisticUpdateV6(t,patch); await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:patch.due_date,dueTime:patch.due_time,followupHold:false}); toast('Item received. Quotation task ready');
+};
+advanceReceived = async function(id){
+  const t=azpFindTaskV6(id); if(!t)return toast('Record not found');
+  const ns='Planning', patch=azpPatchForStageV6(t,ns);
+  azpOptimisticUpdateV6(t,patch); await updateTask(t,patch); await updateLead(t,{stage:ns,dueDate:patch.due_date,dueTime:patch.due_time,followupHold:false}); toast('Advance received. Planning task ready');
+};
+async function azpScheduleSameStageV6(id,label){
+  const t=azpFindTaskV6(id); if(!t)return toast('Record not found');
+  const x=azpAskDateTimeV6(label,'dateTime'); if(!x)return;
+  const future=azpTargetMsV6(x.d,x.tm)>Date.now()+60000;
+  const patch={status:future?'Scheduled':'Pending',scheduled_hold:future,due_date:x.d,dueDate:x.d,due_time:x.tm,dueTime:x.tm,comments:azpCommentV6(t,t.workflow_stage)+' Reason: '+x.reason,comment:azpCommentV6(t,t.workflow_stage)+' Reason: '+x.reason,priority:future?'Scheduled':'Urgent'};
+  azpOptimisticUpdateV6(t,patch); await updateTask(t,patch); await updateLead(t,{stage:t.workflow_stage,dueDate:x.d,dueTime:x.tm,remarks:x.reason,followupHold:future,followReason:x.reason}); toast(label+' scheduled');
+}
+itemLater = async function(id){ await azpScheduleSameStageV6(id,'Item List follow-up'); };
+advanceLater = async function(id){ await azpScheduleSameStageV6(id,'Advance follow-up'); };
+laterTask = async function(id){ await azpScheduleSameStageV6(id,'Follow-up'); };
+function azpIsOverdueV6(t){
+  const ms=azpTargetMsV6(t.due_date||t.dueDate,t.due_time||t.dueTime);
+  if(String(t.status||'').toLowerCase()==='overdue') return true;
+  return ms && ms<Date.now()-60000 && !['Completed','Cancelled'].includes(cleanStatus(t.status));
+}
+function taskGuideEnglish(stage){
+ const m={
+  'New Lead':'Call the customer and understand the shifting requirement clearly.',
+  'Item List':'Call the customer and collect the complete household item list.',
+  'Quotation':'Prepare and send the quotation after verifying the item list.',
+  'Advance':'Collect advance/token payment before creating the planning sheet.',
+  'Planning':'Finalize the vehicle, driver, workers, and work schedule.',
+  'Confirmation Message':'Send the booking confirmation message to the customer.',
+  'Agreement Paper':'Prepare and send the agreement paper to the customer.',
+  'White Board Entry':'Mention the confirmed job on the office white board.',
+  'Vendor Arrangement':'Arrange the required vendor or electrician for the job.',
+  'Driver Call Before Execution':'Inform the driver and make sure the driver talks with the customer.',
+  'WhatsApp Job Allotment':'Send the job allotment details through WhatsApp.',
+  'Uniform Verification':'Verify staff uniform and team readiness before execution.',
+  'Vendor Follow-up':'Follow up with the vendor for dismantling or fitting work.',
+  'Item Video + Bill + 90% Payment':'Collect item video, generate bill, and collect 90% payment.',
+  '10% Payment':'Collect the remaining 10% payment before installation.',
+  'Online Review':'Request the customer to submit an online review.',
+  'Physical Feedback':'Collect physical feedback from the customer.',
+  'Reference Follow-up':'Call the customer for references and repeat business.',
+  'Workflow Completed':'This customer workflow is completed.'
+ }; return m[stage]||'Complete this customer task and update the latest status.';
+}
+function taskGuideOdia(stage){
+ const m={
+  'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+  'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+  'Advance':'ପ୍ଲାନିଂ ସିଟ୍ ପୂର୍ବରୁ ଗ୍ରାହକଙ୍କଠାରୁ ଅଗ୍ରିମ/ଟୋକେନ୍ ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Planning':'ଗାଡ଼ି, ଡ୍ରାଇଭର, କର୍ମଚାରୀ ଏବଂ କାର୍ଯ୍ୟ ସମୟସୂଚୀ ଚୂଡ଼ାନ୍ତ କରନ୍ତୁ।',
+  'Confirmation Message':'ଗ୍ରାହକଙ୍କୁ ବୁକିଂ ନିଶ୍ଚିତକରଣ ମେସେଜ୍ ପଠାନ୍ତୁ।',
+  'Agreement Paper':'ଗ୍ରାହକଙ୍କ ପାଇଁ ଅଗ୍ରିମେଣ୍ଟ ପେପର୍ ପ୍ରସ୍ତୁତ କରି ପଠାନ୍ତୁ।',
+  'White Board Entry':'ଅଫିସ୍ ହ୍ୱାଇଟ୍ ବୋର୍ଡରେ ନିଶ୍ଚିତ ହୋଇଥିବା କାମ ଲେଖନ୍ତୁ।',
+  'Vendor Arrangement':'କାମ ପାଇଁ ଆବଶ୍ୟକ ଭେଣ୍ଡର୍ କିମ୍ବା ଇଲେକ୍ଟ୍ରିସିଆନ୍ ବ୍ୟବସ୍ଥା କରନ୍ତୁ।',
+  'Driver Call Before Execution':'ଡ୍ରାଇଭରକୁ ସୂଚନା ଦେଇ ଗ୍ରାହକଙ୍କ ସହ କଥା ହେବାକୁ କହନ୍ତୁ।',
+  'WhatsApp Job Allotment':'WhatsApp ମାଧ୍ୟମରେ କାମ ଆଲଟମେଣ୍ଟ ବିବରଣୀ ପଠାନ୍ତୁ।',
+  'Uniform Verification':'କାମ ପୂର୍ବରୁ ଷ୍ଟାଫ୍ ୟୁନିଫର୍ମ ଏବଂ ଟିମ୍ ରେଡିନେସ୍ ଯାଞ୍ଚ କରନ୍ତୁ।',
+  'Vendor Follow-up':'ଡିସମାଣ୍ଟଲିଂ କିମ୍ବା ଫିଟିଂ କାମ ପାଇଁ ଭେଣ୍ଡର୍ ଫଲୋଅପ୍ କରନ୍ତୁ।',
+  'Item Video + Bill + 90% Payment':'ଆଇଟମ୍ ଭିଡିଓ, ବିଲ୍ ଏବଂ 90% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  '10% Payment':'ଇନ୍‌ଷ୍ଟଲେସନ୍ ପୂର୍ବରୁ ବାକି 10% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Online Review':'ଗ୍ରାହକଙ୍କୁ ଅନଲାଇନ୍ ରିଭ୍ୟୁ ଦେବାକୁ ଅନୁରୋଧ କରନ୍ତୁ।',
+  'Physical Feedback':'ଗ୍ରାହକଙ୍କ ଠାରୁ ଫିଜିକାଲ୍ ଫିଡ୍‌ବ୍ୟାକ୍ ସଂଗ୍ରହ କରନ୍ତୁ।',
+  'Reference Follow-up':'ରେଫରେନ୍ସ ଏବଂ ରିପିଟ୍ ବିଜନେସ୍ ପାଇଁ ଗ୍ରାହକଙ୍କୁ କଲ୍ କରନ୍ତୁ।',
+  'Workflow Completed':'ଏହି ଗ୍ରାହକଙ୍କ କାର୍ଯ୍ୟ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି।'
+ }; return m[stage]||'ଏହି ଗ୍ରାହକଙ୍କ କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି ନୂତନ ସ୍ଥିତି ଅପଡେଟ୍ କରନ୍ତୁ।';
+}
+card = function(t){
+  const pr=(t.customer_priority||'Warm').toLowerCase(); const stage=t.workflow_stage||'New Lead'; let decision='';
+  if(stage==='Item List'){
+    decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+  } else if(stage==='Advance'){
+    decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+  } else if(AZP_FOLLOW_STAGES_V6.includes(stage)){
+    const mode=stage==='WhatsApp Job Allotment'?'timeOnly15':'dateTime';
+    const help=stage==='WhatsApp Job Allotment'?'Time only. Choose 00/15/30/45 minutes. More than 1 hour = overdue.':(stage==='Vendor Arrangement'?'Date & time. More than 24 hours = overdue.':'Date & time follow-up.');
+    decision=`<div class="decision"><b>${esc(stage)} follow-up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','${mode}')">Follow Up Next</button></div><div class="small">${help}</div></div>`;
+  }
+  const statusTxt=azpIsOverdueV6(t)?'OVERDUE':cleanStatus(t.status);
+  return `<div class="task ${pr} ${isFuture(t)?'future':''}"><h3>${azpCustomerTitleV6(t,stage)}</h3>${taskGuideHTML(stage)}<div class="meta">🚚 ${esc(t.from||'-')} → ${esc(t.to||'-')}<br>📱 ${esc(t.customer_mobile||'-')}<br>📅 ${esc(t.due_date||t.dueDate||'-')} ⏰ ${esc(t.due_time||t.dueTime||'-')}</div><div class="badges">${isScheduledHold(t)?'<span class="badge gray">Scheduled Hidden</span>':'<span class="badge green">Single Live</span>'}<span class="badge ${pr}">${esc(t.customer_priority||'Warm')}</span><span class="badge ${azpIsOverdueV6(t)?'hot':'gray'}">${esc(statusTxt)}</span></div>${decision}<div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div></div>`;
+};
+
+init();
+
+/* ===== AZP FINAL STAFF DISPLAY HARD FIX: SHOW ROUTE / MOBILE / CUSTOMER ===== */
+(function(){
+  function pick(t,names){ for(const n of names){ if(t && t[n]!==undefined && String(t[n]).trim()) return String(t[n]).trim(); } return ''; }
+  function parseFromComment(t){
+    const txt=[t.comments,t.comment,t.task_title,t.title].join(' ');
+    const out={};
+    let m=txt.match(/Mobile:\s*([0-9+\-\s]{8,15})/i); if(m) out.mobile=m[1].replace(/\D/g,'').slice(-10);
+    m=txt.match(/Route:\s*(.*?)\s+to\s+(.*?)\s*(?:\||$)/i); if(m){out.from=m[1].trim();out.to=m[2].trim();}
+    m=txt.match(/Customer:\s*(.*?)\s*\|/i); if(m) out.customer=m[1].trim();
+    return out;
+  }
+  const oldDocToTaskFinal=window.docToTask;
+  window.docToTask=function(doc){
+    let d=oldDocToTaskFinal ? oldDocToTaskFinal(doc) : {_docId:doc.id,...doc.data()};
+    if(!d) return d;
+    const p=parseFromComment(d);
+    d.customer_name=pick(d,['customer_name','customerName','writeTo']) || p.customer || '';
+    d.customer_mobile=pick(d,['customer_mobile','customerMobile','mobile']) || p.mobile || '';
+    d.from=pick(d,['from','fromLocation']) || p.from || '';
+    d.to=pick(d,['to','toLocation']) || p.to || '';
+    if(!d.customer_name || String(d.customer_name).toLowerCase()==='customer'){
+      d.customer_name=(d.from&&d.to)?(d.from+' to '+d.to):(d.customer_name||'Customer');
+    }
+    return d;
+  };
+  const oldCardFinal=window.card;
+  window.card=function(t){
+    const p=parseFromComment(t);
+    t.customer_mobile=pick(t,['customer_mobile','customerMobile','mobile']) || p.mobile || '';
+    t.from=pick(t,['from','fromLocation']) || p.from || '';
+    t.to=pick(t,['to','toLocation']) || p.to || '';
+    if(!t.customer_name || String(t.customer_name).toLowerCase()==='customer') t.customer_name=(t.from&&t.to)?(t.from+' to '+t.to):'Customer';
+    let html=oldCardFinal(t);
+    const stage=t.workflow_stage||t.stage||'New Lead';
+    html=html.replace(/<h3>.*?<\/h3>/, '<h3>'+esc(t.customer_name+' - '+stage)+'</h3>');
+    html=html.replace(/🚚\s*.*?<br>📱\s*.*?<br>/s, '🚚 '+esc(t.from||'-')+' → '+esc(t.to||'-')+'<br>📱 '+esc(t.customer_mobile||'-')+'<br>');
+    return html;
+  };
+})();
+
+
+
+/* ===== AZP FINAL CLEAN SIMPLE STAFF TASK TEXT PATCH - SYNTAX FIXED =====
+   Clean display after Complete & Next. No duplicate CRM TASK / [CRM:] / Mobile / Route text.
+*/
+(function(){
+  function azpS(v){return String(v||'').trim();}
+  function azpEsc(v){try{return esc(v)}catch(e){return String(v||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}}
+  function azpClean(v){
+    let s=azpS(v);
+    s=s.replace(/\[CRM:[^\]]*\]/ig,' ');
+    s=s.replace(/CRM\s*TASK\s*:/ig,' ');
+    s=s.replace(/Route\s*:/ig,' ');
+    s=s.replace(/Mobile\s*:/ig,' ');
+    s=s.replace(/\s+/g,' ').trim();
+    return s;
+  }
+  function azpParseAny(t){
+    const txt=[t&&t.comments,t&&t.comment,t&&t.task_title,t&&t.title,t&&t.rawTitle].map(azpS).join(' ');
+    const out={};
+    let m=txt.match(/Mobile:\s*([0-9+\-\s]{8,15})/i);
+    if(m) out.mobile=m[1].replace(/\D/g,'').slice(-10);
+    m=txt.match(/Route:\s*(.*?)\s+to\s+(.*?)(?:\s*\||\.|$)/i);
+    if(m){out.from=azpClean(m[1]); out.to=azpClean(m[2]);}
+    m=txt.match(/Customer:\s*(.*?)\s*(?:\||$)/i);
+    if(m) out.customer=azpClean(m[1]);
+    return out;
+  }
+  function azpGet(t,names){
+    for(const n of names){ if(t && t[n]!==undefined && azpS(t[n])) return azpS(t[n]); }
+    return '';
+  }
+  function azpData(t){
+    const p=azpParseAny(t||{});
+    let from=azpClean(azpGet(t,['from','fromLocation'])) || p.from || '';
+    let to=azpClean(azpGet(t,['to','toLocation'])) || p.to || '';
+    let mobile=(azpGet(t,['customer_mobile','customerMobile','mobile']) || p.mobile || '').replace(/\D/g,'').slice(-10);
+    let customer=azpClean(azpGet(t,['customer_name','customerName','writeTo'])) || p.customer || '';
+    if(!customer || customer.toLowerCase()==='customer'){
+      customer = (from && to) ? (from+' to '+to) : 'Customer';
+    }
+    return {customer,from,to,mobile};
+  }
+  function azpStageInstruction(stage){
+    const en={
+      'New Lead':'Call the customer and understand the shifting requirement clearly.',
+      'Item List':'Call the customer and collect the complete household item list.',
+      'Quotation':'Prepare and send the quotation after checking the item list.',
+      'Advance':'Collect advance or token payment from the customer.',
+      'Planning':'Prepare planning sheet and arrange vehicle, driver and workers.',
+      'Confirmation Message':'Send booking confirmation message to the customer.',
+      'Agreement Paper':'Prepare and send agreement paper to the customer.',
+      'White Board Entry':'Enter confirmed job details on office white board.',
+      'Vendor Arrangement':'Arrange required vendor or electrician for this job.',
+      'Driver Call':'Ask driver to call and coordinate with the customer.',
+      'WhatsApp Job Allotment':'Send job allotment details on WhatsApp.',
+      'Uniform Verification':'Verify staff uniform and team readiness.',
+      'Vendor Follow-up':'Follow up with vendor for dismantling or fitting work.',
+      'Item Video + Bill + 90% Payment':'Collect item video, make bill and collect 90% payment.',
+      '10% Payment':'Collect remaining 10% payment.',
+      'Online Review':'Request customer to give online review.',
+      'Physical Feedback':'Collect physical feedback from customer.',
+      'Reference Follow-up':'Ask customer for reference leads.',
+      'Review':'Request Google review from customer.'
+    };
+    const od={
+      'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+      'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପଠାନ୍ତୁ।',
+      'Advance':'ଗ୍ରାହକଙ୍କଠାରୁ ଅଗ୍ରିମ/ଟୋକେନ୍ ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Planning':'ପ୍ଲାନିଂ ସିଟ୍ ପ୍ରସ୍ତୁତ କରି ଗାଡ଼ି, ଡ୍ରାଇଭର ଓ କର୍ମଚାରୀ ବ୍ୟବସ୍ଥା କରନ୍ତୁ।',
+      'Confirmation Message':'ଗ୍ରାହକଙ୍କୁ ବୁକିଂ କନଫର୍ମେସନ୍ ମେସେଜ୍ ପଠାନ୍ତୁ।',
+      'Agreement Paper':'ଗ୍ରାହକଙ୍କୁ ଏଗ୍ରିମେଣ୍ଟ ପେପର୍ ପଠାନ୍ତୁ।',
+      'White Board Entry':'ଅଫିସ୍ ହ୍ୱାଇଟ୍ ବୋର୍ଡରେ କାମର ବିବରଣୀ ଲେଖନ୍ତୁ।',
+      'Vendor Arrangement':'ଆବଶ୍ୟକ ଭେଣ୍ଡର୍/ଇଲେକ୍ଟ୍ରିସିଆନ୍ ବ୍ୟବସ୍ଥା କରନ୍ତୁ।',
+      'Driver Call':'ଡ୍ରାଇଭରକୁ ଗ୍ରାହକଙ୍କ ସହ କଥା ହେବାକୁ କହନ୍ତୁ।',
+      'WhatsApp Job Allotment':'WhatsApp ରେ କାମ ଆଲଟମେଣ୍ଟ ବିବରଣୀ ପଠାନ୍ତୁ।',
+      'Uniform Verification':'ଷ୍ଟାଫ୍ ୟୁନିଫର୍ମ ଓ ଟିମ୍ ରେଡିନେସ୍ ଯାଞ୍ଚ କରନ୍ତୁ।',
+      'Vendor Follow-up':'ଭେଣ୍ଡର୍ ସହ ଫଲୋଅପ୍ କରନ୍ତୁ।',
+      'Item Video + Bill + 90% Payment':'ଆଇଟମ୍ ଭିଡିଓ, ବିଲ୍ ଏବଂ 90% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+      '10% Payment':'ବାକି 10% ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Online Review':'ଗ୍ରାହକଙ୍କୁ ଅନଲାଇନ୍ ରିଭ୍ୟୁ ଦେବାକୁ କହନ୍ତୁ।',
+      'Physical Feedback':'ଗ୍ରାହକଙ୍କଠାରୁ ଫିଡବ୍ୟାକ୍ ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Reference Follow-up':'ଗ୍ରାହକଙ୍କୁ ରେଫରେନ୍ସ ପାଇଁ ପଚାରନ୍ତୁ।',
+      'Review':'ଗ୍ରାହକଙ୍କୁ Google Review ଦେବାକୁ କହନ୍ତୁ।'
+    };
+    return {en:en[stage]||'Complete this task and update status.', od:od[stage]||'ଏହି କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି status update କରନ୍ତୁ।'};
+  }
+  window.taskGuideEnglish=function(stage){return azpStageInstruction(stage).en;};
+  window.taskGuideOdia=function(stage){return azpStageInstruction(stage).od;};
+  window.taskGuideHTML=function(stage){
+    const g=azpStageInstruction(stage);
+    return '<div class="task-guide"><div class="en"><b>🇬🇧 Task:</b> '+azpEsc(g.en)+'</div><div class="od"><b>🇮🇳 କାର୍ଯ୍ୟ:</b> '+azpEsc(g.od)+'</div></div>';
+  };
+  function cleanPatchForStage(t,stage){
+    const d=azpData(t);
+    const g=azpStageInstruction(stage);
+    const title=d.customer+' - '+stage;
+    const dd=(t.due_date||t.dueDate||today());
+    const tt=(t.due_time||t.dueTime||'11:00');
+    return {
+      workflow_stage:stage, stage:stage,
+      status:'Pending', staff_app_status:'Pending', task_status:'Pending',
+      task_title:title, title:title,
+      comments:g.en, comment:g.en,
+      customer_name:d.customer, customerName:d.customer,
+      customer_mobile:d.mobile, customerMobile:d.mobile,
+      from:d.from, to:d.to, fromLocation:d.from, toLocation:d.to,
+      due_date:dd, dueDate:dd, due_time:tt, dueTime:tt,
+      updatedAtMs:Date.now(), updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    };
+  }
+  const oldAzpWriteSafeStage=window.azpWriteSafeStage;
+  window.azpWriteSafeStage=async function(t,stage){
+    const patch=cleanPatchForStage(t,stage);
+    Object.assign(t,patch);
+    try{ if(typeof azpSetLocalStage==='function') azpSetLocalStage(t,stage); }catch(e){}
+    try{ allTasks=allTasks.map(function(x){return ((x._docId===t._docId || x.leadId===t.leadId)?Object.assign(x,patch):x)}); render(); }catch(e){}
+    const lid=String(t.leadId||t.crmLeadId||'');
+    const writes=[];
+    if(db){
+      if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+      if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set(patch,{merge:true}));
+      if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set({stage:stage,workflow_stage:stage,dueDate:patch.dueDate,dueTime:patch.dueTime,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}));
+      try{ if(lid) writes.push(db.collection('taskMaster').doc('TASK_'+lid).set(patch,{merge:true})); }catch(e){}
+      await Promise.all(writes);
+    }else if(oldAzpWriteSafeStage){
+      return oldAzpWriteSafeStage(t,stage);
+    }
+  };
+  window.card=function(t){
+    const stage=t.workflow_stage||t.stage||'New Lead';
+    const d=azpData(t);
+    const pr=(t.customer_priority||'Warm').toLowerCase();
+    let decision='';
+    if(stage==='Item List'){
+      decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }else if(stage==='Advance'){
+      decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }
+    const dueD=t.due_date||t.dueDate||'-';
+    const dueT=t.due_time||t.dueTime||'-';
+    const st=cleanStatus(t.status);
+    const over=(typeof azpIsOverdueStage==='function' && azpIsOverdueStage(t) && !(typeof isScheduledHold==='function' && isScheduledHold(t)));
+    const statusBadge=over?'OVERDUE':st;
+    return `<div class="task ${pr}">
+      <h3>${azpEsc(d.customer+' - '+stage)}</h3>
+      ${taskGuideHTML(stage)}
+      <div class="meta">🚚 ${azpEsc(d.from||'-')} → ${azpEsc(d.to||'-')}<br>📱 ${azpEsc(d.mobile||'-')}<br>📅 ${azpEsc(dueD)} ⏰ ${azpEsc(dueT)}</div>
+      <div class="badges"><span class="badge green">Single Live</span><span class="badge ${pr}">${azpEsc(t.customer_priority||'Warm')}</span><span class="badge gray">${azpEsc(statusBadge)}</span></div>
+      ${decision}
+      <div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div>
+    </div>`;
+  };
+})();
+
+
+/* ===== AZP PROFESSIONAL CARD UI + HARD CLEAN DISPLAY FINAL ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .task{border-left:0!important;border-radius:24px!important;padding:0!important;overflow:hidden!important;background:#fff!important}
+    .azp-pro-head{background:linear-gradient(135deg,#eff6ff,#f5f3ff);padding:16px 16px 12px;border-bottom:1px solid #e5e7eb}
+    .azp-pro-title{font-size:20px;font-weight:950;color:#0f172a;line-height:1.25;margin:0}
+    .azp-pro-stage{display:inline-block;margin-top:8px;border-radius:999px;background:#dbeafe;color:#1e40af;padding:6px 10px;font-size:12px;font-weight:950}
+    .azp-pro-body{padding:14px 16px}
+    .azp-info{display:grid;gap:8px;margin:10px 0 12px}
+    .azp-info-row{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;font-size:14px;font-weight:850;color:#475569;line-height:1.35}
+    .azp-info-row b{color:#0f172a}
+    .azp-task-box{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:12px;margin:12px 0}
+    .azp-task-box div{font-size:14px;font-weight:900;line-height:1.45}
+    .azp-task-box .od{color:#1d4ed8;margin-top:7px}
+    .badges{margin:12px 0!important}
+    .decision{margin:12px 0!important}
+    .actions{margin-top:12px!important}
+  `;
+  document.head.appendChild(style);
+
+  function E(v){try{return esc(v)}catch(e){return String(v||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}}
+  function S(v){return String(v||'').trim();}
+  function clean(v){
+    let s=S(v);
+    s=s.replace(/\[CRM:[^\]]*\]/ig,' ');
+    s=s.replace(/CRM\s*TASK\s*:/ig,' ');
+    s=s.replace(/\b(Customer|Route|Mobile)\s*:/ig,' ');
+    s=s.replace(/\b(New Lead|Item List|Quotation|Advance|Planning|Warm|Hot|Cold)\b/ig,' ');
+    s=s.replace(/[|]+/g,' ');
+    s=s.replace(/\s+/g,' ').trim();
+    return s;
+  }
+  function parseRouteFromAll(t){
+    const txt=[t.from,t.to,t.customer_name,t.customerName,t.writeTo,t.comments,t.comment,t.task_title,t.title].map(S).join(' ');
+    let out={from:S(t.from||t.fromLocation),to:S(t.to||t.toLocation)};
+    if(out.from && out.to) return out;
+    let m=txt.match(/\b(CDA\s*\d+)\s+(?:to|2|→|->)\s+(CDA\s*\d+)/i);
+    if(m) return {from:m[1].toUpperCase().replace(/\s+/g,' '),to:m[2].toUpperCase().replace(/\s+/g,' ')};
+    m=txt.match(/\b([A-Za-z]+[A-Za-z\s]*\d*)\s+(?:to|2|→|->)\s+([A-Za-z]+[A-Za-z\s]*\d*)/i);
+    if(m) return {from:clean(m[1]),to:clean(m[2])};
+    return {from:clean(out.from),to:clean(out.to)};
+  }
+  function mobileOf(t){
+    const txt=[t.customer_mobile,t.customerMobile,t.mobile,t.comments,t.comment,t.task_title,t.title].map(S).join(' ');
+    const m=txt.match(/\b([6-9]\d{9})\b/);
+    return m?m[1]:'';
+  }
+  function customerOf(t,route){
+    let c=clean(t.customer_name||t.customerName||t.writeTo||'');
+    if(!c || c.toLowerCase()==='customer' || c.length>40){
+      c=(route.from&&route.to)?(route.from+' to '+route.to):'Customer';
+    }
+    return c;
+  }
+  function guide(stage){
+    if(typeof azpStageInstruction==='function') return azpStageInstruction(stage);
+    return {en: (typeof taskGuideEnglish==='function'?taskGuideEnglish(stage):'Complete this task.'), od:(typeof taskGuideOdia==='function'?taskGuideOdia(stage):'ଏହି କାମ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ।')};
+  }
+
+  window.card=function(t){
+    const stage=t.workflow_stage||t.stage||'New Lead';
+    const route=parseRouteFromAll(t);
+    const mobile=mobileOf(t);
+    const customer=customerOf(t,route);
+    const pr=(t.customer_priority||'Warm').toLowerCase();
+    const dueD=t.due_date||t.dueDate||'-';
+    const dueT=t.due_time||t.dueTime||'-';
+    const g=guide(stage);
+    let decision='';
+    if(stage==='Item List'){
+      decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }else if(stage==='Advance'){
+      decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }
+    const over=(typeof azpIsOverdueStage==='function' && azpIsOverdueStage(t) && !(typeof isScheduledHold==='function' && isScheduledHold(t)));
+    const statusBadge=over?'OVERDUE':cleanStatus(t.status);
+    return `<div class="task ${pr}">
+      <div class="azp-pro-head">
+        <h3 class="azp-pro-title">${E(customer)}</h3>
+        <span class="azp-pro-stage">${E(stage)}</span>
+      </div>
+      <div class="azp-pro-body">
+        <div class="azp-info">
+          <div class="azp-info-row"><span>📍</span><div><b>From:</b> ${E(route.from||'-')}</div></div>
+          <div class="azp-info-row"><span>📍</span><div><b>To:</b> ${E(route.to||'-')}</div></div>
+          <div class="azp-info-row"><span>📞</span><div><b>Mobile:</b> ${E(mobile||'-')}</div></div>
+          <div class="azp-info-row"><span>📅</span><div><b>Due:</b> ${E(dueD)} &nbsp; ⏰ ${E(dueT)}</div></div>
+        </div>
+        <div class="azp-task-box">
+          <div>🇬🇧 <b>Task:</b> ${E(g.en)}</div>
+          <div class="od">🇮🇳 <b>କାର୍ଯ୍ୟ:</b> ${E(g.od)}</div>
+        </div>
+        <div class="badges"><span class="badge green">Single Live</span><span class="badge ${pr}">${E(t.customer_priority||'Warm')}</span><span class="badge gray">${E(statusBadge)}</span></div>
+        ${decision}
+        <div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div>
+      </div>
+    </div>`;
+  };
+})();
+
+
+/* ===== AZP SECOND SCREENSHOT STYLE FINAL LOCK =====
+   Clean lock: never show old long CRM/comment text in title/from/to.
+   Professional card exactly like the clean second screenshot.
+*/
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .task{background:#fff!important;border-left:6px solid #d97706!important;border-radius:22px!important;padding:14px!important;margin-bottom:12px!important;box-shadow:0 10px 24px rgba(15,23,42,.07)!important;overflow:hidden!important}
+    .task h3{font-size:20px!important;line-height:1.25!important;margin:0 0 10px!important;font-weight:950!important;color:#0f172a!important}
+    .task-guide{border:1px solid #dbeafe!important;background:#f8fbff!important;border-radius:16px!important;padding:10px 12px!important;margin:9px 0!important}
+    .meta{font-size:14px!important;color:#64748b!important;font-weight:850!important;line-height:1.55!important;margin-top:10px!important}
+    .badges{display:flex!important;gap:6px!important;flex-wrap:wrap!important;margin:10px 0!important}
+    .decision{border:1px solid #fed7aa!important;background:#fff7ed!important;border-radius:18px!important;padding:12px!important;margin:10px 0!important}
+  `;
+  document.head.appendChild(style);
+
+  function E(v){
+    try{return esc(v)}
+    catch(e){return String(v||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}
+  }
+  function S(v){return String(v||'').trim();}
+  function cleanText(v){
+    let s=S(v);
+    s=s.replace(/\[CRM:[^\]]*\]/ig,' ');
+    s=s.replace(/CRM\s*TASK\s*:/ig,' ');
+    s=s.replace(/\b(Customer|Route|Mobile)\s*:/ig,' ');
+    s=s.replace(/\b(New Lead|Item List|Quotation|Advance|Planning|Warm|Hot|Cold|Single Live|OVERDUE)\b/ig,' ');
+    s=s.replace(/[|]+/g,' ');
+    s=s.replace(/\s+/g,' ').trim();
+    return s;
+  }
+  function allText(t){return [t.from,t.to,t.customer_name,t.customerName,t.writeTo,t.comments,t.comment,t.task_title,t.title,t.rawTitle].map(S).join(' ');}
+  function mobileOf(t){
+    const txt=[t.customer_mobile,t.customerMobile,t.mobile,t.comments,t.comment,t.task_title,t.title].map(S).join(' ');
+    const m=txt.match(/\b([6-9]\d{9})\b/);
+    return m?m[1]:'';
+  }
+  function dateLabelOf(t){
+    const txt=allText(t);
+    const m=txt.match(/\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|July|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}\b/i);
+    return m ? m[0].replace(/^jul\b/i,'July') : '';
+  }
+  function routeOf(t){
+    let f=cleanText(t.from||t.fromLocation||'');
+    let to=cleanText(t.to||t.toLocation||'');
+    const dirty = (x)=> !x || x.length>35 || /CRM|Mobile|Route|Collect|customer|Item List|Warm/i.test(x);
+    const txt=allText(t);
+    if(dirty(f) || dirty(to)){
+      let m=txt.match(/\b(CDA\s*\d+)\s+(?:to|2|→|->)\s+(CDA\s*\d+)\b/i);
+      if(m){f=m[1].toUpperCase().replace(/\s+/g,' '); to=m[2].toUpperCase().replace(/\s+/g,' ');}
+    }
+    if(dirty(f) || dirty(to)){
+      let m=txt.match(/\b([A-Za-z]+(?:\s*\d+)?)\s+(?:to|2|→|->)\s+([A-Za-z]+(?:\s*\d+)?)\b/i);
+      if(m){f=cleanText(m[1]); to=cleanText(m[2]);}
+    }
+    return {from:dirty(f)?'-':f, to:dirty(to)?'-':to};
+  }
+  function customerOf(t,r){
+    let d=dateLabelOf(t);
+    if(d) return d;
+    let c=cleanText(t.customer_name||t.customerName||t.writeTo||'');
+    if(!c || c.length>35 || /CRM|Mobile|Route|Collect|customer/i.test(c)){
+      c=(r.from!=='-'&&r.to!=='-') ? (r.from+' → '+r.to) : 'New Lead';
+    }
+    return c;
+  }
+  function guide(stage){
+    const enMap={
+      'New Lead':'Call the customer and understand the shifting requirement clearly.',
+      'Item List':'Call the customer and collect the complete household item list.',
+      'Quotation':'Prepare and send the quotation after checking the item list.',
+      'Advance':'Collect advance or token payment from the customer.',
+      'Planning':'Prepare planning sheet and arrange vehicle, driver and workers.',
+      'Confirmation Message':'Send booking confirmation message to the customer.',
+      'Agreement Paper':'Prepare and send agreement paper to the customer.',
+      'White Board Entry':'Enter confirmed job details on office white board.',
+      'Vendor Arrangement':'Arrange required vendor or electrician for this job.',
+      'Driver Call':'Ask driver to call and coordinate with the customer.',
+      'WhatsApp Job Allotment':'Send job allotment details on WhatsApp.',
+      'Uniform Verification':'Verify staff uniform and team readiness.',
+      'Vendor Follow-up':'Follow up with vendor for dismantling or fitting work.',
+      'Item Video + Bill + 90% Payment':'Collect item video, make bill and collect 90% payment.',
+      '10% Payment':'Collect remaining 10% payment.',
+      'Online Review':'Request customer to give online review.',
+      'Physical Feedback':'Collect physical feedback from customer.',
+      'Reference Follow-up':'Ask customer for reference leads.',
+      'Review':'Request Google review from customer.'
+    };
+    const odMap={
+      'New Lead':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ଶିଫ୍ଟିଂ ଆବଶ୍ୟକତା ସ୍ପଷ୍ଟ ଭାବରେ ବୁଝନ୍ତୁ।',
+      'Item List':'ଗ୍ରାହକଙ୍କୁ ଫୋନ କରି ସମ୍ପୂର୍ଣ୍ଣ ଘରୋଇ ସାମଗ୍ରୀ ତାଲିକା ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Quotation':'ସାମଗ୍ରୀ ତାଲିକା ଯାଞ୍ଚ କରି କୋଟେସନ୍ ପଠାନ୍ତୁ।',
+      'Advance':'ଗ୍ରାହକଙ୍କଠାରୁ ଅଗ୍ରିମ/ଟୋକେନ୍ ପେମେଣ୍ଟ ସଂଗ୍ରହ କରନ୍ତୁ।',
+      'Planning':'ପ୍ଲାନିଂ ସିଟ୍ ପ୍ରସ୍ତୁତ କରି ଗାଡ଼ି, ଡ୍ରାଇଭର ଓ କର୍ମଚାରୀ ବ୍ୟବସ୍ଥା କରନ୍ତୁ।'
+    };
+    return {en:enMap[stage]||'Complete this task and update status.', od:odMap[stage]||'ଏହି କାମ ସମ୍ପୂର୍ଣ୍ଣ କରି status update କରନ୍ତୁ।'};
+  }
+  window.card=function(t){
+    const stage=t.workflow_stage||t.stage||'New Lead';
+    const r=routeOf(t);
+    const mob=mobileOf(t);
+    const cust=customerOf(t,r);
+    const g=guide(stage);
+    const pr=(t.customer_priority||'Warm').toLowerCase();
+    const dueD=t.due_date||t.dueDate||'-';
+    const dueT=t.due_time||t.dueTime||'-';
+    const over=(typeof azpIsOverdueStage==='function' && azpIsOverdueStage(t) && !(typeof isScheduledHold==='function' && isScheduledHold(t)));
+    const statusBadge=over?'OVERDUE':cleanStatus(t.status);
+    let decision='';
+    if(stage==='Item List'){
+      decision=`<div class="decision"><b>Item List decision</b><div class="actions"><button class="btn green" onclick="itemReceived('${t._docId}')">Item Received</button><button class="btn amber" onclick="itemLater('${t._docId}')">Item Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }else if(stage==='Advance'){
+      decision=`<div class="decision"><b>Advance decision</b><div class="actions"><button class="btn green" onclick="advanceReceived('${t._docId}')">Advance Received</button><button class="btn amber" onclick="advanceLater('${t._docId}')">Advance Later</button><button class="btn red" onclick="cancelTask('${t._docId}')">Cancel</button></div></div>`;
+    }
+    return `<div class="task ${pr}">
+      <h3>${E(cust)} - ${E(stage)}</h3>
+      <div class="task-guide">
+        <div class="en"><b>🇬🇧 Task:</b> ${E(g.en)}</div>
+        <div class="od"><b>🇮🇳 କାର୍ଯ୍ୟ:</b> ${E(g.od)}</div>
+      </div>
+      <div class="meta">
+        🚚 ${E(r.from)} → ${E(r.to)}<br>
+        📱 ${E(mob||'-')}<br>
+        📅 ${E(dueD)} ⏰ ${E(dueT)}
+      </div>
+      <div class="badges"><span class="badge green">Single Live</span><span class="badge ${pr}">${E(t.customer_priority||'Warm')}</span><span class="badge gray">${E(statusBadge)}</span></div>
+      ${decision}
+      <div class="actions"><button class="btn amber" onclick="startTask('${t._docId}')">Start</button><button class="btn green" onclick="completeNext('${t._docId}')">Complete & Next</button><button class="btn gray" onclick="copyMsg(allTasks.find(x=>x._docId==='${t._docId}'))">Copy</button><button class="btn gray" onclick="wa(allTasks.find(x=>x._docId==='${t._docId}'))">WhatsApp</button></div>
+    </div>`;
+  };
+})();
+
+
+/* ===== AZP PERMANENT LINEAR WORKFLOW FIX - NO BACKWARD / NO LOOP / NO HALT =====
+   Problem fixed:
+   White Board Entry was returning to Agreement Paper / repeated stages / halted after 2-3 steps.
+   Rule: One fixed forward-only workflow. Complete & Next always moves to the next stage.
+*/
+(function(){
+  const AZP_FINAL_FLOW=[
+    'New Lead',
+    'Item List',
+    'Quotation',
+    'Advance',
+    'Planning',
+    'Confirmation Message',
+    'Agreement Paper',
+    'White Board Entry',
+    'Vendor Arrangement',
+    'Driver Call',
+    'WhatsApp Job Allotment',
+    'Uniform Verification',
+    'Vendor Follow-up',
+    'Item Video + Bill + 90% Payment',
+    '10% Payment',
+    'Online Review',
+    'Physical Feedback',
+    'Reference Follow-up',
+    'Review'
+  ];
+
+  const STAGE_ALIAS={
+    'Confirmed':'Planning',
+    'Confirmation':'Confirmation Message',
+    'Agreement':'Agreement Paper',
+    'Whiteboard Entry':'White Board Entry',
+    'Whiteboard':'White Board Entry',
+    'White Board':'White Board Entry',
+    'Vendor':'Vendor Arrangement',
+    'Driver':'Driver Call',
+    'Job Allotment':'WhatsApp Job Allotment',
+    'Whatsapp Job Allotment':'WhatsApp Job Allotment',
+    'Uniform':'Uniform Verification',
+    'Vendor Followup':'Vendor Follow-up',
+    'Item Video Bill Payment':'Item Video + Bill + 90% Payment',
+    '90% Payment':'Item Video + Bill + 90% Payment',
+    'Balance Payment':'10% Payment',
+    'Final Payment':'10% Payment',
+    'Feedback':'Physical Feedback'
+  };
+
+  function normStage(s){
+    s=String(s||'New Lead').trim();
+    return STAGE_ALIAS[s] || s;
+  }
+
+  window.azpNextStageSafe=function(stage){
+    stage=normStage(stage);
+    const i=AZP_FINAL_FLOW.indexOf(stage);
+    if(i>=0 && i<AZP_FINAL_FLOW.length-1) return AZP_FINAL_FLOW[i+1];
+    if(i===AZP_FINAL_FLOW.length-1) return 'Review';
+    return 'New Lead';
+  };
+
+  window.nextStage=function(stage){
+    return window.azpNextStageSafe(stage);
+  };
+
+  function safeId(t){
+    return String((t&&t.leadId)||(t&&t.crmLeadId)||(t&&t.id)||'').replace(/^CRM_TASK_/,'').replace(/^TASK_/,'');
+  }
+
+  function getCustomer(t){
+    let name=String((t&&t.customer_name)||(t&&t.customerName)||(t&&t.writeTo)||'Customer').trim();
+    if(!name || /CRM TASK|\[CRM|Mobile:|Route:/i.test(name)) name='Customer';
+    return name;
+  }
+
+  function cleanStagePatch(t,stage){
+    stage=normStage(stage);
+    const dueDate=(t&& (t.due_date||t.dueDate)) || (typeof today==='function'?today():new Date().toISOString().slice(0,10));
+    const dueTime=(t&& (t.due_time||t.dueTime)) || '11:00';
+    const title=getCustomer(t)+' - '+stage;
+    const en=(typeof taskGuideEnglish==='function')?taskGuideEnglish(stage):('Complete '+stage+' task.');
+    return {
+      workflow_stage:stage,
+      stage:stage,
+      status:'Pending',
+      staff_app_status:'Pending',
+      task_status:'Pending',
+      scheduled_hold:false,
+      followupHold:false,
+      task_title:title,
+      title:title,
+      comments:en,
+      comment:en,
+      due_date:dueDate,
+      dueDate:dueDate,
+      due_time:dueTime,
+      dueTime:dueTime,
+      priority:((t&&t.customer_priority)==='Hot'?'Very Urgent':'Urgent'),
+      updatedAtMs:Date.now(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    };
+  }
+
+  window.azpWriteSafeStage=async function(t,stage){
+    if(!t) throw new Error('Task missing');
+    const patch=cleanStagePatch(t,stage);
+    const lid=safeId(t);
+    Object.assign(t,patch);
+    try{ if(typeof azpSetLocalStage==='function') azpSetLocalStage(t,patch.workflow_stage); }catch(e){}
+    try{
+      allTasks=allTasks.map(function(x){
+        const xl=safeId(x);
+        return (x._docId===t._docId || (lid && xl===lid)) ? Object.assign(x,patch) : x;
+      });
+      render();
+    }catch(e){}
+    if(!db) return;
+    const writes=[];
+    if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+    if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+    if(lid) writes.push(db.collection('azpExecutionRecords').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+    if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set({
+      stage:patch.workflow_stage,
+      workflow_stage:patch.workflow_stage,
+      status:'Active',
+      dueDate:patch.dueDate,
+      dueTime:patch.dueTime,
+      due_date:patch.due_date,
+      due_time:patch.due_time,
+      followupHold:false,
+      scheduled_hold:false,
+      updatedAtMs:Date.now(),
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true}));
+    try{ if(lid) writes.push(db.collection('taskMaster').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true})); }catch(e){}
+    await Promise.all(writes);
+  };
+
+  window.completeNext=async function(id){
+    try{
+      const t=(allTasks||[]).find(function(x){
+        return x._docId===id || x.id===id || x.leadId===id || safeId(x)===id;
+      });
+      if(!t){ toast('Record not found. Please refresh once.'); return; }
+      const current=normStage(t.workflow_stage||t.stage||'New Lead');
+
+      // Decision stages keep their special buttons.
+      if(current==='Item List'){ toast('Choose Item Received / Item Later / Cancel'); return; }
+      if(current==='Advance'){ toast('Choose Advance Received / Advance Later / Cancel'); return; }
+
+      const ns=window.azpNextStageSafe(current);
+      if(ns===current && current==='Review'){
+        toast('Workflow completed');
+        return;
+      }
+      await window.azpWriteSafeStage(t,ns);
+      toast('Moved to '+ns);
+    }catch(e){
+      console.error(e);
+      toast('Stage update failed: '+(e.message||e));
+    }
+  };
+
+  window.itemReceived=async function(id){
+    try{
+      const t=(allTasks||[]).find(x=>x._docId===id || x.id===id || x.leadId===id || safeId(x)===id);
+      if(!t){ toast('Record not found'); return; }
+      await window.azpWriteSafeStage(t,'Quotation');
+      toast('Moved to Quotation');
+    }catch(e){ console.error(e); toast('Item update failed'); }
+  };
+
+  window.advanceReceived=async function(id){
+    try{
+      const t=(allTasks||[]).find(x=>x._docId===id || x.id===id || x.leadId===id || safeId(x)===id);
+      if(!t){ toast('Record not found'); return; }
+      await window.azpWriteSafeStage(t,'Planning');
+      toast('Moved to Planning');
+    }catch(e){ console.error(e); toast('Advance update failed'); }
+  };
+
+  // Remove stale local stage overrides older than 5 minutes to prevent old loop-back testing data.
+  try{
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf('azp_stage_override_')===0){
+        const o=JSON.parse(localStorage.getItem(k)||'{}');
+        if(!o.ts || Date.now()-o.ts>5*60*1000) localStorage.removeItem(k);
+      }
+    });
+  }catch(e){}
+})();
+
+
+/* ===== AZP FOLLOW UP NEXT BUTTON RECOVERY FINAL =====
+   Restores Follow Up Next button on required workflow stages:
+   Vendor Arrangement, WhatsApp Job Allotment, Uniform Verification, 10% Payment.
+   Staff can set date/time, task becomes Scheduled and shows again at due time.
+*/
+(function(){
+  function azpTodayISO(){ return (typeof today==='function') ? today() : new Date().toISOString().slice(0,10); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function plus15Time(){
+    const d=new Date(Date.now()+15*60000);
+    return pad(d.getHours())+':'+pad(d.getMinutes());
+  }
+  function safeLeadId(t){
+    return String((t&&t.leadId)||(t&&t.crmLeadId)||(t&&t.id)||'').replace(/^CRM_TASK_/,'').replace(/^TASK_/,'');
+  }
+  function cleanCustomer(t){
+    let name=String((t&&t.customer_name)||(t&&t.customerName)||(t&&t.writeTo)||'Customer').trim();
+    if(!name || /CRM TASK|\[CRM|Mobile:|Route:/i.test(name)) name='Customer';
+    return name;
+  }
+  function stageGuide(stage){
+    return (typeof taskGuideEnglish==='function') ? taskGuideEnglish(stage) : ('Follow up for '+stage);
+  }
+  function isFuture(date,time){
+    const ms=new Date(String(date||azpTodayISO())+'T'+String(time||'11:00')).getTime();
+    return !isNaN(ms) && ms > Date.now()+60000;
+  }
+
+  window.followNextStage=async function(id,mode){
+    try{
+      const t=(allTasks||[]).find(function(x){
+        return x._docId===id || x.id===id || x.leadId===id || safeLeadId(x)===id;
+      });
+      if(!t){ toast('Record not found'); return; }
+
+      const stage=t.workflow_stage||t.stage||'New Lead';
+      let d=t.due_date||t.dueDate||azpTodayISO();
+      let tm=t.due_time||t.dueTime||'11:00';
+
+      if(mode==='timeOnly15'){
+        d=azpTodayISO();
+        tm=prompt('Next follow-up time HH:MM', plus15Time());
+        if(!tm) return;
+        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(tm)){ toast('Time format HH:MM डालिए'); return; }
+      }else{
+        d=prompt('Follow-up date YYYY-MM-DD', d);
+        if(!d) return;
+        tm=prompt('Follow-up time HH:MM', tm);
+        if(!tm) return;
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('Date format YYYY-MM-DD डालिए'); return; }
+        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(tm)){ toast('Time format HH:MM डालिए'); return; }
+      }
+
+      const reason=prompt('Remark / reason','Follow-up later') || '';
+      const future=isFuture(d,tm);
+      const lid=safeLeadId(t);
+      const title=cleanCustomer(t)+' - '+stage;
+      const patch={
+        workflow_stage:stage,
+        stage:stage,
+        status:future?'Scheduled':'Pending',
+        staff_app_status:future?'Scheduled':'Pending',
+        task_status:future?'Scheduled':'Pending',
+        scheduled_hold:future,
+        followupHold:future,
+        followReason:reason,
+        task_title:title,
+        title:title,
+        comments:stageGuide(stage),
+        comment:stageGuide(stage),
+        due_date:d,
+        dueDate:d,
+        due_time:tm,
+        dueTime:tm,
+        priority:future?'Scheduled':((t.customer_priority==='Hot')?'Very Urgent':'Urgent'),
+        updatedAtMs:Date.now(),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      Object.assign(t,patch);
+      try{
+        allTasks=allTasks.map(function(x){
+          return (x._docId===t._docId || (lid && safeLeadId(x)===lid)) ? Object.assign(x,patch) : x;
+        });
+        render();
+      }catch(e){}
+
+      if(db){
+        const writes=[];
+        if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set({
+          stage:stage,
+          workflow_stage:stage,
+          dueDate:d,
+          dueTime:tm,
+          due_date:d,
+          due_time:tm,
+          followupHold:future,
+          scheduled_hold:future,
+          remarks:reason,
+          followReason:reason,
+          updatedAtMs:Date.now(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true}));
+        try{ if(lid) writes.push(db.collection('taskMaster').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true})); }catch(e){}
+        await Promise.all(writes);
+      }
+
+      toast(future ? 'Follow-up scheduled. Due time पर show होगा.' : 'Follow-up due now.');
+    }catch(e){
+      console.error(e);
+      toast('Follow-up failed: '+(e.message||e));
+    }
+  };
+
+  // Add decision panel back into the final card rendering without disturbing clean layout.
+  const previousCard=window.card;
+  window.card=function(t){
+    let html=previousCard(t);
+    try{
+      const stage=t.workflow_stage||t.stage||'New Lead';
+      let panel='';
+      if(stage==='Vendor Arrangement'){
+        panel=`<div class="decision"><b>Vendor / Electrician Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. Task selected time पर फिर show होगा.</div></div>`;
+      }else if(stage==='WhatsApp Job Allotment'){
+        panel=`<div class="decision"><b>Job Allotment Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','timeOnly15')">Follow Up Next</button></div><div class="small">केवल time set करें. 15 minutes gap follow-up के लिए.</div></div>`;
+      }else if(stage==='Uniform Verification'){
+        panel=`<div class="decision"><b>Uniform Verification Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. Same stage scheduled रहेगा.</div></div>`;
+      }else if(stage==='10% Payment'){
+        panel=`<div class="decision"><b>10% Payment Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Date + time set करें. Online review से पहले payment follow-up.</div></div>`;
+      }
+      if(panel){
+        html=html.replace('<div class="actions"><button class="btn amber" onclick="startTask', panel+'<div class="actions"><button class="btn amber" onclick="startTask');
+      }
+    }catch(e){}
+    return html;
+  };
+})();
+
+
+/* ===== AZP FEEDBACK -> REFERENCE FOLLOW-UP DATE/TIME FINAL =====
+   After Physical Feedback, staff must set Reference Follow-up date/time
+   for 2/3/4 days later or any selected date/time.
+*/
+(function(){
+  function todayISO(){ return (typeof today==='function') ? today() : new Date().toISOString().slice(0,10); }
+  function addDaysISO(days){
+    const d=new Date(todayISO()+'T00:00');
+    d.setDate(d.getDate()+Number(days||0));
+    return d.toISOString().slice(0,10);
+  }
+  function safeLeadId(t){
+    return String((t&&t.leadId)||(t&&t.crmLeadId)||(t&&t.id)||'').replace(/^CRM_TASK_/,'').replace(/^TASK_/,'');
+  }
+  function customerName(t){
+    let n=String((t&&t.customer_name)||(t&&t.customerName)||(t&&t.writeTo)||'Customer').trim();
+    if(!n || /CRM TASK|\[CRM|Mobile:|Route:/i.test(n)) n='Customer';
+    return n;
+  }
+  function refGuide(){
+    return 'Call customer for reference leads and repeat business.';
+  }
+
+  window.feedbackReceivedSetReference=async function(id){
+    try{
+      const t=(allTasks||[]).find(function(x){
+        return x._docId===id || x.id===id || x.leadId===id || safeLeadId(x)===id;
+      });
+      if(!t){ toast('Record not found'); return; }
+
+      let days=prompt('Reference follow-up कितने दिन बाद? 2 / 3 / 4', '3');
+      if(!days) return;
+      days=String(days).replace(/\D/g,'') || '3';
+
+      let d=prompt('Reference follow-up date YYYY-MM-DD', addDaysISO(days));
+      if(!d) return;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ toast('Date format YYYY-MM-DD डालिए'); return; }
+
+      let tm=prompt('Reference follow-up time HH:MM', '11:00');
+      if(!tm) return;
+      if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(tm)){ toast('Time format HH:MM डालिए'); return; }
+
+      const lid=safeLeadId(t);
+      const stage='Reference Follow-up';
+      const future=new Date(d+'T'+tm).getTime() > Date.now()+60000;
+      const patch={
+        workflow_stage:stage,
+        stage:stage,
+        status:future?'Scheduled':'Pending',
+        staff_app_status:future?'Scheduled':'Pending',
+        task_status:future?'Scheduled':'Pending',
+        scheduled_hold:future,
+        followupHold:future,
+        followReason:'Reference follow-up after feedback',
+        task_title:customerName(t)+' - '+stage,
+        title:customerName(t)+' - '+stage,
+        comments:refGuide(),
+        comment:refGuide(),
+        due_date:d,
+        dueDate:d,
+        due_time:tm,
+        dueTime:tm,
+        priority:future?'Scheduled':((t.customer_priority==='Hot')?'Very Urgent':'Urgent'),
+        updatedAtMs:Date.now(),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      Object.assign(t,patch);
+      try{
+        allTasks=allTasks.map(function(x){
+          return (x._docId===t._docId || (lid && safeLeadId(x)===lid)) ? Object.assign(x,patch) : x;
+        });
+        render();
+      }catch(e){}
+
+      if(db){
+        const writes=[];
+        if(t._docId) writes.push(db.collection('azpExecutionRecords').doc(String(t._docId)).set(patch,{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true}));
+        if(lid) writes.push(db.collection('azpExecutionRecords').doc('CRM_LEAD_'+lid).set({
+          stage:stage,
+          workflow_stage:stage,
+          dueDate:d,
+          dueTime:tm,
+          due_date:d,
+          due_time:tm,
+          followupHold:future,
+          scheduled_hold:future,
+          remarks:'Reference follow-up scheduled after feedback',
+          followReason:'Reference follow-up after feedback',
+          updatedAtMs:Date.now(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true}));
+        try{ if(lid) writes.push(db.collection('taskMaster').doc('TASK_'+lid).set({...patch,module:'taskManagement',source:'CRM_SINGLE_LIVE',leadId:lid},{merge:true})); }catch(e){}
+        await Promise.all(writes);
+      }
+
+      toast(future ? 'Reference Follow-up scheduled.' : 'Reference Follow-up due now.');
+    }catch(e){
+      console.error(e);
+      toast('Reference follow-up failed: '+(e.message||e));
+    }
+  };
+
+  // Add button after Physical Feedback stage, before Reference Follow-up.
+  const oldCardRef=window.card;
+  window.card=function(t){
+    let html=oldCardRef(t);
+    try{
+      const stage=t.workflow_stage||t.stage||'New Lead';
+      if(stage==='Physical Feedback'){
+        const panel=`<div class="decision"><b>Feedback Decision</b><div class="actions"><button class="btn green" onclick="feedbackReceivedSetReference('${t._docId}')">Feedback Received + Set Reference Date</button><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Feedback ke baad Reference Follow-up ke liye 2/3/4 din baad ka date & time yahin set hoga.</div></div>`;
+        html=html.replace('<div class="actions"><button class="btn amber" onclick="startTask', panel+'<div class="actions"><button class="btn amber" onclick="startTask');
+      }
+    }catch(e){}
+    return html;
+  };
+})();
+
+
+/* ===== AZP HARD FIX: REFERENCE FOLLOW-UP + PHYSICAL FEEDBACK FOLLOW UP NEXT BUTTON ===== */
+(function(){
+  function addFollowPanelToCard(html,t){
+    const stage=(t.workflow_stage||t.stage||'New Lead');
+    let panel='';
+    if(stage==='Physical Feedback'){
+      panel=`<div class="decision"><b>Physical Feedback Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button><button class="btn green" onclick="feedbackReceivedSetReference('${t._docId}')">Feedback Done + Reference Date</button></div><div class="small">Feedback pending ho to Follow Up Next dabaiye. Feedback complete ho to Reference Date set kariye.</div></div>`;
+    }
+    if(stage==='Reference Follow-up'){
+      panel=`<div class="decision"><b>Reference Follow Up</b><div class="actions"><button class="btn amber" onclick="followNextStage('${t._docId}','dateTime')">Follow Up Next</button></div><div class="small">Reference ke liye 2/3/4 din baad ka date & time set karke follow-up schedule kariye.</div></div>`;
+    }
+    if(!panel) return html;
+    if(html.includes('Follow Up Next')) return html;
+    if(html.includes('<div class="actions"><button class="btn amber" onclick="startTask')){
+      return html.replace('<div class="actions"><button class="btn amber" onclick="startTask', panel+'<div class="actions"><button class="btn amber" onclick="startTask');
+    }
+    return html + panel;
+  }
+
+  const oldCardButtonFix=window.card;
+  window.card=function(t){
+    let html=oldCardButtonFix(t);
+    return addFollowPanelToCard(html,t);
+  };
+
+  // Ensure Reference Follow-up task can be scheduled repeatedly.
+  if(typeof window.followNextStage!=='function'){
+    window.followNextStage=async function(id){
+      toast('Follow Up Next function missing. Please refresh after upload.');
+    };
+  }
+})();
+
+</script></body></html>
