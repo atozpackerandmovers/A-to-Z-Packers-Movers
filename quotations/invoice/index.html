@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Invoice | A TO Z Packers & Movers</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #0f2f57;
+      --blue: #1559a8;
+      --gold: #f3b31c;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #dbe3ee;
+      --surface: #ffffff;
+      --page: #f3f6fa;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--page); color: var(--ink); }
+    .topbar { background: linear-gradient(135deg, var(--navy), var(--blue)); color: #fff; padding: 18px 20px; box-shadow: 0 8px 24px rgba(15,47,87,.18); }
+    .brand { width: min(1120px, 100%); margin: 0 auto; display: flex; align-items: center; gap: 13px; }
+    .brand-mark { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 14px; background: var(--gold); color: var(--navy); font-weight: 1000; }
+    .brand h1 { margin: 0; font-size: clamp(18px, 3vw, 24px); line-height: 1.15; }
+    .brand p { margin: 4px 0 0; color: #dceaff; font-size: 12px; font-weight: 700; }
+    main { width: min(1120px, calc(100% - 24px)); margin: 24px auto 40px; }
+    .card { overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); box-shadow: 0 14px 38px rgba(16,24,40,.09); }
+    .status { min-height: 280px; display: grid; place-items: center; padding: 38px 20px; text-align: center; }
+    .status-inner { max-width: 560px; }
+    .spinner { width: 48px; height: 48px; margin: 0 auto 18px; border: 5px solid #dce8f6; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status h2 { margin: 0 0 8px; color: var(--navy); font-size: clamp(22px, 4vw, 30px); }
+    .status p { margin: 0; color: var(--muted); line-height: 1.55; }
+    .invoice { display: none; }
+    .invoice-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line); background: #f8fbff; }
+    .invoice-copy { min-width: 0; }
+    .invoice-copy strong { display: block; color: var(--navy); font-size: 16px; overflow-wrap: anywhere; }
+    .invoice-copy span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .button { appearance: none; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 10px 15px; border: 0; border-radius: 12px; background: var(--blue); color: #fff; text-decoration: none; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
+    .button.secondary { background: var(--navy); }
+    .button:focus-visible { outline: 3px solid rgba(243,179,28,.45); outline-offset: 2px; }
+    .viewer { display: block; width: 100%; height: min(76vh, 900px); min-height: 540px; border: 0; background: #eef2f7; }
+    .mobile-note { display: none; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; text-align: center; }
+    @media (max-width: 640px) {
+      main { margin-top: 14px; }
+      .invoice-head { align-items: stretch; flex-direction: column; }
+      .actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .viewer { min-height: 68vh; }
+      .mobile-note { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">AZ</div>
+      <div>
+        <h1>A TO Z Packers & Movers</h1>
+        <p>Secure Invoice Download</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card" aria-live="polite">
+      <div id="loading" class="status">
+        <div class="status-inner">
+          <div class="spinner" aria-hidden="true"></div>
+          <h2>Opening invoice…</h2>
+          <p>Please wait while your invoice is located.</p>
+        </div>
+      </div>
+
+      <div id="not-found" class="status" hidden>
+        <div class="status-inner">
+          <h2>Invoice not found.</h2>
+          <p>Please check the invoice number in your SMS or contact A TO Z Packers & Movers.</p>
+        </div>
+      </div>
+
+      <div id="invoice" class="invoice">
+        <div class="invoice-head">
+          <div class="invoice-copy">
+            <strong id="invoice-number">Invoice</strong>
+            <span>Your existing PDF is ready to view or download.</span>
+          </div>
+          <div class="actions">
+            <a id="open-pdf" class="button secondary" href="#" target="_blank" rel="noopener noreferrer">Open PDF</a>
+            <a id="download-pdf" class="button" href="#" download>Download PDF</a>
+          </div>
+        </div>
+        <iframe id="pdf-viewer" class="viewer" title="Invoice PDF"></iframe>
+        <div class="mobile-note">If the PDF preview is not visible on your phone, tap Open PDF or Download PDF.</div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, limit, query, where } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js";
+    import { getStorage, getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-storage.js";
+
+    // Exact existing production Firebase configuration. This page is read-only.
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14",
+      authDomain: "az-packers-quotation.firebaseapp.com",
+      projectId: "az-packers-quotation",
+      storageBucket: "az-packers-quotation.firebasestorage.app",
+      messagingSenderId: "682004383688",
+      appId: "1:682004383688:web:b795a19579dba9a612a2fd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    const getSalesInvoicePdf = httpsCallable(getFunctions(app, "asia-south1"), "getSalesInvoicePdf");
+
+    const loading = document.getElementById("loading");
+    const notFound = document.getElementById("not-found");
+    const invoice = document.getElementById("invoice");
+    const viewer = document.getElementById("pdf-viewer");
+    const openPdf = document.getElementById("open-pdf");
+    const downloadPdf = document.getElementById("download-pdf");
+    const invoiceNumber = document.getElementById("invoice-number");
+
+    function requestedId() {
+      const raw = new URLSearchParams(window.location.search).get("id") || "";
+      const value = raw.trim();
+      return /^[A-Za-z0-9_-]{3,100}$/.test(value) ? value : "";
+    }
+
+    function firstString(record, keys) {
+      for (const key of keys) {
+        const value = record?.[key];
+        if (typeof value === "string" && value.trim()) return value.trim();
+      }
+      return "";
+    }
+
+    function safePdfUrl(value) {
+      const url = String(value || "").trim();
+      if (/^https:\/\//i.test(url)) return url;
+      if (/^data:application\/pdf[;,]/i.test(url)) return url;
+      return "";
+    }
+
+    function pdfUrlFromRecord(record) {
+      const direct = firstString(record, [
+        "pdf_url", "pdfUrl", "quotation_pdf_url", "quotationPdfUrl",
+        "invoice_url", "invoiceUrl", "invoice_pdf_url", "invoicePdfUrl",
+        "download_url", "downloadUrl", "pdf_download_url", "pdfDownloadUrl",
+        "file_url", "fileUrl", "quotation_file_url", "quotationFileUrl"
+      ]);
+      const safeDirect = safePdfUrl(direct);
+      if (safeDirect) return safeDirect;
+
+      const nested = [record?.pdf, record?.invoice, record?.quotation_pdf, record?.document, record?.file];
+      for (const item of nested) {
+        if (!item || typeof item !== "object") continue;
+        const safeNested = safePdfUrl(firstString(item, ["url", "download_url", "downloadUrl", "file_url", "fileUrl"]));
+        if (safeNested) return safeNested;
+      }
+      return "";
+    }
+
+    function pdfPathFromRecord(record) {
+      return firstString(record, [
+        "pdf_path", "pdfPath", "quotation_pdf_path", "quotationPdfPath",
+        "invoice_path", "invoicePath", "invoice_pdf_path", "invoicePdfPath",
+        "storage_path", "storagePath", "file_path", "filePath"
+      ]);
+    }
+
+    function storagePath(value) {
+      const path = String(value || "").trim();
+      if (!path) return "";
+      if (path.startsWith("gs://")) {
+        const withoutScheme = path.slice(5);
+        const slash = withoutScheme.indexOf("/");
+        return slash >= 0 ? withoutScheme.slice(slash + 1) : "";
+      }
+      return path.replace(/^\/+/, "");
+    }
+
+    async function findExistingRecord(id) {
+      const searches = [
+        { collectionName: "salesBills", fields: ["invoice_no", "invoiceNumber", "invoice_number", "invoiceNo", "linked_quotation_no", "linkedQuotationNo", "quotation_number", "quotationNumber"] },
+        { collectionName: "quotations", fields: ["quotation_number", "quotationNo", "quotationId", "invoice_number", "invoiceNo"] }
+      ];
+      for (const search of searches) {
+        try {
+          const direct = await getDoc(doc(db, search.collectionName, id));
+          if (direct.exists()) return { id: direct.id, __collection: search.collectionName, ...direct.data() };
+        } catch (error) {
+          console.warn(`Direct ${search.collectionName} lookup was unavailable.`, error);
+        }
+        for (const field of search.fields) {
+          try {
+            const snapshot = await getDocs(query(collection(db, search.collectionName), where(field, "==", id), limit(1)));
+            if (!snapshot.empty) {
+              const match = snapshot.docs[0];
+              return { id: match.id, __collection: search.collectionName, ...match.data() };
+            }
+          } catch (error) {
+            console.warn(`${search.collectionName} lookup by ${field} was unavailable.`, error);
+          }
+        }
+      }
+      return null;
+    }
+
+    function fileNameFromRecord(record, id) {
+      const savedName = firstString(record, ["pdf_file_name", "pdfFileName", "invoice_file_name", "invoiceFileName", "file_name", "fileName"]);
+      if (savedName) return savedName;
+      const customer = String(record?.customer_name || record?.customerName || "Customer").replace(/[^A-Za-z0-9_-]+/g, "_");
+      return `Quotation_${customer}_${id}.pdf`;
+    }
+
+    async function existingStorageUrl(record, id) {
+      const explicitPath = storagePath(pdfPathFromRecord(record));
+      const fileName = fileNameFromRecord(record, id);
+      const paths = [
+        explicitPath,
+        firstString(record, ["pdf_file_name", "pdfFileName", "invoice_file_name", "invoiceFileName"]),
+        record?.__collection === "salesBills" ? `sales-invoices/${record.id}/${String(record.invoice_no || id).replace(/[^A-Za-z0-9_-]/g, "_")}.pdf` : "",
+        `quotations/${fileName}`,
+        `quotations/pdfs/${fileName}`,
+        `quotation-pdfs/${fileName}`,
+        `invoices/${fileName}`,
+        `quotations/${id}.pdf`,
+        `invoices/${id}.pdf`
+      ].map(storagePath).filter(Boolean);
+
+      const uniquePaths = [...new Set(paths)];
+      for (const path of uniquePaths) {
+        try {
+          return await getDownloadURL(ref(storage, path));
+        } catch (error) {
+          // Continue probing only existing, read-only path conventions.
+        }
+      }
+      return "";
+    }
+
+    function showNotFound() {
+      loading.hidden = true;
+      invoice.style.display = "none";
+      notFound.hidden = false;
+      document.title = "Invoice not found | A TO Z Packers & Movers";
+    }
+
+    function showInvoice(id, record, pdfUrl) {
+      loading.hidden = true;
+      notFound.hidden = true;
+      invoice.style.display = "block";
+      const displayId = String(record?.invoice_number || record?.invoiceNo || record?.quotation_number || record?.quotationNo || id);
+      const fileName = fileNameFromRecord(record, displayId);
+      invoiceNumber.textContent = `Invoice ${displayId}`;
+      viewer.src = pdfUrl;
+      openPdf.href = pdfUrl;
+      downloadPdf.href = pdfUrl;
+      downloadPdf.setAttribute("download", fileName);
+      document.title = `Invoice ${displayId} | A TO Z Packers & Movers`;
+    }
+
+    async function start() {
+      const id = requestedId();
+      if (!id) return showNotFound();
+
+      try {
+        try {
+          if (!auth.currentUser) await signInAnonymously(auth);
+          const response = await getSalesInvoicePdf({ id });
+          const data = response?.data || {};
+          if (data.ok && safePdfUrl(data.pdfUrl)) {
+            return showInvoice(id, { invoice_no: data.invoiceNumber, pdf_file_name: data.fileName }, data.pdfUrl);
+          }
+        } catch (error) {
+          console.warn("Online sales invoice lookup was unavailable; checking existing records.", error);
+        }
+
+        const record = await findExistingRecord(id);
+        if (!record) return showNotFound();
+
+        const directUrl = pdfUrlFromRecord(record);
+        const pdfUrl = directUrl || await existingStorageUrl(record, id);
+        if (!pdfUrl) return showNotFound();
+
+        showInvoice(id, record, pdfUrl);
+      } catch (error) {
+        console.error("Invoice lookup failed.", error);
+        showNotFound();
+      }
+    }
+
+    start();
+  </script>
+</body>
+    </html>
+    
