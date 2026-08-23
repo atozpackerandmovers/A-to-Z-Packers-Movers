@@ -14173,7 +14173,9 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
 
   const PAGE_SIZE=250;
   const MAX_DOCS=2000;
-  const MAX_EXECUTION_PER_MODULE=400;
+  const MAX_EXECUTION_PER_MODULE=800;
+  const EXECUTION_MODULE_CAPS=Object.freeze({taskManagement:2500,crmLead:2500,jobs:1500});
+  const EXECUTION_QUERY_CONCURRENCY=2;
   const MAX_LIST=18;
   const MAX_AI_PROMPT_CHARS=11000;
   const CACHE_MS=2*60*1000;
@@ -14310,9 +14312,11 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   }
   function isTaskOrStaffQuery(queryText){return /task|staff|swagat|ranjit|sarkar|sanju|schedule|cancel|pending work|advance stage|advance-stage/i.test(clean(queryText));}
   function sourceIsRequired(source,queryText){return !source.optional||Boolean(source.requiredForTask&&isTaskOrStaffQuery(queryText));}
+  function executionModuleCap(moduleName){return EXECUTION_MODULE_CAPS[moduleName]||MAX_EXECUTION_PER_MODULE;}
   function executionModulesFor(queryText){
     const q=clean(queryText).toLowerCase(),modules=new Set();
     const add=(...values)=>values.forEach(value=>modules.add(value));
+    if(/sms|text message|springedge|dlt|delivery receipt|message status/.test(q))return[];
     if(isTaskOrStaffQuery(q)||/follow|lead|customer|party|call/.test(q))add('taskManagement','crmLead');
     if(/food|fooding/.test(q))add('foodingCycle','attendance','leaveApproval');
     if(/material|stock|packing item/.test(q))add('materialStock','material');
@@ -14322,17 +14326,36 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     return [...modules];
   }
   async function readPages(makeQuery,cap,timeoutMs,label){
-    const docs=[];let cursor=null,pages=0;
+    const docs=[];let cursor=null,pages=0,pageError='';
     while(docs.length<=cap){
       const pageSize=Math.min(PAGE_SIZE,cap+1-docs.length);
       if(pageSize<=0)break;
-      const snap=await withTimeout(getDocsFromServer(makeQuery(cursor,pageSize)),timeoutMs,`${label} page ${pages+1}`);
+      let snap;
+      try{
+        snap=await withTimeout(getDocsFromServer(makeQuery(cursor,pageSize)),timeoutMs,`${label} page ${pages+1}`);
+      }catch(error){
+        if(!docs.length)throw error;
+        pageError=clip(error?.code||error?.message||'page-read-failed',100);
+        break;
+      }
       pages+=1;docs.push(...snap.docs);
       if(snap.size<pageSize)break;
       cursor=snap.docs[snap.docs.length-1];
       if(!cursor)break;
     }
-    return {docs:docs.slice(0,cap),truncated:docs.length>cap,pages};
+    return {docs:docs.slice(0,cap),truncated:docs.length>cap,pages,incomplete:Boolean(pageError),pageError};
+  }
+  async function mapWithConcurrency(items,concurrency,worker){
+    const results=new Array(items.length);let nextIndex=0;
+    async function runWorker(){
+      while(nextIndex<items.length){
+        const index=nextIndex++;
+        results[index]=await worker(items[index],index);
+      }
+    }
+    const workerCount=Math.min(Math.max(1,concurrency),items.length);
+    await Promise.all(Array.from({length:workerCount},()=>runWorker()));
+    return results;
   }
   async function readOrderedSource(db,source){
     const col=collection(db,source.name),field=source.timestampField;
@@ -14350,26 +14373,27 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   }
   async function readExecutionSource(db,source,queryText){
     const col=collection(db,source.name),modules=executionModulesFor(queryText);
-    const moduleResults=await Promise.all(modules.map(async moduleName=>{
+    if(!modules.length)return {docs:[],truncated:false,pages:0,orderingField:source.timestampField,orderingFallback:false,queryDetails:[],incomplete:false,querySkipped:true};
+    const moduleResults=await mapWithConcurrency(modules,EXECUTION_QUERY_CONCURRENCY,async moduleName=>{
       try{
-        let result;
+        let result;const moduleCap=executionModuleCap(moduleName);
         try{
-          result=await readPages((cursor,size)=>query(col,where('module','==',moduleName),orderBy(source.timestampField,'desc'),...(cursor?[startAfter(cursor)]:[]),limit(size)),MAX_EXECUTION_PER_MODULE,15000,`${source.name}/${moduleName}`);
+          result=await readPages((cursor,size)=>query(col,where('module','==',moduleName),orderBy(source.timestampField,'desc'),...(cursor?[startAfter(cursor)]:[]),limit(size)),moduleCap,18000,`${source.name}/${moduleName}`);
           if(!result.docs.length)throw new Error(`No ${moduleName} records found with ordering field ${source.timestampField}`);
-          return {docs:result.docs,detail:{module:moduleName,count:result.docs.length,truncated:result.truncated,orderingField:source.timestampField}};
+          return {docs:result.docs,detail:{module:moduleName,count:result.docs.length,cap:moduleCap,pages:result.pages,truncated:result.truncated,incomplete:result.incomplete,partial:result.incomplete,orderingField:source.timestampField,error:result.pageError||''}};
         }catch(primaryError){
-          result=await readPages((cursor,size)=>query(col,where('module','==',moduleName),orderBy(documentId(),'asc'),...(cursor?[startAfter(cursor)]:[]),limit(size)),MAX_EXECUTION_PER_MODULE,15000,`${source.name}/${moduleName} compatibility`);
-          return {docs:result.docs,detail:{module:moduleName,count:result.docs.length,truncated:result.truncated,orderingField:'documentId',orderingFallback:true,error:clip(primaryError?.code||primaryError?.message||'timestamp-order-failed',100)}};
+          result=await readPages((cursor,size)=>query(col,where('module','==',moduleName),orderBy(documentId(),'asc'),...(cursor?[startAfter(cursor)]:[]),limit(size)),moduleCap,18000,`${source.name}/${moduleName} compatibility`);
+          return {docs:result.docs,detail:{module:moduleName,count:result.docs.length,cap:moduleCap,pages:result.pages,truncated:result.truncated,incomplete:result.incomplete,partial:result.incomplete,orderingField:'documentId',orderingFallback:true,error:result.pageError||clip(primaryError?.code||primaryError?.message||'timestamp-order-failed',100)}};
         }
       }catch(error){
-        return {docs:[],detail:{module:moduleName,count:0,truncated:false,failed:true,error:clip(error?.code||error?.message||'filtered-read-failed',100)}};
+        return {docs:[],detail:{module:moduleName,count:0,cap:executionModuleCap(moduleName),truncated:false,failed:true,error:clip(error?.code||error?.message||'filtered-read-failed',100)}};
       }
-    }));
+    });
     const all=moduleResults.flatMap(x=>x.docs),details=moduleResults.map(x=>x.detail);
     const map=new Map();all.forEach(docSnap=>map.set(docSnap.id,docSnap));
-    const failedModules=details.filter(x=>x.failed),truncated=details.some(x=>x.truncated);
+    const failedModules=details.filter(x=>x.failed),partialModules=details.filter(x=>x.partial),truncated=details.some(x=>x.truncated);
     if(!map.size&&failedModules.length===details.length)throw new Error(`All filtered execution queries failed: ${failedModules.map(x=>x.module).join(', ')}`);
-    return {docs:[...map.values()].sort((a,b)=>rowTime(b.data())-rowTime(a.data())),truncated,pages:details.length,orderingField:source.timestampField,orderingFallback:details.some(x=>x.orderingFallback),queryDetails:details,incomplete:failedModules.length>0};
+    return {docs:[...map.values()].sort((a,b)=>rowTime(b.data())-rowTime(a.data())),truncated,pages:details.reduce((sum,x)=>sum+(x.pages||1),0),orderingField:source.timestampField,orderingFallback:details.some(x=>x.orderingFallback),queryDetails:details,incomplete:failedModules.length>0||partialModules.length>0};
   }
   async function readSource(db,source,queryText){
     const started=Date.now();
@@ -14696,7 +14720,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
       staffWorkflowReports:taskWorkflow,
       executionOperations:{jobs:executionJobs,materialStock,fooding,moduleSummary:moduleSummary(operationalRows),queryRelevantRecords:relevantOperationalRows(operationalRows,queryText)},
       aiSuggestionEvidence:{dataQualityGaps,operationalExceptions:{materialAlerts:materialStock.alerts,foodingOverdue:fooding.overdue,unassignedExecutionJobs:executionJobs.unassignedToday,overdueTasks:take(overdueTasks.map(x=>({task:x.title,customer:x.customer,assignedTo:x.assigned,dueDate:x.due,status:x.status}))) }},
-      dataCoverage:{records:{quotations:quotes.length,sales:sales.length,planning:plans.length,agreements:agreements.length,tasks:tasks.length,crmLeads:crm.length,itemLists:items.length,complaints:complaints.length,database:database.length,execution:executionRows.length,fleet:fleetRows.length},taskReportIncomplete,taskRequiredFailures:taskRequiredFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),failedSources:sourceFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),optionalUnavailableSources:optionalFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),incompleteSources:incompleteSources.map(x=>({module:x.module,collection:x.name,details:x.queryDetails||[]})),truncatedSources:truncated.map(x=>({module:x.module,collection:x.name,limit:x.key==='execution'?MAX_EXECUTION_PER_MODULE:MAX_DOCS,details:x.queryDetails||[]}))}
+      dataCoverage:{records:{quotations:quotes.length,sales:sales.length,planning:plans.length,agreements:agreements.length,tasks:tasks.length,crmLeads:crm.length,itemLists:items.length,complaints:complaints.length,database:database.length,execution:executionRows.length,fleet:fleetRows.length},taskReportIncomplete,taskRequiredFailures:taskRequiredFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),failedSources:sourceFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),optionalUnavailableSources:optionalFailures.map(x=>({module:x.module,collection:x.name,error:x.error})),incompleteSources:incompleteSources.map(x=>({module:x.module,collection:x.name,details:x.queryDetails||[]})),truncatedSources:truncated.map(x=>({module:x.module,collection:x.name,limit:x.key==='execution'?'module-specific safe cap':MAX_DOCS,details:x.queryDetails||[]}))}
     };
   }
 
@@ -14715,10 +14739,11 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     if(optional.length)notes.push(`Optional source unavailable: ${optional.map(x=>x.module||x.collection).join(', ')}`);
     if(incomplete.length){
       const failedModules=incomplete.flatMap(source=>(source.details||[]).filter(detail=>detail.failed).map(detail=>`${detail.module||'Unknown submodule'}${detail.error?` (${detail.error})`:''}`));
-      notes.push(`Filtered source incomplete: ${incomplete.map(x=>x.module||x.collection).join(', ')}${failedModules.length?`. Failed filtered submodule(s): ${failedModules.join(', ')}`:''}`);
+      const partialModules=incomplete.flatMap(source=>(source.details||[]).filter(detail=>detail.partial).map(detail=>`${detail.module||'Unknown submodule'} (${detail.count??0} records preserved${detail.error?`; ${detail.error}`:''})`));
+      notes.push(`Filtered source incomplete: ${incomplete.map(x=>x.module||x.collection).join(', ')}${failedModules.length?`. Failed filtered submodule(s): ${failedModules.join(', ')}`:''}${partialModules.length?`. Partially loaded submodule(s): ${partialModules.join(', ')}`:''}`);
     }
     if(truncated.length){
-      const cappedModules=truncated.flatMap(source=>(source.details||[]).filter(detail=>detail.truncated).map(detail=>`${detail.module||'Unknown submodule'} (${detail.count??'limit reached'} records loaded)`));
+      const cappedModules=truncated.flatMap(source=>(source.details||[]).filter(detail=>detail.truncated).map(detail=>`${detail.module||'Unknown submodule'} (${detail.count??'limit reached'} records loaded${detail.cap?`; safety cap ${detail.cap}`:''})`));
       notes.push(`Record limit reached: ${truncated.map(x=>x.module||x.collection).join(', ')}${cappedModules.length?`. Capped filtered submodule(s): ${cappedModules.join(', ')}`:''}`);
     }
     if(snapshot?.meta?.cacheUsed)notes.push(`Cached snapshot used. Original server load time: ${snapshot.meta.snapshotLoadedAt||'unavailable'}. Press Refresh for a new server read.`);
