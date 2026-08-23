@@ -14176,6 +14176,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   const MAX_EXECUTION_PER_MODULE=800;
   const EXECUTION_MODULE_CAPS=Object.freeze({taskManagement:2500,crmLead:2500,jobs:1500});
   const EXECUTION_QUERY_CONCURRENCY=2;
+  const SOURCE_QUERY_CONCURRENCY=3;
   const MAX_LIST=18;
   const MAX_AI_PROMPT_CHARS=11000;
   const CACHE_MS=2*60*1000;
@@ -14406,6 +14407,13 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
       const code=clip(error?.code||error?.message||'read-failed',90);
       return {key:source.key,name:source.name,module:source.module,optional:!required,required,ok:false,count:0,truncated:false,incomplete:true,ms:Date.now()-started,error:code,rows:[]};
     }
+  }
+  async function readSourceWithRetry(db,source,queryText){
+    const first=await readSource(db,source,queryText);
+    if(first.ok||!/unavailable|deadline|timed out|network|connection/i.test(first.error||''))return first;
+    await new Promise(resolve=>setTimeout(resolve,300));
+    const second=await readSource(db,source,queryText);
+    return second.ok?{...second,retried:true}:{...second,retried:true,firstError:first.error};
   }
 
   function normalizeQuotes(rows){return rows.map(d=>({
@@ -14960,7 +14968,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   async function loadLive(queryText){
     const app=getApp(),db=getFirestore(app);
     await ensureLiveFirebaseAuth();
-    const results=await Promise.all(SOURCES.map(source=>readSource(db,source,queryText)));
+    const results=await mapWithConcurrency(SOURCES,SOURCE_QUERY_CONCURRENCY,source=>readSourceWithRetry(db,source,queryText));
     const sourceMap=Object.fromEntries(results.map(x=>[x.key,x.rows]));
     lastSnapshot={sources:results,sourceMap,loadedAt:new Date().toISOString(),cacheUsed:false};
     const analysis=buildAnalysis(sourceMap,queryText);
