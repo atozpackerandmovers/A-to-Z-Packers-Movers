@@ -3380,7 +3380,7 @@ Thank you for choosing A to Z Packers & Movers! 🙏`;
 
 <!-- BEGIN AZP CUSTOMER AI ASSISTANT PHASE 1 - isolated additive widget -->
 <style id="azp-customer-ai-style-v1">
-#azp-customer-ai-launch{position:fixed;left:16px;right:auto;bottom:16px;z-index:99960;border:0;border-radius:999px;padding:13px 17px;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:#fff;font:800 14px/1.2 Arial,sans-serif;box-shadow:0 14px 34px rgba(30,64,175,.35);display:flex;align-items:center;gap:8px;cursor:pointer}
+#azp-customer-ai-launch{position:fixed;left:16px;right:auto;bottom:16px;z-index:99960;border:0;border-radius:999px;padding:13px 17px;background:#000;color:#fff;font:800 14px/1.2 Arial,sans-serif;box-shadow:0 14px 34px rgba(30,64,175,.35);display:flex;align-items:center;gap:8px;cursor:pointer}
 #azp-customer-ai-launch:hover{transform:translateY(-1px)}
 #azp-customer-ai-panel{position:fixed;right:16px;bottom:148px;z-index:99980;width:min(390px,calc(100vw - 24px));height:min(620px,calc(100dvh - 178px));display:none;grid-template-rows:auto 1fr auto;background:#fff;border:1px solid #dbeafe;border-radius:22px;overflow:hidden;box-shadow:0 28px 75px rgba(15,23,42,.32);font-family:Arial,sans-serif}
 #azp-customer-ai-panel.azp-ai-open{display:grid}
@@ -3675,7 +3675,7 @@ You are "A to Z Assistant", the official AI Moving Assistant of A TO Z Packers &
     document.body.appendChild(launcher); document.body.appendChild(panel);
     messages=panel.querySelector('#azp-customer-ai-messages'); input=panel.querySelector('.azp-customer-ai-input'); sendButton=panel.querySelector('.azp-customer-ai-send');
     launcher.addEventListener('click',open); panel.querySelector('.azp-customer-ai-close').addEventListener('click',close); sendButton.addEventListener('click',handleSend); input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleSend();}});
-    addMessage('👋 Hello! Welcome to A TO Z Packers & Movers.\n\nमैं आपका AI Moving Assistant हूँ। 🚚📦\nआपको तुरंत सही सहायता देने के लिए कृपया बताइए:\n\n1️⃣ Free Shifting Quotation\n2️⃣ Household Shifting\n3️⃣ Car/Bike Transportation\n4️⃣ Existing Booking Support\n5️⃣ Talk to Our Team\n\nअपना विकल्प लिखें या सीधे अपना सवाल पूछें। 😊');
+    addMessage('👋 Welcome to A TO Z Packers & Movers!\n\n🚚📦 I’m your AI Moving Assistant —\n\nHow can I help you today?');
     addActions([
       {label:'1️⃣ Free Quotation',onClick:startEnquiry},
       {label:'2️⃣ Household',onClick:()=>askAi('I need household shifting assistance. Please guide me.')},
