@@ -176,7 +176,6 @@
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, serverTimestamp, query, writeBatch } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
     import { getDatabase, ref as rtdbRef, onValue } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js';
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js';
 
     const firebaseConfig={apiKey:'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',authDomain:'az-packers-quotation.firebaseapp.com',databaseURL:'https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'az-packers-quotation',storageBucket:'az-packers-quotation.firebasestorage.app',messagingSenderId:'682004383688',appId:'1:682004383688:web:b795a19579dba9a612a2fd'};
     const app=getApps().length?getApp():initializeApp(firebaseConfig); const db=getFirestore(app); const prodRtdb=getDatabase(app,firebaseConfig.databaseURL); const prodAuth=getAuth(app);
@@ -1129,7 +1128,7 @@
     // ===== PHASE 2: ISOLATED LIVE ETA EXTENSION =====
     // Uses the existing Maps key, existing driver GPS data and a separate ETA record.
     // Planning Sheet, Phase 1 navigation and existing GPS/tracking records stay read-only.
-    let azpEtaMapsPromise=null,azpEtaBusy=false,azpEtaLastGpsSignature='',azpEtaRouteCallable=null;
+    let azpEtaMapsPromise=null,azpEtaBusy=false,azpEtaLastGpsSignature='';
     const azpEtaStatusDone=s=>['completed','cancelled'].includes(String(s||'').trim().toLowerCase());
     function azpEtaJobKey(j){return String(j?.job_id||j?.planning_no||j?.planningId||j?.id||'').replace(/^PLAN_/,'').trim()}
     function azpEtaAssignedDriver(j){
@@ -1187,10 +1186,10 @@
       return {lat,lng,ts,driverId:String(legacy.driver_id||''),vehicle:String(legacy.vehicle_number||''),source:'Driver Live GPS'};
     }
     function azpEtaLoadMaps(){
-      if(window.google?.maps?.DirectionsService)return Promise.resolve(window.google.maps);
+      if(window.google?.maps?.importLibrary)return Promise.resolve(window.google.maps);
       if(azpEtaMapsPromise)return azpEtaMapsPromise;
       azpEtaMapsPromise=new Promise((resolve,reject)=>{
-        const ready=()=>window.google?.maps?.DirectionsService?resolve(window.google.maps):reject(new Error('Google Maps Directions service unavailable'));
+        const ready=()=>window.google?.maps?.importLibrary?resolve(window.google.maps):reject(new Error('Google Maps Routes library unavailable'));
         let script=document.getElementById('azp-existing-google-maps-service');
         if(script){script.addEventListener('load',ready,{once:true});script.addEventListener('error',()=>reject(new Error('Google Maps failed to load')),{once:true});return;}
         script=document.createElement('script');script.id='azp-existing-google-maps-service';script.async=true;script.defer=true;
@@ -1208,14 +1207,20 @@
     }
     async function azpEtaDirections(job,point){
       const coords=azpNavigationCoordinates(job,'delivery');
-      const destination=String(job.to_location||'').trim()||(coords?`${coords.lat} ${coords.lng} India`:'');
+      const destination=coords?{lat:coords.lat,lng:coords.lng}:String(job.to_location||'').trim();
       if(!destination)throw new Error('Delivery address unavailable');
-      if(!azpEtaRouteCallable)azpEtaRouteCallable=httpsCallable(getFunctions(app,'asia-south1'),'calculateRouteDistance');
-      const origin=`${point.lat.toFixed(6)} ${point.lng.toFixed(6)} India`;
-      const response=await azpEtaRouteCallable({from:origin,to:destination});
-      const data=response?.data||{},distanceMeters=Number(data.distanceMeters||0)||Math.round((Number(data.distanceKm)||0)*1000);
-      const durationRaw=String(data.duration||data.durationSeconds||''),seconds=Number(data.durationSeconds||durationRaw.replace(/s$/i,''));
-      if(!distanceMeters||!Number.isFinite(seconds)||seconds<=0)throw new Error('Existing Google Routes service returned incomplete ETA');
+      const maps=await azpEtaLoadMaps();
+      const {Route}=await maps.importLibrary('routes');
+      const {routes=[]}=await Route.computeRoutes({
+        origin:{lat:point.lat,lng:point.lng},
+        destination,
+        travelMode:'DRIVING',
+        routingPreference:'TRAFFIC_AWARE',
+        region:'in',
+        fields:['distanceMeters','durationMillis']
+      });
+      const route=routes[0],distanceMeters=Number(route?.distanceMeters||0),durationMillis=Number(route?.durationMillis||0),seconds=Math.round(durationMillis/1000);
+      if(!distanceMeters||!Number.isFinite(seconds)||seconds<=0)throw new Error('Google Maps Routes returned incomplete ETA');
       const arrival=new Date(Date.now()+seconds*1000),parts=azpEtaArrivalParts(arrival),distanceKm=distanceMeters/1000;
       const durationText=seconds>=3600?`${Math.floor(seconds/3600)} hr ${Math.round((seconds%3600)/60)} min`:`${Math.max(1,Math.round(seconds/60))} min`;
       return {currentLocation:`Live GPS ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`,distanceText:`${distanceKm.toLocaleString('en-IN',{maximumFractionDigits:1})} KM`,distanceMeters,durationText,durationSeconds:seconds,arrival,arrivalDay:parts.day,arrivalTime:parts.time};
@@ -1226,7 +1231,7 @@
       let data=null;
       try{
         const route=await azpEtaDirections(job,point),jobKey=azpEtaJobKey(job),driver=azpEtaAssignedDriver(job),now=Date.now();
-        data={module:'eta',collection:'eta',eta_version:'Phase 2',eta_status:'Live',eta_job_id:jobKey,eta_source_job_document:String(job.id||''),eta_driver_id:point.driverId||'',eta_driver_name:driver,eta_vehicle_number:point.vehicle||job.vehicle_number||'',eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:route.currentLocation,eta_destination:String(job.to_location||''),eta_remaining_distance_meters:route.distanceMeters,eta_remaining_distance_text:route.distanceText,eta_duration_seconds:route.durationSeconds,eta_duration_text:route.durationText,eta_arrival_iso:route.arrival.toISOString(),eta_arrival_day:route.arrivalDay,eta_arrival_time:route.arrivalTime,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_source:point.source,customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
+        data={module:'eta',collection:'eta',eta_version:'Phase 2.1 Exact GPS',eta_route_method:'Google Maps Routes exact coordinates',eta_status:'Live',eta_job_id:jobKey,eta_source_job_document:String(job.id||''),eta_driver_id:point.driverId||'',eta_driver_name:driver,eta_vehicle_number:point.vehicle||job.vehicle_number||'',eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:route.currentLocation,eta_destination:String(job.to_location||''),eta_remaining_distance_meters:route.distanceMeters,eta_remaining_distance_text:route.distanceText,eta_duration_seconds:route.durationSeconds,eta_duration_text:route.durationText,eta_arrival_iso:route.arrival.toISOString(),eta_arrival_day:route.arrivalDay,eta_arrival_time:route.arrivalTime,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_source:point.source,customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
         azpEtaRender(job,data);
       }catch(err){
         const existing=azpDriverEtaRecord(job);azpEtaRender(job,existing,existing?'':'ETA temporarily unavailable. GPS/Maps will retry automatically.');console.warn('Phase 2 ETA update skipped',err?.message||err);
