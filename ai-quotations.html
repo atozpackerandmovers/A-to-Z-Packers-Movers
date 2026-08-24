@@ -14143,19 +14143,19 @@ import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.
 .azp-bd-modal-open{overflow:hidden!important}.azp-bd-modal-open *{animation-play-state:paused!important}
 .azp-bd-backdrop{position:fixed;inset:0;z-index:100500;display:flex;align-items:center;justify-content:center;padding:12px;background:#07111f;isolation:isolate}
 .azp-bd-dialog{contain:layout paint style;width:min(1020px,100%);max-height:96dvh;overflow:auto;overscroll-behavior:contain;border:1px solid rgba(148,163,184,.28);border-radius:28px;background:linear-gradient(180deg,#f8fbff 0%,#eef3fa 100%);box-shadow:0 26px 72px rgba(0,0,0,.36);font-family:Inter,'Segoe UI',Arial,sans-serif}
-.azp-bd-head{position:sticky;top:0;z-index:4;display:flex;align-items:flex-start;gap:14px;padding:20px 22px;color:#fff;background:linear-gradient(128deg,#071426 0%,#0f2e67 46%,#4338ca 100%);border-radius:27px 27px 0 0;border-bottom:1px solid rgba(255,255,255,.18)}
+.azp-bd-head{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:13px;padding:16px 19px;color:#fff;background:linear-gradient(128deg,#050b16 0%,#0c285b 48%,#4338ca 100%);border-radius:27px 27px 0 0;border-bottom:1px solid rgba(255,255,255,.18);box-shadow:0 8px 24px rgba(2,6,23,.2)}
 .azp-bd-head:after{content:'LIVE OWNER INTELLIGENCE';position:absolute;right:77px;top:18px;padding:5px 8px;border:1px solid rgba(167,243,208,.35);border-radius:999px;background:rgba(5,150,105,.18);color:#a7f3d0;font-size:8px;font-weight:900;letter-spacing:.12em}.azp-bd-head-icon{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(255,255,255,.07));font-size:28px}.azp-bd-head h2{margin:0;padding-right:120px;font-size:23px;line-height:1.18;font-weight:900;letter-spacing:-.025em}.azp-bd-head p{margin:6px 0 0;color:#cfe2ff;font-size:12px;line-height:1.45}.azp-bd-close{margin-left:auto;flex:0 0 44px;width:44px;height:44px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-size:27px;cursor:pointer;transition:background .16s ease,transform .16s ease}.azp-bd-close:active{transform:scale(.95)}
-.azp-bd-body{padding:18px}.azp-bd-guard{margin-bottom:13px;padding:11px 13px;border:1px solid #a7f3d0;border-left:5px solid #059669;border-radius:15px;background:#ecfdf5;color:#065f46;font-size:11px;font-weight:800;line-height:1.55}
+.azp-bd-body{padding:18px}.azp-bd-guard{margin-bottom:13px;padding:9px 12px;border:1px solid #a7f3d0;border-left:5px solid #059669;border-radius:15px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:800;line-height:1.45}
 .azp-bd-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 11px;scrollbar-width:thin;scroll-snap-type:x proximity}.azp-bd-chip{scroll-snap-align:start;white-space:nowrap;border:1px solid #ccd7e6;border-radius:999px;padding:9px 12px;background:#fff;color:#334155;box-shadow:0 3px 10px rgba(15,23,42,.05);font-size:11px;font-weight:850;cursor:pointer;transition:border-color .14s ease,background .14s ease,color .14s ease}.azp-bd-chip:active{border-color:#4f46e5;color:#3730a3;background:#eef2ff}
 .azp-bd-command-panel{padding:14px;border:1px solid #d9e2ef;border-radius:20px;background:#fff;box-shadow:0 10px 28px rgba(15,23,42,.07)}.azp-bd-command-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.azp-bd-command-title label{color:#0f172a;font-size:13px;font-weight:900}.azp-bd-command-title span{color:#64748b;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .azp-bd-query{contain:layout style;width:100%;min-height:104px;resize:vertical;border:1.5px solid #b8c5d6;border-radius:15px;background:#fbfdff;padding:13px 14px;outline:none;color:#0f172a;caret-color:#2563eb;font:600 16px/1.5 Arial,'Segoe UI',sans-serif;box-shadow:inset 0 1px 2px rgba(15,23,42,.04);transition:border-color .12s ease,box-shadow .12s ease}.azp-bd-query:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .azp-bd-actions{display:grid;grid-template-columns:minmax(190px,1fr) auto auto 56px;gap:9px;margin-top:11px}.azp-bd-run,.azp-bd-suggest,.azp-bd-wa,.azp-bd-refresh{min-height:54px;border:0;border-radius:15px;font:900 12px/1.25 Inter,'Segoe UI',Arial,sans-serif;cursor:pointer;box-shadow:0 7px 18px rgba(15,23,42,.1);transition:transform .14s ease,filter .14s ease,box-shadow .14s ease}.azp-bd-run:active,.azp-bd-suggest:active,.azp-bd-wa:active,.azp-bd-refresh:active{transform:translateY(1px) scale(.985);box-shadow:0 3px 9px rgba(15,23,42,.12)}.azp-bd-run{padding:10px 16px;background:linear-gradient(135deg,#155eef,#6d28d9);color:#fff}.azp-bd-suggest{padding:9px 13px;background:linear-gradient(135deg,#fff7d6,#fde68a);color:#854d0e}.azp-bd-wa{padding:9px 13px;background:linear-gradient(135deg,#16a34a,#047857);color:#fff}.azp-bd-refresh{min-width:56px;background:#e6edf7;color:#334155;font-size:21px}.azp-bd-run:disabled,.azp-bd-suggest:disabled,.azp-bd-wa:disabled,.azp-bd-refresh:disabled{opacity:.58;cursor:wait;transform:none}
-.azp-bd-status{display:none;margin-top:12px;padding:11px 13px;border:1px solid transparent;border-radius:14px;font-size:11px;font-weight:850;line-height:1.5}.azp-bd-status.show{display:block}.azp-bd-status.loading{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}.azp-bd-status.success{border-color:#a7f3d0;background:#ecfdf5;color:#047857}.azp-bd-status.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}.azp-bd-status.error{border-color:#fecaca;background:#fef2f2;color:#b91c1c}
+.azp-bd-status{display:none;margin-top:12px;padding:11px 13px;border:1px solid transparent;border-radius:14px;font-size:11px;font-weight:850;line-height:1.5}.azp-bd-status.show{display:block}.azp-bd-status.loading{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}.azp-bd-status.loading:before{content:'●';display:inline-block;margin-right:8px;color:#2563eb;animation:azpBdPulse 1s ease-in-out infinite}.azp-bd-status.success{border-color:#a7f3d0;background:#ecfdf5;color:#047857}.azp-bd-status.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}.azp-bd-status.error{border-color:#fecaca;background:#fef2f2;color:#b91c1c}@keyframes azpBdPulse{50%{opacity:.25}}
 .azp-bd-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.azp-bd-metric{position:relative;min-width:0;padding:13px 12px 12px;border:1px solid #dce5f1;border-radius:17px;background:#fff;box-shadow:0 7px 20px rgba(15,23,42,.06);overflow:hidden}.azp-bd-metric:before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,#2563eb,#7c3aed)}.azp-bd-metric:nth-child(2n):before{background:linear-gradient(90deg,#059669,#22c55e)}.azp-bd-metric:nth-child(3n):before{background:linear-gradient(90deg,#d97706,#f59e0b)}.azp-bd-metric small{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.azp-bd-metric strong{display:block;margin-top:5px;color:#0f172a;font-size:20px;font-weight:900;overflow-wrap:anywhere}
 .azp-bd-source{margin-top:10px;padding:10px 12px;border:1px solid #dce5f1;border-radius:14px;background:#fff;color:#64748b;font-size:10px;line-height:1.55}.azp-bd-source b{color:#334155}
 .azp-bd-result{margin-top:14px;border:1px solid #d4deeb;border-radius:21px;background:#f7faff;box-shadow:0 12px 30px rgba(15,23,42,.08);overflow:hidden}.azp-bd-result-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;background:linear-gradient(90deg,#0f1f3d,#1d3972);border-bottom:1px solid rgba(255,255,255,.14)}.azp-bd-result-head b{color:#fff;font-size:13px;letter-spacing:.02em}.azp-bd-copy{border:1px solid rgba(255,255,255,.2);border-radius:11px;padding:8px 11px;background:rgba(255,255,255,.13);color:#fff;font-size:10px;font-weight:900;cursor:pointer}.azp-bd-output{display:grid;gap:11px;min-height:180px;padding:13px;color:#1e293b}.azp-bd-report-card{border:1px solid #dde6f1;border-radius:17px;background:#fff;box-shadow:0 5px 16px rgba(15,23,42,.055);overflow:hidden}.azp-bd-report-card h3{margin:0;padding:10px 13px;border-bottom:1px solid #e6edf5;background:#f2f6fb;color:#172554;font-size:11px;font-weight:950;letter-spacing:.045em;text-transform:uppercase}.azp-bd-report-card .azp-bd-card-body{display:grid;gap:7px;padding:12px 13px;font:600 12.5px/1.6 Inter,'Segoe UI',Arial,sans-serif}.azp-bd-report-card p{margin:0;overflow-wrap:anywhere}.azp-bd-report-card .azp-bd-data-row{display:grid;grid-template-columns:minmax(120px,.9fr) minmax(0,1.35fr);gap:10px;padding:7px 9px;border-radius:10px;background:#f8fafc}.azp-bd-report-card .azp-bd-data-key{color:#64748b;font-weight:800}.azp-bd-report-card .azp-bd-data-value{color:#0f172a;font-weight:900;text-align:right}.azp-bd-report-card.tone-alert{border-color:#fecaca}.azp-bd-report-card.tone-alert h3{background:#fff1f2;color:#b91c1c}.azp-bd-report-card.tone-success{border-color:#a7f3d0}.azp-bd-report-card.tone-success h3{background:#ecfdf5;color:#047857}.azp-bd-report-card.tone-action{border-color:#fde68a}.azp-bd-report-card.tone-action h3{background:#fffbeb;color:#92400e}.azp-bd-report-card.tone-ai{border-color:#c4b5fd}.azp-bd-report-card.tone-ai h3{background:#f5f3ff;color:#5b21b6}.azp-bd-note{margin-top:11px;text-align:center;color:#64748b;font-size:10px;line-height:1.5}
 .azp-bd-wa-modal{position:fixed;inset:0;z-index:100650;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(2,6,23,.78)}.azp-bd-wa-card{width:min(680px,100%);max-height:92dvh;overflow:auto;border-radius:22px;background:#fff;padding:17px;box-shadow:0 30px 90px rgba(2,6,23,.45)}.azp-bd-wa-card h3{margin:0;color:#14532d}.azp-bd-wa-card p{color:#64748b;font-size:11px;line-height:1.5}.azp-bd-wa-field{display:grid;gap:5px;margin-top:10px}.azp-bd-wa-field label{font-size:11px;font-weight:900;color:#334155}.azp-bd-wa-field input,.azp-bd-wa-field textarea{width:100%;border:1.5px solid #cbd5e1;border-radius:13px;padding:10px 11px;outline:none;font:600 13px/1.5 'Poppins',Arial,sans-serif}.azp-bd-wa-field textarea{min-height:220px;resize:vertical}.azp-bd-wa-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.azp-bd-wa-open,.azp-bd-wa-close{border:0;border-radius:14px;padding:12px;font-weight:900;cursor:pointer}.azp-bd-wa-open{background:#16a34a;color:#fff}.azp-bd-wa-close{background:#e2e8f0;color:#334155}
-@media(max-width:760px){.azp-bd-backdrop{padding:0;background:#07111f}.azp-bd-dialog{max-height:100dvh;border:0;border-radius:0}.azp-bd-head{padding:17px 15px;border-radius:0}.azp-bd-head:after{display:none}.azp-bd-head h2{padding-right:0;font-size:19px}.azp-bd-head-icon{flex-basis:48px;width:48px;height:48px;border-radius:15px;font-size:25px}.azp-bd-body{padding:12px}.azp-bd-command-panel{padding:11px;border-radius:17px}.azp-bd-command-title span{display:none}.azp-bd-query{min-height:112px;resize:none;font-size:16px}.azp-bd-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.azp-bd-actions{grid-template-columns:1fr 1fr}.azp-bd-refresh{min-width:0}.azp-bd-report-card .azp-bd-data-row{grid-template-columns:1fr}.azp-bd-report-card .azp-bd-data-value{text-align:left}.azp-bd-result{border-radius:18px}}
+@media(max-width:760px){.azp-bd-backdrop{padding:0;background:#07111f}.azp-bd-dialog{max-height:100dvh;border:0;border-radius:0}.azp-bd-head{padding:12px 14px;border-radius:0;gap:10px}.azp-bd-head:after{display:none}.azp-bd-head h2{padding-right:0;font-size:18px}.azp-bd-head p{margin-top:3px;font-size:10px}.azp-bd-head-icon{flex-basis:43px;width:43px;height:43px;border-radius:13px;font-size:23px}.azp-bd-close{width:40px;height:40px;flex-basis:40px}.azp-bd-body{padding:12px}.azp-bd-command-panel{padding:11px;border-radius:17px}.azp-bd-command-title span{display:none}.azp-bd-query{min-height:96px;resize:none;font-size:16px;touch-action:manipulation}.azp-bd-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.azp-bd-actions{grid-template-columns:1fr 1fr}.azp-bd-refresh{min-width:0}.azp-bd-report-card .azp-bd-data-row{grid-template-columns:1fr}.azp-bd-report-card .azp-bd-data-value{text-align:left}.azp-bd-result{border-radius:18px}}
 @media(prefers-reduced-motion:reduce){.azp-bd-dialog *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media print{.azp-bd-backdrop{display:none!important}}
 </style>
@@ -14235,6 +14235,9 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   ]);
   let callable=null;
   let lastSnapshot=null;
+  let preloadPromise=null;
+  let lastOwnerQuery='';
+  const PREPARED_FRESH_MS=45*1000;
 
   const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
   const clip=(v,n=120)=>clean(v).slice(0,n);
@@ -14973,7 +14976,8 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   }
   function directorPrompt(snapshot){
     const choices=advisoryCatalog(snapshot).map(item=>`${item.code} | ${item.analysis} | ${item.action}`).join('\n');
-    return `A TO Z PACKERS & MOVERS — VERIFIED ADVISORY PRIORITY SELECTOR\n\nThe software has already produced the complete deterministic verified report. You are not allowed to create, restate, calculate, interpret, or correct any figure, amount, percentage, date, status count, customer detail, payment age, source limitation, or operational fact.\n\nYour only job is to rank the most useful action codes from the verified qualitative choices below. Do not add advice or explanations.\n\nReturn only up to three unique code letters separated by commas, for example: A,B,C\nIf fewer choices apply, return fewer codes. Never return any other text.\n\nVERIFIED QUALITATIVE CHOICES\n${choices}`;
+    const ownerQuestion=clip(snapshot?.meta?.query,500);
+    return `A TO Z PACKERS & MOVERS — GROUNDED OWNER BUSINESS DIRECTOR\n\nOWNER QUESTION\n${ownerQuestion}\n\nThe deterministic software has already answered the owner with exact verified figures and customer records. Your role is to add senior-management interpretation, not to repeat the report. Use only the qualitative evidence choices below.\n\nSTRICT RULES\n- Never write any number, amount, percentage, date, phone, customer name, reference, status count, payment age, trend, conversion, or system-working claim.\n- Never reinterpret a collection threshold as ageing.\n- Never introduce a fact that is not one of the selected evidence codes.\n- Advice must be practical, concise, specific to the owner's question, and written in the owner's language style.\n- Recommendations are read-only; never claim an action was completed.\n\nReturn valid JSON only in this exact shape:\n{"selected_codes":["A"],"owner_summary":"qualitative answer","management_view":"professional interpretation","next_action":"one practical next action"}\nSelect no more than three unique codes.\n\nVERIFIED QUALITATIVE EVIDENCE\n${choices}`;
   }
   function selectedAdvisoryCodes(text,catalog){
     const raw=clean(text).toUpperCase();
@@ -14987,6 +14991,23 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     const selected=codes.map(code=>catalog.find(item=>item.code===code)).filter(Boolean);
     const order=['Immediate','Next','Follow-up'];
     return `BUSINESS INTERPRETATION\n${selected.map(item=>`- ${item.analysis}`).join('\n')}\n\nMANAGEMENT SUGGESTIONS\n${selected.map(item=>`- ${item.action}`).join('\n')}\n\nACTION ORDER\n${selected.map((item,index)=>`- ${order[index]||'Follow-up'} — ${item.action}`).join('\n')}`;
+  }
+  function parsedIntelligentAdvisory(text,catalog){
+    const raw=String(text||'').trim(),jsonText=raw.match(/\{[\s\S]*\}/)?.[0];
+    if(!jsonText)return null;
+    let parsed;try{parsed=JSON.parse(jsonText);}catch(_error){return null;}
+    const allowed=new Set(catalog.map(item=>item.code));
+    const codes=Array.isArray(parsed.selected_codes)?parsed.selected_codes.map(x=>clean(x).toUpperCase()).filter((code,index,all)=>allowed.has(code)&&all.indexOf(code)===index).slice(0,3):[];
+    const fields=[clip(parsed.owner_summary,420),clip(parsed.management_view,520),clip(parsed.next_action,420)];
+    const unsafe=/\d|[०-९୦-୯]|₹|\$|%|\b(?:ninety|hundred|thousand|lakh|crore)\b|नब्बे|दिन\s*पुरान|ଦିନ\s*ପୁରୁଣା|\b\d{4}[-/]\d|\bAZP[A-Z0-9-]*\b|data limitations|no source limitation|unknown[- ]status|days? overdue|firebase is working|sms is working|delivery is working/i;
+    if(!codes.length||fields.some(value=>!value||unsafe.test(value)))return null;
+    return {codes,ownerSummary:fields[0],managementView:fields[1],nextAction:fields[2]};
+  }
+  function intelligentAdvisory(snapshot,aiText=''){
+    const catalog=advisoryCatalog(snapshot),parsed=parsedIntelligentAdvisory(aiText,catalog);
+    if(!parsed)return groundedAdvisory(snapshot,'');
+    const evidence=parsed.codes.map(code=>catalog.find(item=>item.code===code)).filter(Boolean);
+    return `OWNER-FOCUSED INTERPRETATION\n${parsed.ownerSummary}\n\nMANAGEMENT VIEW\n${parsed.managementView}\n\nRECOMMENDED NEXT ACTION\n${parsed.nextAction}\n\nVERIFIED EVIDENCE BASIS\n${evidence.map(item=>`- ${item.analysis}`).join('\n')}`;
   }
   function responseText(result){
     const d=result?.data??result??{};
@@ -15047,43 +15068,66 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     return analysis;
   }
   function shouldUseSnapshotCache(forceReload,state=lastSnapshot){return !forceReload&&Boolean(state?.sourceMap)&&Date.now()-Date.parse(state?.loadedAt||0)<CACHE_MS;}
+  function preparedSnapshotFresh(state=lastSnapshot){return Boolean(state?.sourceMap)&&Date.now()-Date.parse(state?.loadedAt||0)<PREPARED_FRESH_MS;}
+  function resolveOwnerQuery(queryText){
+    const current=clip(queryText,500);
+    const followUp=/^(?:show|give|tell|list|provide)?\s*(?:me\s*)?(?:the\s*)?(?:names?|details?|customers?|records?|who|which ones?|unka naam|naam|details dikhao|list dikhao)\??$/i.test(current);
+    return followUp&&lastOwnerQuery?clip(`${lastOwnerQuery}. Follow-up request: ${current}`,500):current;
+  }
   function requiresFreshSnapshot(queryText){
     return /\b(today|today's|yesterday|current|currently|latest|live|now|recent|tonight)\b|\blast\s*(?:two|three|four|five|six|seven|[2-7])\s*(?:-|to)?\s*(?:three|four|five|six|seven|[3-7])?\s*days?\b|\b(aaj|kal|abhi|haal)\b|आज|कल|अभी|हाल/i.test(clean(queryText));
   }
+  async function startDirectorPreload(){
+    if(preparedSnapshotFresh()){
+      const field=document.getElementById('azp-bd-query'),queryText=clip(field?.value||"Today's business health report",500);
+      const snapshot=buildAnalysis(lastSnapshot.sourceMap,queryText);lastSnapshot.cacheUsed=false;lastSnapshot.analysis=snapshot;
+      if(document.getElementById('azp-bd-backdrop')){renderSnapshot(snapshot);const report=deterministicDirectorReport(snapshot,queryText);setOutput(`${report}\n\nDIRECTOR'S IMMEDIATE FOCUS\n${groundedAdvisory(snapshot,'')}`);setStatus('Live intelligence is ready. Ask naturally or choose a quick command.','success');}
+      return snapshot;
+    }
+    if(preloadPromise)return preloadPromise;
+    setStatus('Preparing live business intelligence in the background…','loading');
+    preloadPromise=loadLive('Analyze all live business modules for the owner.').then(()=>{
+      const field=document.getElementById('azp-bd-query'),queryText=clip(field?.value||"Today's business health report",500);
+      const snapshot=buildAnalysis(lastSnapshot.sourceMap,queryText);lastSnapshot.cacheUsed=false;lastSnapshot.analysis=snapshot;
+      if(document.getElementById('azp-bd-backdrop')){renderSnapshot(snapshot);const report=deterministicDirectorReport(snapshot,queryText);setOutput(`${report}\n\nDIRECTOR'S IMMEDIATE FOCUS\n${groundedAdvisory(snapshot,'')}`);setStatus('Live intelligence is ready. Ask naturally or choose a quick command.','success');}
+      return snapshot;
+    }).catch(error=>{if(document.getElementById('azp-bd-backdrop'))setStatus(`Background preparation could not finish: ${clip(error?.message||'live source unavailable',160)}. Press Ask to retry.`,'warn');return null;}).finally(()=>{preloadPromise=null;});
+    return preloadPromise;
+  }
   async function runDirector(forceReload=false){
-    const queryText=clip(document.getElementById('azp-bd-query')?.value,500);
+    const typedQuery=clip(document.getElementById('azp-bd-query')?.value,500);
+    const queryText=resolveOwnerQuery(typedQuery);
     if(!queryText){setStatus('Please ask the owner question first.','error');return;}
+    lastOwnerQuery=queryText;
     const run=document.getElementById('azp-bd-run'),refresh=document.getElementById('azp-bd-refresh'),suggest=document.getElementById('azp-bd-suggest'),wa=document.getElementById('azp-bd-wa');
     let snapshot=null,verifiedReport='';
     if(run){run.disabled=true;run.textContent='⏳ Reading live business data…';}if(refresh)refresh.disabled=true;if(suggest)suggest.disabled=true;if(wa)wa.disabled=true;
     try{
+      const preparedFresh=!forceReload&&preparedSnapshotFresh();
       const cacheFresh=shouldUseSnapshotCache(forceReload)&&!requiresFreshSnapshot(queryText);
-      setStatus(cacheFresh?'Using the recent live snapshot and recalculating this report…':'Reading live Firebase data from all available business modules…','loading');
-      if(cacheFresh){lastSnapshot.cacheUsed=true;snapshot=buildAnalysis(lastSnapshot.sourceMap,queryText);lastSnapshot.analysis=snapshot;}
-      else snapshot=await loadLive(queryText);
-      renderSnapshot(snapshot);verifiedReport=deterministicDirectorReport(snapshot,queryText);setOutput(verifiedReport);
+      setStatus(preparedFresh?'Using the just-prepared live intelligence…':cacheFresh?'Using the recent snapshot and recalculating this report…':'Reading the required live Firebase business data…','loading');
+      if(!forceReload&&preloadPromise){await preloadPromise;snapshot=lastSnapshot?.sourceMap?buildAnalysis(lastSnapshot.sourceMap,queryText):null;if(snapshot){lastSnapshot.cacheUsed=false;lastSnapshot.analysis=snapshot;}}
+      if(!snapshot&&preparedFresh){lastSnapshot.cacheUsed=false;snapshot=buildAnalysis(lastSnapshot.sourceMap,queryText);lastSnapshot.analysis=snapshot;}
+      else if(!snapshot&&cacheFresh){lastSnapshot.cacheUsed=true;snapshot=buildAnalysis(lastSnapshot.sourceMap,queryText);lastSnapshot.analysis=snapshot;}
+      else if(!snapshot)snapshot=await loadLive(queryText);
+      renderSnapshot(snapshot);verifiedReport=deterministicDirectorReport(snapshot,queryText);
+      setOutput(`${verifiedReport}\n\nDIRECTOR'S IMMEDIATE FOCUS\n${groundedAdvisory(snapshot,'')}`);
       const successful=lastSnapshot.sources.filter(x=>x.ok).length;
       if(!successful){setStatus("I don't have enough live information. No business collection could be read.",'error');return;}
-      if(!needsAdvisoryAi(queryText)){
-        const failed=lastSnapshot.sources.filter(x=>!x.ok).length;
-        const incomplete=snapshot.meta.partialData||snapshot.meta.truncatedData||snapshot.meta.taskReportIncomplete;
-        setStatus(incomplete?`Report completed with incomplete live data${failed?` and ${failed} unavailable source(s)`:''}. See Data Limitations.`:(snapshot.meta.cacheUsed?'Exact report completed from the cached snapshot shown above. Press Refresh for a new server read.':'Exact live report completed from the latest Firebase records.'),incomplete?'warn':'success');
-        return;
-      }
-      setStatus('Live snapshot ready. AI Business Director is preparing the owner report…','loading');
+      setStatus('Verified answer is ready. AI Business Director is adding professional interpretation…','loading');
       if(!callable)callable=httpsCallable(getFunctions(getApp(),'asia-south1'),'aiAssistant');
-      const result=await withTimeout(callable({prompt:directorPrompt(snapshot)}),55000,'AI Business Director');
+      const result=await withTimeout(callable({prompt:directorPrompt(snapshot)}),28000,'AI Business Director');
       const text=responseText(result);
-      const advisory=groundedAdvisory(snapshot,text);
-      setOutput(`${verifiedReport}\n\nAI BUSINESS DIRECTOR — VERIFIED ADVISORY\n${advisory}`);
+      const advisory=intelligentAdvisory(snapshot,text);
+      setOutput(`${verifiedReport}\n\nAI BUSINESS DIRECTOR — PROFESSIONAL INTERPRETATION\n${advisory}`);
       const failed=lastSnapshot.sources.filter(x=>!x.ok).length,incomplete=snapshot.meta.partialData||snapshot.meta.truncatedData||snapshot.meta.taskReportIncomplete;
       setStatus(incomplete?`Report completed with incomplete live data${failed?` and ${failed} unavailable source(s)`:''}. See Data Limitations.`:'Live business director report completed.',incomplete?'warn':'success');
     }catch(error){
       console.error('AZP AI Business Director Phase 1 failed',error);
       const message=clip(error?.details?.reason||error?.details||error?.message||'Report failed',220);
-      if(snapshot){setOutput(deterministicDirectorReport(snapshot,queryText));setStatus(`Live business report completed from Firebase. AI narrative service is temporarily unavailable (${message}).`,'warn');}
+      if(snapshot){const report=verifiedReport||deterministicDirectorReport(snapshot,queryText);setOutput(`${report}\n\nDIRECTOR'S IMMEDIATE FOCUS\n${groundedAdvisory(snapshot,'')}`);setStatus(`Verified live report is ready. Professional wording service is temporarily unavailable (${message}).`,'warn');}
       else setStatus(`Live report could not be loaded: ${message}.`,'error');
-    }finally{if(run){run.disabled=false;run.textContent='✨ Ask AI Business Director';}if(refresh)refresh.disabled=false;if(suggest)suggest.disabled=false;if(wa)wa.disabled=false;}
+    }finally{if(run){run.disabled=false;run.textContent='✨ Ask Business Director';}if(refresh)refresh.disabled=false;if(suggest)suggest.disabled=false;if(wa)wa.disabled=false;}
   }
   async function copyOutput(button){
     const output=document.getElementById('azp-bd-output');const text=output?.dataset.rawReport||output?.textContent||'';
@@ -15112,18 +15156,19 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   }
   function close(){document.getElementById('azp-bd-wa-modal')?.remove();document.getElementById('azp-bd-backdrop')?.remove();document.body?.classList.remove('azp-bd-modal-open');document.removeEventListener('keydown',escapeKey,true);}
   function escapeKey(event){if(event.key==='Escape')close();}
+  function isolateComposerInput(event){if(event.target?.id==='azp-bd-query')event.stopPropagation();}
   function open(){
     close();document.getElementById('azp-ai-backdrop')?.remove();
     const backdrop=document.createElement('div');backdrop.id='azp-bd-backdrop';backdrop.className='azp-bd-backdrop';
     backdrop.innerHTML=`<section class="azp-bd-dialog" role="dialog" aria-modal="true" aria-labelledby="azp-bd-title">
-      <header class="azp-bd-head"><div class="azp-bd-head-icon">🧠</div><div><h2 id="azp-bd-title">AI Business Director · Phase 1</h2><p>Owner-only live reports, analysis, risk detection and professional action priorities.</p></div><button type="button" class="azp-bd-close" aria-label="Close">×</button></header>
+      <header class="azp-bd-head"><div class="azp-bd-head-icon">🧠</div><div><h2 id="azp-bd-title">Owner AI Business Director</h2><p>Verified answer first · intelligent management advice next</p></div><button type="button" class="azp-bd-close" aria-label="Close">×</button></header>
       <div class="azp-bd-body">
-        <div class="azp-bd-guard">🔒 Read-only intelligence: this module does not save records, change prices, send SMS/WhatsApp, assign staff, create PDF/invoices, or modify production workflows.</div>
+        <div class="azp-bd-guard">🔒 Safe read-only intelligence · Live data is analyzed without changing records or sending messages.</div>
         <div class="azp-bd-chips">${QUICK.map(x=>`<button type="button" class="azp-bd-chip" data-command="${esc(x)}">${esc(x)}</button>`).join('')}</div>
         <div class="azp-bd-command-panel"><div class="azp-bd-command-title"><label for="azp-bd-query">Ask the Owner AI Business Director</label><span>Fast command input</span></div><textarea id="azp-bd-query" class="azp-bd-query" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="done" placeholder="Ask naturally: Today's work report / Who has not paid 90%? / Show Swagatika's report…">Today's business health report</textarea>
-        <div class="azp-bd-actions"><button type="button" id="azp-bd-run" class="azp-bd-run">✨ Ask AI Business Director</button><button type="button" id="azp-bd-suggest" class="azp-bd-suggest">💡 AI Suggestions</button><button type="button" id="azp-bd-wa" class="azp-bd-wa">📲 WhatsApp Report</button><button type="button" id="azp-bd-refresh" class="azp-bd-refresh" title="Refresh live data">↻</button></div></div>
+        <div class="azp-bd-actions"><button type="button" id="azp-bd-run" class="azp-bd-run">✨ Ask Business Director</button><button type="button" id="azp-bd-suggest" class="azp-bd-suggest">💡 Director Priorities</button><button type="button" id="azp-bd-wa" class="azp-bd-wa">📲 WhatsApp Report</button><button type="button" id="azp-bd-refresh" class="azp-bd-refresh" title="Refresh live data">↻</button></div></div>
         <div id="azp-bd-status" class="azp-bd-status"></div><div id="azp-bd-metrics" class="azp-bd-metrics"></div><div id="azp-bd-source" class="azp-bd-source"><b>Live snapshot:</b> Not loaded yet.</div>
-        <div class="azp-bd-result"><div class="azp-bd-result-head"><b>📊 Executive Owner Report</b><button type="button" id="azp-bd-copy" class="azp-bd-copy">Copy Report</button></div><div id="azp-bd-output" class="azp-bd-output" data-raw-report="Ask a question to load a fresh, read-only live Firebase snapshot."><section class="azp-bd-report-card tone-ai"><h3>Owner Intelligence Ready</h3><div class="azp-bd-card-body"><p>Ask a question to load a fresh, read-only live Firebase snapshot.</p></div></section></div></div>
+        <div class="azp-bd-result"><div class="azp-bd-result-head"><b>📊 Executive Owner Intelligence</b><button type="button" id="azp-bd-copy" class="azp-bd-copy">Copy Report</button></div><div id="azp-bd-output" class="azp-bd-output" data-raw-report="Preparing verified live business intelligence."><section class="azp-bd-report-card tone-ai"><h3>Preparing Owner Intelligence</h3><div class="azp-bd-card-body"><p>Live business data is being prepared while you type.</p></div></section></div></div>
         <div class="azp-bd-note">AI recommendations are advisory. Verify high-value payment, dispatch and customer decisions against source records.</div>
       </div></section>`;
     document.body.appendChild(backdrop);document.body.classList.add('azp-bd-modal-open');document.addEventListener('keydown',escapeKey,true);
@@ -15136,6 +15181,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     backdrop.querySelector('#azp-bd-copy').addEventListener('click',event=>copyOutput(event.currentTarget));
     backdrop.querySelectorAll('[data-command]').forEach(button=>button.addEventListener('click',()=>{const field=document.getElementById('azp-bd-query');if(field)field.value=button.dataset.command||'';}));
     requestAnimationFrame(()=>backdrop.querySelector('#azp-bd-query')?.focus({preventScroll:true}));
+    startDirectorPreload();
   }
   function intercept(event){event.preventDefault();event.stopImmediatePropagation();open();}
   function bind(){
@@ -15146,6 +15192,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
     return true;
   }
   window.azpOpenAiBusinessDirector=open;
+  window.addEventListener('input',isolateComposerInput,true);
   const observer=new MutationObserver(()=>{if(bind())observer.disconnect();});
   const startBinding=()=>{if(!bind())observer.observe(document.documentElement,{childList:true,subtree:true});};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startBinding,{once:true});else startBinding();
