@@ -5,7 +5,7 @@ const http = require("node:http");
 const path = require("node:path");
 
 const HOST = "0.0.0.0";
-const PORT = Number(process.env.STAGING_UI_PORT || 8080);
+const PORT = Number(process.argv[2] || process.env.STAGING_UI_PORT || 8080);
 const ROOT = path.resolve(__dirname, "../../staging");
 const HTML = path.join(ROOT, "test.driver.master-ai-staging.html");
 const CONFIG = path.join(ROOT, "firebase-staging-config.js");
