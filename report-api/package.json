@@ -1,0 +1,28 @@
+{
+  "name": "azp-read-only-daily-report-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Token-protected, strictly read-only Daily Operations Report API for A TO Z Packers & Movers.",
+  "main": "src/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "lint": "eslint src test",
+    "test": "node --test --test-reporter=spec test/*.test.js",
+    "test:unit": "node --test --test-reporter=spec test/unit.test.js",
+    "test:runtime": "node test/local-runtime-smoke.js",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.3.0",
+    "firebase-functions": "^7.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^10.9.1",
+    "express": "^5.2.1"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
