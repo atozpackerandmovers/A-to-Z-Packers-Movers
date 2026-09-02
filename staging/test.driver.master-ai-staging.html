@@ -231,6 +231,7 @@
   <div id="bottomNav" class="bottom-nav no-print"></div>
   <div id="toast" class="fixed top-4 right-4 z-[80] hidden"><div class="toast rounded-xl bg-emerald-600 text-white px-4 py-3 text-sm font-black shadow-xl"></div></div>
 
+  <script src="./firebase-staging-config.js"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, getDocsFromServer, serverTimestamp, query, writeBatch, orderBy, documentId, startAfter, limit } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
@@ -238,7 +239,13 @@
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js';
 
-    const firebaseConfig={apiKey:'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',authDomain:'az-packers-quotation.firebaseapp.com',databaseURL:'https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'az-packers-quotation',storageBucket:'az-packers-quotation.firebasestorage.app',messagingSenderId:'682004383688',appId:'1:682004383688:web:b795a19579dba9a612a2fd'};
+    const firebaseConfig=window.__AZP_STAGING_FIREBASE_CONFIG__;
+    const EXPECTED_STAGING_PROJECT='a-to-z-gps-staging';
+    const requiredStagingConfig=['apiKey','authDomain','databaseURL','projectId','storageBucket','messagingSenderId','appId'];
+    if(!firebaseConfig||firebaseConfig.projectId!==EXPECTED_STAGING_PROJECT||requiredStagingConfig.some(key=>!firebaseConfig[key])){
+      document.body.innerHTML='<main style="max-width:720px;margin:48px auto;padding:24px;font-family:system-ui"><h1>Staging configuration required</h1><p>This build is locked to the non-production Firebase project <strong>a-to-z-gps-staging</strong>. Create <code>staging/firebase-staging-config.js</code> from the committed example before testing.</p><p>No production Firebase connection was attempted.</p></main>';
+      throw new Error('Missing or invalid staging-only Firebase configuration');
+    }
     const app=getApps().length?getApp():initializeApp(firebaseConfig); const db=getFirestore(app); const prodRtdb=getDatabase(app,firebaseConfig.databaseURL); const prodAuth=getAuth(app);
     const azpProdAuthPersistenceReady=setPersistence(prodAuth,browserLocalPersistence).then(()=>true).catch(err=>{console.warn('Production GPS Auth persistence unavailable',err?.code||err);return false});
     const MAIN='azpExecutionRecords'; const STAFF_UPDATES='azpStaffUpdates';
@@ -2799,7 +2806,7 @@
 
     /* MASTER AI — read-only, available only to Manoj Kumar Swain / Admin Preview. */
     const MAI_VERSION='3.0.0-staging',MAI_TZ='Asia/Kolkata',MAI_PAGE_SIZE=500,MAI_MAX_PAGES=20;
-    const MAI_API_URL='https://asia-south1-az-packers-quotation.cloudfunctions.net/masterAiReport';
+    const MAI_API_URL=window.__AZP_MASTER_AI_API_URL__||`https://asia-south1-${firebaseConfig.projectId}.cloudfunctions.net/masterAiReport`;
     /* Every source below is an existing production collection. Master AI is read-only. */
     const MAI_EXTRA=[
       ['quotations',5000,'Quotation History'],

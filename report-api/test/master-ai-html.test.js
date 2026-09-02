@@ -9,6 +9,13 @@ const htmlPath = path.resolve(__dirname, "../../staging/test.driver.master-ai-st
 const html = fs.readFileSync(htmlPath, "utf8");
 const block = html.slice(html.indexOf("/* MASTER AI"), html.indexOf("async function boot()"));
 
+test("staging build is locked to the non-production Firebase project", () => {
+  assert.match(html, /EXPECTED_STAGING_PROJECT='a-to-z-gps-staging'/);
+  assert.match(html, /__AZP_STAGING_FIREBASE_CONFIG__/);
+  assert.doesNotMatch(html, /projectId:'az-packers-quotation'/);
+  assert.doesNotMatch(html, /asia-south1-az-packers-quotation\.cloudfunctions\.net/);
+});
+
 test("Master AI uses secure server report API and Firebase ID token", () => {
   assert.match(block, /authUser\.getIdToken\(true\)/);
   assert.match(block, /Authorization.*Bearer/);

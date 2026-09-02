@@ -10,6 +10,8 @@ The staging implementation removes the screenshot bug where the generic word `re
 
 No Firebase rule, production record, production Hosting file, main branch, or deployed function was changed.
 
+The staging HTML is fail-closed and accepts only the existing non-production Firebase project `a-to-z-gps-staging`. Its uncommitted runtime web configuration must be created from `staging/firebase-staging-config.example.js`; if it is missing or points to another project, the page stops before initializing Firebase.
+
 ## Source-confirmed schema map
 
 These names were observed in the supplied Execution and Quotation HTML source; they are not invented aliases.
@@ -44,7 +46,7 @@ Mapped comment fields: `comment`, `comments`, `note`, `notes`, `remark`, `remark
 
 ## Test result
 
-Local automated result: **47 passed, 0 failed**. `npm run lint` passes and the staging HTML module passes `node --check`.
+Local automated result: **48 passed, 0 failed**. `npm run lint` passes and the staging HTML module passes `node --check`.
 
 Coverage includes India midnight, today/yesterday/kal, all three date formats, month/year boundary, Timestamp/ISO/epoch/legacy normalization, duplicate prevention, zero-record diagnostics, comment linkage, authorized and unauthorized users, origin/method rejection, mobile button wiring, and no Firestore mutation calls.
 
@@ -63,17 +65,19 @@ Still required in staging:
 
 ## Deployment sequence
 
-1. Select a non-production Firebase project and sanitized fixtures.
-2. Set `masterAiAdmin: true` for Manoj's test account or configure server-only `MASTER_AI_ADMIN_UIDS`.
-3. Run `npm test` and `npm run lint` in `report-api`.
-4. Start emulators with `firebase --config firebase.master-ai-staging.json emulators:start`.
-5. Run the mandatory manual count/security/mobile checks.
-6. Deploy approved indexes and `masterAiReport` to staging only.
-7. Obtain Manoj Kumar Swain's approval before any production permission, billing change, main merge, or production deployment.
+1. Use the existing non-production Firebase project `a-to-z-gps-staging`; do not create a duplicate project.
+2. Copy `staging/firebase-staging-config.example.js` to the gitignored `staging/firebase-staging-config.js` and insert the staging web-app values from Firebase Console.
+3. Set `masterAiAdmin: true` for Manoj's test account or configure server-only `MASTER_AI_ADMIN_UIDS`.
+4. Run `npm test` and `npm run lint` in `report-api`.
+5. Start emulators with `firebase --config firebase.master-ai-staging.json emulators:start`.
+6. Run the mandatory manual count/security/mobile checks.
+7. Deploy approved indexes and `masterAiReport` to staging only.
+8. Obtain Manoj Kumar Swain's approval before any production permission, billing change, main merge, or production deployment.
 
 ## Changed files
 
 - `staging/test.driver.master-ai-staging.html`
+- `staging/firebase-staging-config.example.js`
 - `report-api/src/master-ai-dates.js`
 - `report-api/src/master-ai-schema.js`
 - `report-api/src/master-ai-repository.js`
