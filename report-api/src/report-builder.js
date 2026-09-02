@@ -350,32 +350,51 @@ function latestSetting(rows, person) {
   }).sort((a, b) => recordTimeMs(b) - recordTimeMs(a))[0] || null;
 }
 
-function foodingRate(person, source) {
-  const master = latestSetting(moduleRows(source, MODULES.STAFF_SALARY_MASTER), person);
-  if (master) {
-    const value = firstNumber(master, ["fooding_rate", "fooding_amount"]);
-    if (value > 0) return {rate: value, source: "Staff Salary Master"};
+function configuredRate(record, keys) {
+  if (!record) return {found: false, key: null, value: null};
+  for (const key of keys) {
+    const raw = record?.[key];
+    if (raw === "" || raw === null || raw === undefined) continue;
+    const value = Number(raw);
+    if (Number.isFinite(value) && value >= 0) return {found: true, key, value};
   }
-  const settings = latestSetting(moduleRows(source, MODULES.SALARY_SETTINGS), person);
-  if (settings) {
-    const value = firstNumber(settings, ["fooding_amount", "fooding_rate"]);
-    if (value > 0) return {rate: value, source: "Salary/Fooding Settings"};
-  }
-  if (person.role === "Driver") return {rate: 250, source: "Existing Driver default"};
-  if (person.role === "Worker") return {rate: 150, source: "Existing Worker default"};
-  const explicitOfficeRate = firstNumber(person.raw, ["fooding_rate"]);
-  return {rate: explicitOfficeRate, source: explicitOfficeRate > 0 ? "Indoor Staff Master" : null};
+  return {found: false, key: null, value: null};
 }
 
-function attendanceHalfDayEligible(source) {
+function foodingRate(person, source) {
+  let explicitZero = null;
+  const master = latestSetting(moduleRows(source, MODULES.STAFF_SALARY_MASTER), person);
+  const masterRate = configuredRate(master, ["fooding_rate", "fooding_amount"]);
+  if (masterRate.found) {
+    if (masterRate.value > 0) return {rate: masterRate.value, source: `staffSalaryMaster.${masterRate.key}`};
+    explicitZero = {rate: 0, source: `staffSalaryMaster.${masterRate.key}`};
+  }
+  const settings = latestSetting(moduleRows(source, MODULES.SALARY_SETTINGS), person);
+  const settingsRate = configuredRate(settings, ["fooding_amount", "fooding_rate"]);
+  if (settingsRate.found) {
+    if (settingsRate.value > 0) return {rate: settingsRate.value, source: `salarySettings.${settingsRate.key}`};
+    explicitZero ||= {rate: 0, source: `salarySettings.${settingsRate.key}`};
+  }
+  const masterRecordRate = configuredRate(person.raw, ["fooding_rate", "fooding_amount"]);
+  if (masterRecordRate.found) {
+    if (masterRecordRate.value > 0) return {rate: masterRecordRate.value, source: `${person.masterModule}.${masterRecordRate.key}`};
+    explicitZero ||= {rate: 0, source: `${person.masterModule}.${masterRecordRate.key}`};
+  }
+  return explicitZero || {rate: null, source: null};
+}
+
+function attendanceHalfDayRule(source) {
   const latest = moduleRows(source, MODULES.ATTENDANCE_SETTINGS).sort((a, b) => recordTimeMs(b) - recordTimeMs(a))[0];
-  if (!latest) return true;
-  return normalizeKey(latest.half_day_fooding_eligible || "Yes") === "yes";
+  const configured = normalizeKey(latest?.half_day_fooding_eligible);
+  if (configured === "yes" || configured === "no") {
+    return {eligible: configured === "yes", source: "attendanceSettings.half_day_fooding_eligible"};
+  }
+  return {eligible: true, source: "production execution.html default"};
 }
 
 function buildFooding(source, staff, attendanceResolution, reportDate, warnings) {
   const jobs = moduleRows(source, MODULES.JOBS);
-  const halfDayEligible = attendanceHalfDayEligible(source);
+  const halfDayRule = attendanceHalfDayRule(source);
   const output = [];
 
   staff.forEach((person) => {
@@ -383,36 +402,41 @@ function buildFooding(source, staff, attendanceResolution, reportDate, warnings)
     const resolved = attendanceResolution.selectedByIdentity.get(person.identity) || {record: null, status: "Not Marked"};
     const status = resolved.status;
     const {rate, source: rateSource} = foodingRate(person, source);
-    const officeApplicable = person.role === "Office" && normalizeKey(person.raw?.fooding_applicable) === "yes";
+    const recordedFooding = normalizeKey(resolved.record?.fooding_eligible);
+    const hasRecordedFooding = recordedFooding === "yes" || recordedFooding === "no";
+    const officeApplicable = person.role === "Office" && rate > 0;
     const roleAllowed = person.role === "Driver" || person.role === "Worker" || officeApplicable;
-    const attendanceAllowed = status === "Present" || (status === "Half Day" && halfDayEligible);
+    const attendanceRuleSource = hasRecordedFooding ? "attendance.fooding_eligible" :
+      (status === "Half Day" ? halfDayRule.source : "production Present rule");
+    const attendanceAllowed = hasRecordedFooding ? recordedFooding === "yes" :
+      (status === "Present" || (status === "Half Day" && halfDayRule.eligible));
     const eligible = Boolean(roleAllowed && attendanceAllowed && rate > 0);
     let reason = "Attendance not marked";
-    if (!roleAllowed) reason = "Role is not eligible under existing production rules";
-    else if (status === "Absent") reason = "Absent staff is not eligible";
+    if (status === "Absent") reason = "Absent staff is not eligible";
     else if (status === "Leave") reason = "Staff on leave is not eligible";
-    else if (status === "Half Day" && !halfDayEligible) reason = "Half-day fooding is disabled by attendance settings";
-    else if (attendanceAllowed && rate <= 0) reason = "Fooding rate is missing";
-    else if (eligible) reason = `Eligible from ${rateSource}`;
+    else if (!roleAllowed) reason = "Role is not eligible without a positive configured fooding rate";
+    else if (status === "Half Day" && !attendanceAllowed) reason = `Half-day fooding is disabled by ${attendanceRuleSource}`;
+    else if (attendanceAllowed && !(rate > 0)) reason = "Fooding rate is missing or zero in production settings";
+    else if (eligible) reason = `Eligible from ${rateSource}; attendance from ${attendanceRuleSource}`;
 
-    if (attendanceAllowed && rate <= 0 && roleAllowed) {
+    if (attendanceAllowed && !(rate > 0) && (person.role === "Driver" || person.role === "Worker")) {
       warnings.push(warning("warning", "MISSING_FOODING_RATE", "Eligible attendance exists but no fooding rate is configured.", {employeeName: person.employeeName, role: person.role}));
     }
     const recordedEligible = normalizeKey(resolved.record?.fooding_eligible) === "yes";
     if (recordedEligible && (status === "Absent" || status === "Leave")) {
       warnings.push(warning("error", "FOODING_FOR_ABSENT_STAFF", "Attendance record marks an absent/on-leave person as fooding eligible.", {employeeName: person.employeeName, date: reportDate, attendanceStatus: status}));
     }
-    if (person.role === "Driver" || person.role === "Worker" || officeApplicable) {
+    if (person.role === "Driver" || person.role === "Worker" || person.role === "Office") {
       output.push({
         employeeName: person.employeeName,
         role: person.role,
         attendanceStatus: status,
         dutyWorkStatus: dutyStatus(person, jobs, reportDate),
         foodingEligible: eligible ? "Yes" : "No",
-        applicableFoodingRate: rate || null,
+        applicableFoodingRate: rate,
         calculatedFoodingAmount: eligible ? rate : 0,
         reason,
-        missingRateWarning: Boolean(attendanceAllowed && rate <= 0 && roleAllowed)
+        missingRateWarning: Boolean(attendanceAllowed && !(rate > 0) && (person.role === "Driver" || person.role === "Worker"))
       });
     }
   });

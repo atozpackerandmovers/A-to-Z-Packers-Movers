@@ -23,6 +23,16 @@ function createEmulatorFixtureRepository() {
     attendance_status: "Present",
     fooding_eligible: "Yes"
   }];
+  source.staffSalaryMaster = [{
+    id: "EMULATOR_SALARY_1",
+    module: "staffSalaryMaster",
+    collection: "staffSalaryMaster",
+    master_id: "EMULATOR_DRIVER_1",
+    employee_name: "Emulator Driver",
+    role: "Driver",
+    fooding_rate: 250,
+    status: "Active"
+  }];
   source.materialStock = [{
     id: "EMULATOR_STOCK_1",
     module: "materialStock",

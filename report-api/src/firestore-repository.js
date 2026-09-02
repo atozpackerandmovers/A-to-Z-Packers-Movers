@@ -25,8 +25,8 @@ function createFirestoreRepository(db, options = {}) {
       Filter.where("module", "==", moduleName),
       Filter.where("collection", "==", moduleName)
     );
-    const snapshot = await collection.where(discriminator).limit(limit).get();
-    if (snapshot.size >= limit) throw new DataVolumeLimitError(moduleName, limit);
+    const snapshot = await collection.where(discriminator).limit(limit + 1).get();
+    if (snapshot.size > limit) throw new DataVolumeLimitError(moduleName, limit);
     return snapshotRows(snapshot);
   }
 

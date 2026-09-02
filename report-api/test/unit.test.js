@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const {MODULES} = require("../src/constants");
+const {createFirestoreRepository, DataVolumeLimitError} = require("../src/firestore-repository");
 const {buildDailyOperationsReport} = require("../src/report-builder");
 const {createDailyOperationsHandler} = require("../src/http-handler");
 
@@ -31,6 +32,11 @@ function baseSource() {
   source.attendance = [
     {id: "att-1", module: "attendance", master_id: "driver-1", employee_name: "Driver One", role: "Driver", date: REPORT_DATE, attendance_status: "Present", fooding_eligible: "Yes", punch_in: "09:05"},
     {id: "att-2", module: "attendance", master_id: "worker-1", employee_name: "Worker One", role: "Worker", date: REPORT_DATE, attendance_status: "Absent", fooding_eligible: "No"}
+  ];
+  source.staffSalaryMaster = [
+    {id: "salary-driver-1", module: "staffSalaryMaster", master_id: "driver-1", employee_name: "Driver One", role: "Driver", fooding_rate: 250, status: "Active"},
+    {id: "salary-worker-1", module: "staffSalaryMaster", master_id: "worker-1", employee_name: "Worker One", role: "Worker", fooding_rate: 150, status: "Active"},
+    {id: "salary-office-1", module: "staffSalaryMaster", master_id: "office-1", employee_name: "Office One", role: "Indoor Staff", fooding_rate: 0, status: "Active"}
   ];
   source.materialStock = [
     {id: "stock-1", module: "materialStock", item_name: "Cartons", unit_name: "Quantity", date: "2026-09-01", opening_stock: "10", purchase_qty: "5", used_qty: "1", reorder_level: "3"}
@@ -182,12 +188,14 @@ test("17 blacklisted employee is excluded unless attendance needs investigation"
   assert.equal(report.warnings.some((item) => item.code === "INACTIVE_STAFF_ATTENDANCE" && item.context.employeeName === "Blacklisted Worker"), true);
 });
 
-test("18 missing fooding rate is warned when office fooding is explicitly applicable", () => {
+test("18 missing fooding rate is warned without a configured Driver/Worker rate", () => {
   const source = baseSource();
-  source.indoorStaffMaster[0].fooding_applicable = "Yes";
-  source.attendance.push({id: "att-office", module: "attendance", master_id: "office-1", employee_name: "Office One", role: "Indoor Staff", date: REPORT_DATE, attendance_status: "Present"});
+  source.staffSalaryMaster = source.staffSalaryMaster.filter((row) => row.master_id !== "driver-1");
   const report = buildDailyOperationsReport(source, REPORT_DATE);
-  assert.equal(report.warnings.some((item) => item.code === "MISSING_FOODING_RATE"), true);
+  const driver = report.foodingEligibility.find((item) => item.employeeName === "Driver One");
+  assert.equal(driver.applicableFoodingRate, null);
+  assert.equal(driver.missingRateWarning, true);
+  assert.equal(report.warnings.some((item) => item.code === "MISSING_FOODING_RATE" && item.context.employeeName === "Driver One"), true);
 });
 
 test("19 absent person incorrectly marked for fooding is warned", () => {
@@ -250,9 +258,56 @@ test("26 API response excludes phones, passwords, addresses and source private v
 
 test("27 production report source contains no Firestore write operation", () => {
   const sourceDir = path.join(__dirname, "..", "src");
-  const inspected = ["index.js", "firestore-repository.js", "report-builder.js"]
+  const inspected = ["index.js", "firestore-repository.js"]
     .map((file) => fs.readFileSync(path.join(sourceDir, file), "utf8"))
     .join("\n");
-  const forbidden = /\b(setDoc|addDoc|updateDoc|deleteDoc|writeBatch|runTransaction)\b|\.doc\([^)]*\)\.\s*(set|create|update|delete)\s*\(/;
+  const forbidden = /\b(setDoc|addDoc|updateDoc|deleteDoc|writeBatch|runTransaction)\b|\.(set|add|create|update|delete)\s*\(/;
   assert.equal(forbidden.test(inspected), false);
+});
+
+test("28 employee-specific fooding rate is used without a role fallback", () => {
+  const source = baseSource();
+  source.staffSalaryMaster.find((row) => row.master_id === "driver-1").fooding_rate = 200;
+  const report = buildDailyOperationsReport(source, REPORT_DATE);
+  const driver = report.foodingEligibility.find((item) => item.employeeName === "Driver One");
+  assert.equal(driver.applicableFoodingRate, 200);
+  assert.equal(driver.calculatedFoodingAmount, 200);
+});
+
+test("29 Half Day honors saved attendance fooding eligibility before the default rule", () => {
+  const source = baseSource();
+  const attendance = source.attendance.find((row) => row.master_id === "driver-1");
+  attendance.attendance_status = "Half Day";
+  attendance.fooding_eligible = "No";
+  const report = buildDailyOperationsReport(source, REPORT_DATE);
+  const driver = report.foodingEligibility.find((item) => item.employeeName === "Driver One");
+  assert.equal(driver.foodingEligible, "No");
+  assert.equal(driver.calculatedFoodingAmount, 0);
+  assert.match(driver.reason, /attendance\.fooding_eligible/);
+});
+
+test("30 bounded repository accepts 500 rows and fails safely when a query exceeds 500", async () => {
+  function fakeDb(size) {
+    const docs = Array.from({length: size}, (_, index) => ({
+      id: `row-${index}`,
+      data: () => ({module: "attendance"})
+    }));
+    return {
+      collection: () => ({
+        where: () => ({
+          limit: () => ({get: async () => ({size, docs})})
+        })
+      })
+    };
+  }
+
+  const atLimit = createFirestoreRepository(fakeDb(500), {limit: 500});
+  assert.equal((await atLimit.moduleRows("attendance")).length, 500);
+  const overLimit = createFirestoreRepository(fakeDb(501), {limit: 500});
+  await assert.rejects(() => overLimit.moduleRows("attendance"), DataVolumeLimitError);
+  const res = await call(handlerFor(emptySource(), {
+    repository: {loadReportSource: () => overLimit.moduleRows("attendance")}
+  }), request());
+  assert.equal(res.statusCode, 500);
+  assert.equal(res.body.error, "Report data exceeds the safe read limit.");
 });

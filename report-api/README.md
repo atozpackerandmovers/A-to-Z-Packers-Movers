@@ -6,7 +6,7 @@ Isolated Firebase Functions v2 codebase for the A TO Z Packers & Movers Executio
 
 - Reads only from `azpExecutionRecords`.
 - Contains no Firestore `set`, `add`, `update`, `delete`, batch, or write transaction call.
-- Does not modify `executions.html`, existing functions, Hosting, Firestore rules, Authentication, or production records.
+- Does not modify `execution.html`, existing functions, Hosting, Firestore rules, Authentication, or production records.
 - Accepts HTTPS `GET` only and requires `Authorization: Bearer <token>`.
 - Uses the Firebase Secret `DAILY_REPORT_API_TOKEN`; no production token belongs in source control.
 - Returns allowlisted operational fields only. Phone numbers, addresses, login passwords, API keys, salary details, bank/identity data, and GPS coordinates are excluded.
@@ -39,10 +39,19 @@ firebase projects:list
 | Leave | `leaveApproval` | employee identity, leave-from/to fields, approval status |
 | Staff masters | `driverMaster`, `workerMaster`, `indoorStaffMaster` | names, joining/inactive dates, status, designation; private fields are never returned |
 | Fooding rates | `staffSalaryMaster`, `salarySettings` | `fooding_rate`, `fooding_amount`, staff identity, role, status |
-| Fooding rule | `attendanceSettings` plus existing code default | Present is eligible; Half Day follows `half_day_fooding_eligible` (existing default: Yes); Absent/Leave/Not Marked are not eligible |
+| Fooding rule | saved `attendance.fooding_eligible`; `attendanceSettings` fallback | The saved attendance value is authoritative. If it is absent, Half Day follows `half_day_fooding_eligible`; the production `execution.html` default is `Yes`. Absent/Leave/Not Marked are not eligible. |
 | Duty status | `jobs` | selected work date, assigned driver/worker names, status; customer details are never returned |
 
-Existing production role defaults are preserved: Driver ₹250/day, Worker ₹150/day, and Office/Indoor ₹0 unless explicitly enabled with a positive rate.
+### Live production evidence (read-only inspection, 2026-09-03 IST)
+
+The mappings above were verified against actual documents in the live `azpExecutionRecords` collection, using filtered read-only queries by `module`/`collection`. No production document was created or changed.
+
+- Live `salarySettings` query returned 3 documents with `fooding_amount`: one Driver ₹250 and two Workers ₹150.
+- Live `staffSalaryMaster` query returned 7 documents with employee-specific `fooding_rate`: Drivers included ₹250 and ₹200, Workers ₹150, and Indoor Staff explicitly ₹0.
+- Live `attendance` documents contain `attendance_status`, `role`, `date`, and saved `fooding_eligible` values (`Yes` for eligible attendance and `No` for an inspected Absent record).
+- Live `attendanceSettings` query returned 0 documents. The existing production `execution.html` defines `half_day_fooding_eligible: 'Yes'` in `AZP_ATT_DEFAULT_SETTINGS` and persists `fooding_eligible` into each attendance record.
+- Therefore the API does not use role-based ₹250/₹150 estimates. It reads each employee's configured `staffSalaryMaster.fooding_rate` first, then `salarySettings.fooding_amount`, then an explicit master-record fooding field. Missing rates return `null` plus `MISSING_FOODING_RATE` rather than a guessed value.
+- Office/Indoor fooding is allowed only when a positive configured rate exists. The inspected live Indoor Staff salary document explicitly has `fooding_rate: 0`.
 
 ## Local setup
 
