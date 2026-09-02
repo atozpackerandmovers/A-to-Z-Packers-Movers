@@ -14,7 +14,14 @@ const INSTANT_STRING_FIELDS = new Set(["created_at", "updated_at", "createdAtTex
 const EPOCH_FIELDS = new Set(["sortTime", "createdAtMs", "updatedAtMs"]);
 
 function row(document, collection) { return {id: document.id, _collection: collection, ...document.data()}; }
-function uniqueRows(rows) { return [...new Map(rows.map((item) => [`${item._collection}/${item.id}`, item])).values()]; }
+function stableIdentity(item) {
+  const quotation = item.quotation_number || item.quotationNo || item.quotationId || item.quotation_id;
+  if (quotation) return `quotation/${String(quotation).trim().toLowerCase()}`;
+  const job = item.job_id || item.jobId || item.planning_no || item.planningNo;
+  if (job) return `job/${String(job).trim().toLowerCase()}`;
+  return `${item._collection}/${item.id}`;
+}
+function uniqueRows(rows) { return [...new Map(rows.map((item) => [stableIdentity(item), item])).values()]; }
 
 function rangeQuery(base, field, range, mode) {
   const bounds = utcBounds(range);

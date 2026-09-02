@@ -8,11 +8,13 @@
     "node": "22"
   },
   "scripts": {
-    "lint": "eslint src test",
+    "lint": "eslint src test scripts",
     "test": "node --test --test-reporter=spec test/*.test.js",
     "test:unit": "node --test --test-reporter=spec test/unit.test.js",
     "test:runtime": "node test/local-runtime-smoke.js",
-    "audit": "npm audit --omit=dev --audit-level=high"
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "staging:seed": "node scripts/seed-staging-quotations.js",
+    "staging:verify": "node scripts/verify-staging-quotations.js"
   },
   "dependencies": {
     "firebase-admin": "^14.3.0",
