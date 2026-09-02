@@ -1,0 +1,15 @@
+{
+  "indexes": [
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "module", "order": "ASCENDING"}, {"fieldPath": "date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "module", "order": "ASCENDING"}, {"fieldPath": "work_start_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "module", "order": "ASCENDING"}, {"fieldPath": "work_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "module", "order": "ASCENDING"}, {"fieldPath": "shifting_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "module", "order": "ASCENDING"}, {"fieldPath": "createdAt", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "collection", "order": "ASCENDING"}, {"fieldPath": "date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "collection", "order": "ASCENDING"}, {"fieldPath": "work_start_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "collection", "order": "ASCENDING"}, {"fieldPath": "work_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "collection", "order": "ASCENDING"}, {"fieldPath": "shifting_date", "order": "ASCENDING"}]},
+    {"collectionGroup": "azpExecutionRecords", "queryScope": "COLLECTION", "fields": [{"fieldPath": "collection", "order": "ASCENDING"}, {"fieldPath": "createdAt", "order": "ASCENDING"}]}
+  ],
+  "fieldOverrides": []
+}
