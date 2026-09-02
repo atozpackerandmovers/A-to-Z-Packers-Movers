@@ -5,7 +5,7 @@ const http = require("node:http");
 const path = require("node:path");
 
 const HOST = "0.0.0.0";
-const PORT = 8080;
+const PORT = Number(process.env.STAGING_UI_PORT || 8080);
 const ROOT = path.resolve(__dirname, "../../staging");
 const HTML = path.join(ROOT, "test.driver.master-ai-staging.html");
 const CONFIG = path.join(ROOT, "firebase-staging-config.js");
@@ -44,7 +44,7 @@ function handler(request, response) {
 if (require.main === module) {
   http.createServer(handler).listen(PORT, HOST, () => {
     console.log(`STAGING UI READY ON PORT ${PORT}`);
-    console.log("Open Cloud Shell Web Preview for port 8080. No deployment was performed.");
+    console.log(`Open Cloud Shell Web Preview for port ${PORT}. No deployment was performed.`);
   });
 }
 
