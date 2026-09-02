@@ -14,7 +14,8 @@
     "test:runtime": "node test/local-runtime-smoke.js",
     "audit": "npm audit --omit=dev --audit-level=high",
     "staging:seed": "node scripts/seed-staging-quotations.js",
-    "staging:verify": "node scripts/verify-staging-quotations.js"
+    "staging:verify": "node scripts/verify-staging-quotations.js",
+    "staging:serve": "node scripts/serve-staging-ui.js"
   },
   "dependencies": {
     "firebase-admin": "^14.3.0",
