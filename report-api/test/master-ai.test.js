@@ -5,7 +5,7 @@ const test = require("node:test");
 const {parseRange, normalizeStoredDate, utcBounds} = require("../src/master-ai-dates");
 const {parseCommand, buildReport} = require("../src/master-ai-report");
 const {createMasterAiHandler} = require("../src/master-ai-handler");
-const {uniqueRows} = require("../src/master-ai-repository");
+const {legacyDateCandidates, queryField, uniqueRows} = require("../src/master-ai-repository");
 
 const NOW = new Date("2026-09-02T18:45:00Z"); // 03-Sep-2026 00:15 in India.
 const DIAGNOSTIC = {collection: "quotations", dateFields: ["createdAt", "created_at", "quotation_date"], totalRecords: 2, invalidRecords: 0, invalidCountComplete: true, scannedForQuality: 2, truncated: false, errors: []};
@@ -16,6 +16,29 @@ function quotation(id, date, status = "follow_up") {
 
 function responseMock() {
   return {statusCode: 0, headers: {}, body: null, status(code) { this.statusCode = code; return this; }, set(headers) { Object.assign(this.headers, headers); return this; }, json(body) { this.body = body; return this; }, send() { return this; }};
+}
+
+function fakeCollection(records) {
+  function query(filters = []) {
+    return {
+      where(field, operator, expected) { return query([...filters, {field, operator, expected}]); },
+      orderBy() { return this; },
+      limit() { return this; },
+      startAfter() { return this; },
+      async get() {
+        const matches = records.filter(({data}) => filters.every(({field, operator, expected}) => {
+          const actual = data[field];
+          if (operator === "in") return expected.includes(actual);
+          if (operator === ">=") return actual >= expected;
+          if (operator === "<") return actual < expected;
+          throw new Error(`Unsupported fake operator: ${operator}`);
+        }));
+        const docs = matches.map(({id, data}) => ({id, data: () => data}));
+        return {docs, size: docs.length};
+      },
+    };
+  }
+  return query();
 }
 
 async function call(handler, {token = "token", command = "today quotation report", origin = "https://andmovers.github.io"} = {}) {
@@ -44,6 +67,23 @@ test("Timestamp, ISO, epoch and legacy date strings normalize", () => {
   assert.equal(normalizeStoredDate("2026-09-02T18:45:00Z"), "2026-09-03");
   assert.equal(normalizeStoredDate(Date.parse("2026-09-02T18:45:00Z")), "2026-09-03");
   assert.equal(normalizeStoredDate("03/09/2026"), "2026-09-03");
+});
+test("legacy date query candidates include padded and unpadded stored formats", () => {
+  const candidates = legacyDateCandidates({from: "2026-09-03", to: "2026-09-03"});
+  assert.equal(candidates.complete, true);
+  for (const value of ["03-09-2026", "03/09/2026", "2026/09/03", "3-9-2026", "3/9/2026", "2026/9/3", "2026-9-3"]) assert.ok(candidates.values.includes(value));
+});
+test("repository query fetches canonical, ISO and legacy string dates", async () => {
+  const base = fakeCollection([
+    {id: "canonical", data: {quotation_date: "2026-09-03"}},
+    {id: "iso", data: {quotation_date: "2026-09-03T14:30:00+05:30"}},
+    {id: "dash", data: {quotation_date: "03-09-2026"}},
+    {id: "slash", data: {quotation_date: "03/09/2026"}},
+    {id: "old", data: {quotation_date: "02/09/2026"}},
+  ]);
+  const result = await queryField(base, "quotations", "quotation_date", {from: "2026-09-03", to: "2026-09-03"});
+  assert.deepEqual([...new Set(result.rows.map((row) => row.id))].sort(), ["canonical", "dash", "iso", "slash"]);
+  assert.deepEqual(result.errors, []);
 });
 test("quotation defaults to created date and shifting only when requested", () => {
   assert.equal(parseCommand("01-09-2026 quotation report", NOW).dateBasis, "created");

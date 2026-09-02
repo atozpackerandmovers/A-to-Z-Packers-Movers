@@ -1,12 +1,14 @@
 "use strict";
 
 const {Timestamp} = require("firebase-admin/firestore");
-const {normalizeStoredDate, utcBounds} = require("./master-ai-dates");
+const {addDays, normalizeStoredDate, utcBounds} = require("./master-ai-dates");
 const {DATE_FIELDS, DIRECT_COLLECTIONS, EXECUTION_MODULES, MAIN_COLLECTION} = require("./master-ai-schema");
 
 const PAGE_SIZE = 100;
 const MAX_MATCHES_PER_SOURCE = 1000;
 const MAX_QUALITY_SCAN = 2000;
+const MAX_LEGACY_DATE_RANGE_DAYS = 3660;
+const FIRESTORE_IN_LIMIT = 30;
 const TIMESTAMP_FIELDS = new Set(["createdAt", "updatedAt", "savedAt", "timestamp"]);
 const INSTANT_STRING_FIELDS = new Set(["created_at", "updated_at", "createdAtText", "updatedAtText"]);
 const EPOCH_FIELDS = new Set(["sortTime", "createdAtMs", "updatedAtMs"]);
@@ -20,7 +22,30 @@ function rangeQuery(base, field, range, mode) {
   if (mode === "instant") return base.where(field, ">=", bounds.start.toISOString()).where(field, "<", bounds.end.toISOString()).orderBy(field);
   if (mode === "epoch-ms") return base.where(field, ">=", bounds.start.getTime()).where(field, "<", bounds.end.getTime()).orderBy(field);
   if (mode === "epoch-seconds") return base.where(field, ">=", Math.floor(bounds.start.getTime() / 1000)).where(field, "<", Math.floor(bounds.end.getTime() / 1000)).orderBy(field);
-  return base.where(field, ">=", range.from).where(field, "<=", range.to).orderBy(field);
+  return base.where(field, ">=", range.from).where(field, "<", addDays(range.to, 1)).orderBy(field);
+}
+
+function legacyDateCandidates(range) {
+  const values = new Set();
+  let date = range.from;
+  let days = 0;
+  while (date <= range.to && days < MAX_LEGACY_DATE_RANGE_DAYS) {
+    const [year, paddedMonth, paddedDay] = date.split("-");
+    const month = String(Number(paddedMonth));
+    const day = String(Number(paddedDay));
+    [
+      `${paddedDay}-${paddedMonth}-${year}`,
+      `${paddedDay}/${paddedMonth}/${year}`,
+      `${year}/${paddedMonth}/${paddedDay}`,
+      `${day}-${month}-${year}`,
+      `${day}/${month}/${year}`,
+      `${year}/${month}/${day}`,
+      `${year}-${month}-${day}`,
+    ].forEach((value) => values.add(value));
+    date = addDays(date, 1);
+    days += 1;
+  }
+  return {values: [...values], complete: date > range.to, days};
 }
 
 async function readPages(query, collectionName, cap = MAX_MATCHES_PER_SOURCE) {
@@ -49,6 +74,19 @@ async function queryField(base, collectionName, field, range) {
     } catch (error) {
       errors.push({field, mode, code: String(error?.code || error?.message || "query-failed").slice(0, 120)});
     }
+  }
+  if (modes.includes("date")) {
+    const legacy = legacyDateCandidates(range);
+    for (let index = 0; index < legacy.values.length; index += FIRESTORE_IN_LIMIT) {
+      const values = legacy.values.slice(index, index + FIRESTORE_IN_LIMIT);
+      try {
+        const result = await readPages(base.where(field, "in", values), collectionName);
+        output.push(...result.rows); truncated ||= result.truncated;
+      } catch (error) {
+        errors.push({field, mode: "legacy-date-set", code: String(error?.code || error?.message || "query-failed").slice(0, 120)});
+      }
+    }
+    if (!legacy.complete) errors.push({field, mode: "legacy-date-set", code: `range-exceeds-${MAX_LEGACY_DATE_RANGE_DAYS}-day-legacy-query-limit`});
   }
   return {rows: output, errors, truncated};
 }
@@ -164,4 +202,4 @@ function createMasterAiRepository(db) {
   return Object.freeze({queryComments, queryIntent});
 }
 
-module.exports = {createMasterAiRepository, uniqueRows};
+module.exports = {createMasterAiRepository, legacyDateCandidates, queryField, uniqueRows};
