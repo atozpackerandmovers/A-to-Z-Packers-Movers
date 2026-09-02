@@ -18,7 +18,9 @@ test("staging build is locked to the non-production Firebase project", () => {
 
 test("Master AI uses secure server report API and Firebase ID token", () => {
   assert.match(block, /authUser\.getIdToken\(true\)/);
-  assert.match(block, /Authorization.*Bearer/);
+  assert.match(block, /X-Firebase-Authorization/);
+  assert.match(block, /'Authorization'/);
+  assert.match(block, /\[authHeader\]:`Bearer \$\{token\}`/);
   assert.match(block, /masterAiReport/);
 });
 

@@ -18,7 +18,8 @@ function send(response, status, type, body) {
 
 function proxyReport(request, response) {
   const headers = {"content-type": request.headers["content-type"] || "application/json"};
-  if (request.headers.authorization) headers.authorization = request.headers.authorization;
+  const authorization = request.headers["x-firebase-authorization"] || request.headers.authorization;
+  if (authorization) headers.authorization = authorization;
   const upstream = http.request({host: "127.0.0.1", port: 5001, path: FUNCTION_PATH, method: request.method, headers}, (result) => {
     response.writeHead(result.statusCode || 502, {"Cache-Control": "no-store", "Content-Type": result.headers["content-type"] || "application/json"});
     result.pipe(response);

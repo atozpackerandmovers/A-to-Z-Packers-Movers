@@ -2989,7 +2989,8 @@
       const authUser=prodAuth.currentUser;
       if(!authUser||!isMasterAiAdmin())throw new Error('AUTH_REQUIRED');
       const token=await authUser.getIdToken(true);
-      const response=await fetch(MAI_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({command:String(question||'').slice(0,500),timeZone:MAI_TZ})});
+      const authHeader=MAI_API_URL.startsWith('/')?'X-Firebase-Authorization':'Authorization';
+      const response=await fetch(MAI_API_URL,{method:'POST',headers:{'Content-Type':'application/json',[authHeader]:`Bearer ${token}`},body:JSON.stringify({command:String(question||'').slice(0,500),timeZone:MAI_TZ})});
       let payload={};try{payload=await response.json()}catch(_error){}
       if(!response.ok||payload?.success!==true||!payload?.reportText)throw new Error(payload?.error||`REPORT_HTTP_${response.status}`);
       maiLastScan=Date.now();
