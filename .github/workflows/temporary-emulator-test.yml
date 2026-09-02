@@ -1,0 +1,50 @@
+name: Temporary Firebase Emulator Test
+
+on:
+  push:
+    branches:
+      - feature/read-only-daily-report-api
+    paths:
+      - ".github/workflows/temporary-emulator-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  official-emulator-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: report-api/package-lock.json
+
+      - name: Install API dependencies
+        run: npm ci --prefix report-api
+
+      - name: Run lint and automated tests
+        run: |
+          npm --prefix report-api run lint
+          npm --prefix report-api test
+          npm --prefix report-api run test:runtime
+          npm --prefix report-api run audit
+
+      - name: Run official Firebase Functions Emulator HTTP test
+        shell: bash
+        run: |
+          TEST_TOKEN="$(openssl rand -hex 32)"
+          printf 'DAILY_REPORT_API_TOKEN=%s\n' "$TEST_TOKEN" > report-api/.secret.local
+          export REPORT_API_TEST_TOKEN="$TEST_TOKEN"
+          export REPORT_API_USE_LOCAL_FIXTURE=true
+          export GCLOUD_PROJECT=demo-az-packers-quotation
+          npx --yes firebase-tools@15.28.2 emulators:exec \
+            --only functions \
+            --project demo-az-packers-quotation \
+            "node report-api/test/emulator-smoke.js"
