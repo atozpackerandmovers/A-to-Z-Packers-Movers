@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
@@ -9,7 +10,7 @@ const {createFirestoreRepository, DataVolumeLimitError} = require("../src/firest
 const {buildDailyOperationsReport} = require("../src/report-builder");
 const {createDailyOperationsHandler} = require("../src/http-handler");
 
-const TOKEN = "unit-test-token-that-is-not-used-in-production";
+const TOKEN = crypto.randomBytes(32).toString("hex");
 const REPORT_DATE = "2026-09-03";
 
 function emptySource() {

@@ -1,11 +1,12 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const express = require("express");
 
 process.env.FUNCTIONS_EMULATOR = "true";
 process.env.REPORT_API_USE_LOCAL_FIXTURE = "true";
-process.env.DAILY_REPORT_API_TOKEN = "local-runtime-only-daily-report-token";
+process.env.DAILY_REPORT_API_TOKEN = crypto.randomBytes(32).toString("hex");
 
 const {dailyOperationsReport} = require("../src/index");
 

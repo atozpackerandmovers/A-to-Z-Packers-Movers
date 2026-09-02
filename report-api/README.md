@@ -66,16 +66,22 @@ npm run audit
 
 ## Emulator test
 
-Create `report-api/.secret.local` locally (it is gitignored):
-
-```text
-DAILY_REPORT_API_TOKEN=emulator-only-daily-report-token
-```
-
-From the repository root, run the Functions Emulator against a local `demo-*` project and the built-in safe fixture:
+Generate a random local-only test token:
 
 ```bash
-REPORT_API_USE_LOCAL_FIXTURE=true firebase emulators:exec --project demo-az-packers-quotation --only functions "node report-api/test/emulator-smoke.js"
+openssl rand -hex 32
+```
+
+Put that generated value in `report-api/.secret.local` locally (the file is gitignored):
+
+```text
+DAILY_REPORT_API_TOKEN=<generated-local-test-token>
+```
+
+From the repository root, pass the same generated value as `REPORT_API_TEST_TOKEN`, then run the Functions Emulator against a local `demo-*` project and the built-in safe fixture:
+
+```bash
+REPORT_API_USE_LOCAL_FIXTURE=true REPORT_API_TEST_TOKEN=<same-generated-local-test-token> firebase emulators:exec --project demo-az-packers-quotation --only functions "node report-api/test/emulator-smoke.js"
 ```
 
 The smoke test does not connect to or write to production Firestore. The fixture repository is enabled only when both `FUNCTIONS_EMULATOR=true` and `REPORT_API_USE_LOCAL_FIXTURE=true` are present.

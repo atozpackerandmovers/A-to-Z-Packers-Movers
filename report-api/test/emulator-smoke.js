@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const projectId = process.env.GCLOUD_PROJECT || "demo-az-packers-quotation";
 const reportDate = "2026-09-03";
-const token = "emulator-only-daily-report-token";
+const token = process.env.REPORT_API_TEST_TOKEN;
 const endpoint = `http://127.0.0.1:5001/${projectId}/asia-south1/dailyOperationsReport`;
 
 async function request(path = `?date=${reportDate}`, options = {}) {
@@ -16,6 +16,7 @@ async function request(path = `?date=${reportDate}`, options = {}) {
 
 async function main() {
   assert.equal(process.env.REPORT_API_USE_LOCAL_FIXTURE, "true", "Safe emulator fixture must be enabled.");
+  assert.ok(token, "REPORT_API_TEST_TOKEN must match the local emulator secret value.");
   const unauthorized = await request(`?date=${reportDate}`, {token: null});
   assert.equal(unauthorized.status, 401);
   const wrong = await request(`?date=${reportDate}`, {token: "wrong"});
