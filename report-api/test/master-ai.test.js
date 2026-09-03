@@ -57,6 +57,19 @@ test("DD-MM-YYYY, DD/MM/YYYY and YYYY-MM-DD are parsed", () => {
   assert.equal(parseRange("01/09/2026 quotation", NOW).from, "2026-09-01");
   assert.equal(parseRange("2026-09-01 quotation", NOW).from, "2026-09-01");
 });
+test("Hindi month-name date takes priority over the Today fallback", () => {
+  assert.deepEqual(
+    parseRange("27 अगस्त 2026 को कितने quotation बने थे? पूरी सूची और कुल संख्या दिखाओ।", NOW),
+    {from: "2026-08-27", to: "2026-08-27", label: "2026-08-27"}
+  );
+});
+test("Hindi digits and Hindi month-name ranges are parsed", () => {
+  assert.equal(parseRange("२७ अगस्त २०२६ quotation", NOW).from, "2026-08-27");
+  assert.deepEqual(
+    parseRange("27 अगस्त 2026 से 3 सितंबर 2026 quotation", NOW),
+    {from: "2026-08-27", to: "2026-09-03", label: "2026-08-27 to 2026-09-03"}
+  );
+});
 test("range works across month and year boundary", () => assert.deepEqual(parseRange("31-12-2025 to 02-01-2026 quotation", NOW), {from: "2025-12-31", to: "2026-01-02", label: "2025-12-31 to 2026-01-02"}));
 test("India midnight produces exact UTC query boundaries", () => {
   const bounds = utcBounds({from: "2026-09-03", to: "2026-09-03"});
