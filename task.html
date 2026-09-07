@@ -2031,7 +2031,13 @@ function saveTitleMemory(title){
   mem.unshift({title,createdAt:Date.now()});
   localStorage.setItem('az_task_title_memory',JSON.stringify(mem.slice(0,200)));
 }
-function persist(){localStorage.setItem('az_staff_pro',JSON.stringify(staff));localStorage.setItem('az_tasks_pro',JSON.stringify(tasks));localStorage.setItem('az_tasks',JSON.stringify(tasks));}
+function persist(){
+  // Cache failures must not interrupt Firebase sync or the task list refresh.
+  [['az_staff_pro',staff],['az_tasks_pro',tasks],['az_tasks',tasks]].forEach(function(entry){
+    try{localStorage.setItem(entry[0],JSON.stringify(entry[1]));}
+    catch(error){console.warn('Task browser cache could not be saved',entry[0],error);}
+  });
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function todayStr(){return new Date().toISOString().slice(0,10)}function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
 function isToday(x){
   const dt=parseTaskDateTime(x&&x.dueDate,x&&x.dueTime);
@@ -3963,7 +3969,7 @@ function crmRender(){ crmRefreshStaffSelect(); const cnt=document.getElementById
     return '';
   }
   function staffList(){
-    const base=(window.staff||staff||[]).filter(Boolean);
+    const base=(Array.isArray(staff)?staff:Array.isArray(window.staff)?window.staff:[]).filter(Boolean);
     const names=['Gayatri','Srinivas','Swagatika','Mahesh','Ajay','Somnath','Sanjit','Sanjeet','Sillu','Nirakar','Sukadeb','Trilochan','Lucky','Ranjit','Santosh','Akhya','Subrajeet','Pinku','Binod','Naveen','Babul','Deepak','Papu','Hemant'];
     const existing=new Set(base.map(x=>String(x.name||'').toLowerCase()));
     names.forEach(n=>{if(!existing.has(n.toLowerCase()))base.push({id:'AUTO_'+n,name:n,phone:'',role:'Indoor',status:'Active'})});
@@ -9918,28 +9924,63 @@ button{pointer-events:auto!important}
     await batch.commit();
     return true;
   };
+  function confirmTaskDeletion(t) {
+    // A page dialog keeps the browser responsive while awaiting the user's choice.
+    return new Promise(function(resolve){
+      var dialog=document.createElement('dialog');
+      dialog.setAttribute('aria-label','Confirm permanent task deletion');
+      dialog.style.cssText='max-width:520px;width:calc(100% - 48px);border:0;border-radius:16px;padding:24px;box-shadow:0 15px 60px #0006;white-space:pre-wrap';
+      var heading=document.createElement('h2');
+      heading.textContent='Delete this task permanently?';
+      var details=document.createElement('p');
+      details.textContent=String(t.title||t.id)+'\nMobile: '+String(resolveTaskPhone(t)||'Not available')+'\nTask ID: '+String(t.id)+'\nThe linked CRM lead will be kept.';
+      var cancel=document.createElement('button');
+      cancel.type='button';cancel.textContent='Cancel';cancel.className='btn secondary';
+      var approve=document.createElement('button');
+      approve.type='button';approve.textContent='Delete permanently';approve.className='btn red';
+      approve.style.marginLeft='12px';
+      var settled=false;
+      function finish(value){if(settled)return;settled=true;dialog.remove();resolve(value);}
+      cancel.addEventListener('click',function(){finish(false);});
+      approve.addEventListener('click',function(){finish(true);});
+      dialog.addEventListener('cancel',function(event){event.preventDefault();finish(false);});
+      dialog.addEventListener('close',function(){finish(false);});
+      dialog.append(heading,details,cancel,approve);document.body.appendChild(dialog);
+      try{dialog.showModal();cancel.focus();}catch(error){dialog.remove();resolve(false);toast('Could not open deletion confirmation. Please use an updated browser.');}
+    });
+  }
+  function reportTaskDeleteError(error){
+    console.error('Task deletion was not confirmed',error);
+    var box=document.getElementById('azpTaskDeleteError');
+    if(!box){box=document.createElement('div');box.id='azpTaskDeleteError';box.setAttribute('role','alert');box.style.cssText='padding:14px;margin:12px 0;background:#fee2e2;color:#991b1b;border-radius:10px';document.getElementById('tasks').prepend(box);}
+    box.textContent='Delete could not finish: '+String(error&&error.message||error)+'. Refresh to verify the record before retrying.';
+  }
   window.deleteTask = async function (id) {
     id = String(id);
     if (deleting.has(id)) return false;
     var t = find(id); if (!t) return false;
-    if (!confirm('Delete this task permanently?\n' + (t.title || id) + '\nThe linked CRM lead will be kept.')) return false;
     deleting.add(id);
     try {
+      if(!await confirmTaskDeletion(t))return false;
+      // Keep the task until the existing server-side atomic delete is acknowledged.
       await window.firebaseDeleteTask(id);
       deleted.add(id);
       tasks = tasks.filter(function (x) { return String(x.id) !== id; });
-      localStorage.setItem('azp_deleted_task_ids_v1', JSON.stringify(Array.from(deleted)));
-      // Clear legacy caches too, so a reload cannot import the deleted task again.
+      try{localStorage.setItem('azp_deleted_task_ids_v1', JSON.stringify(Array.from(deleted)));}
+      catch(error){console.warn('Deleted task cache could not be saved',error);}
       ['az_tasks_pro','az_tasks','az_tasks_smart','az_tasks_quick','az_task_master','taskMaster','tasks'].forEach(function (key) {
         try {
           var list = JSON.parse(localStorage.getItem(key) || '[]');
           if (Array.isArray(list)) localStorage.setItem(key, JSON.stringify(list.filter(function (x) { return String(x.id) !== id; })));
         } catch (error) { console.warn('Task cache cleanup failed', key, error); }
       });
-      persist(); renderAll(); toast('Task deleted successfully.');
+      persist();
+      try{renderAll();}catch(error){console.warn('Task was deleted; list refresh failed',error);}
+      var oldError=document.getElementById('azpTaskDeleteError');if(oldError)oldError.remove();
+      toast('Task deleted successfully.');
       return true;
     } catch (error) {
-      alert('Delete could not finish: ' + error.message + '\nPlease refresh to verify the record and retry.');
+      reportTaskDeleteError(error);
       return false;
     } finally { deleting.delete(id); }
   };
