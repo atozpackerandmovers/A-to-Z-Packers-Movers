@@ -2031,7 +2031,13 @@ function saveTitleMemory(title){
   mem.unshift({title,createdAt:Date.now()});
   localStorage.setItem('az_task_title_memory',JSON.stringify(mem.slice(0,200)));
 }
-function persist(){localStorage.setItem('az_staff_pro',JSON.stringify(staff));localStorage.setItem('az_tasks_pro',JSON.stringify(tasks));localStorage.setItem('az_tasks',JSON.stringify(tasks));}
+function persist(){
+  // Cache failures must not interrupt Firebase sync or the task list refresh.
+  [['az_staff_pro',staff],['az_tasks_pro',tasks],['az_tasks',tasks]].forEach(function(entry){
+    try{localStorage.setItem(entry[0],JSON.stringify(entry[1]));}
+    catch(error){console.warn('Task browser cache could not be saved',entry[0],error);}
+  });
+}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function todayStr(){return new Date().toISOString().slice(0,10)}function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300)}
 function isToday(x){
   const dt=parseTaskDateTime(x&&x.dueDate,x&&x.dueTime);
@@ -3963,7 +3969,7 @@ function crmRender(){ crmRefreshStaffSelect(); const cnt=document.getElementById
     return '';
   }
   function staffList(){
-    const base=(window.staff||staff||[]).filter(Boolean);
+    const base=(Array.isArray(staff)?staff:Array.isArray(window.staff)?window.staff:[]).filter(Boolean);
     const names=['Gayatri','Srinivas','Swagatika','Mahesh','Ajay','Somnath','Sanjit','Sanjeet','Sillu','Nirakar','Sukadeb','Trilochan','Lucky','Ranjit','Santosh','Akhya','Subrajeet','Pinku','Binod','Naveen','Babul','Deepak','Papu','Hemant'];
     const existing=new Set(base.map(x=>String(x.name||'').toLowerCase()));
     names.forEach(n=>{if(!existing.has(n.toLowerCase()))base.push({id:'AUTO_'+n,name:n,phone:'',role:'Indoor',status:'Active'})});
@@ -9850,4 +9856,243 @@ button{pointer-events:auto!important}
 })();
 </script>
 <!-- END PHASE 6 CRM AUTOFILL + SAVE WELCOME SMS INTEGRATION -->
+<script id="azp-task-actions-repair-v1">
+/* Task actions repair: one shared record store; acknowledged, atomic deletion. */
+(function () {
+  'use strict';
+  Object.defineProperty(window, 'tasks', {
+    configurable: true,
+    get: function () { return tasks; },
+    set: function (value) { if (Array.isArray(value)) tasks = value; }
+  });
+  var deleting = new Set();
+  var deleted = new Set();
+  try {
+    var savedDeleted = JSON.parse(localStorage.getItem('azp_deleted_task_ids_v1') || '[]');
+    if (Array.isArray(savedDeleted)) deleted = new Set(savedDeleted.map(String));
+  } catch (error) { console.warn('Could not load deleted task cache', error); }
+  var originalMerge = window.mergeTasks;
+  window.mergeTasks = function (remote) {
+    originalMerge((remote || []).filter(function (t) { return !deleted.has(String(t.id)) && !deleting.has(String(t.id)); }));
+    tasks = tasks.filter(function (t) { return !deleted.has(String(t.id)); });
+  };
+  tasks = tasks.filter(function (t) { return !deleted.has(String(t.id)); });
+  function find(id) {
+    var t = tasks.find(function (x) { return String(x.id) === String(id); });
+    if (!t) toast('Task not found. Please refresh and try again.');
+    return t;
+  }
+  window.callStaff = function (id) {
+    var t = find(id); if (!t) return false;
+    var phone = String(resolveTaskPhone(t) || '').replace(/\D/g, '');
+    if (!/^(?:91)?[6-9]\d{9}$/.test(phone)) { toast('Valid staff mobile number missing. Please update Staff Master.'); return false; }
+    window.location.href = 'tel:+' + (phone.length === 10 ? '91' : '') + phone;
+    return true;
+  };
+  // Resolve customer contact from the saved record, never the staff line in a card.
+  window.sendWA = function (id) {
+    var t = find(id); if (!t) return false;
+    return window.sendWATask(t);
+  };
+  window.callCustomer = function (id) {
+    var t = find(id); if (!t) return false;
+    var phone = window.azpGetCustomerWhatsAppMobile(t);
+    if (!phone) { toast('Customer mobile number missing / invalid.'); return false; }
+    window.location.href = 'tel:+91' + phone;
+    return true;
+  };
+  // Share deletion IDs across browsers; never clear unrelated or unsaved tasks.
+  function validDeletedId(value) {
+    return typeof value === 'string' && value.length > 0 && value.length <= 500 && value.indexOf('/') === -1;
+  }
+  function deletionRef(id) { return fbDb.collection('azpExecutionRecords').doc('TASK_DELETED_' + id); }
+  function deletionMarker(id) { return {module:'taskDeletionLog', deletedTaskId:id, version:1}; }
+  function deletionSyncStatus(message) {
+    var status = document.getElementById('azpTaskDeletionSyncStatus');
+    if (!status) {
+      status = document.createElement('div'); status.id = 'azpTaskDeletionSyncStatus';
+      status.setAttribute('role','status');
+      status.style.cssText = 'font-size:12px;padding:8px 12px;color:#334155;background:#f1f5f9;border-radius:8px;margin:8px 0';
+      (document.querySelector('header') || document.body).appendChild(status);
+    }
+    status.textContent = message;
+  }
+  function removeDeletedFromBrowser() {
+    tasks = tasks.filter(function(t){return !deleted.has(String(t.id));});
+    var keys = [];
+    try {
+      for (var i=0;i<localStorage.length;i++) {
+        var key=localStorage.key(i);
+        if (/task/i.test(key || '') && key !== 'az_task_title_memory') keys.push(key);
+      }
+      keys.forEach(function(key){
+        try {
+          var value=JSON.parse(localStorage.getItem(key) || 'null');
+          if (!Array.isArray(value)) return;
+          var kept=value.filter(function(t){return !t || typeof t!=='object' || !deleted.has(String(t.id || t.task_id || ''));});
+          if (kept.length !== value.length) localStorage.setItem(key,JSON.stringify(kept));
+        } catch(error) {console.warn('Could not refresh a task cache',key,error);}
+      });
+      localStorage.setItem('azp_deleted_task_ids_v1',JSON.stringify(Array.from(deleted)));
+    } catch(error) {console.warn('Deleted IDs will reload from the server',error);}
+    persist(); renderAll();
+  }
+  var originalLoadTasks=window.loadAllSavedTasks;
+  window.loadAllSavedTasks=function(){
+    return originalLoadTasks.apply(this,arguments).filter(function(t){return !deleted.has(String(t.id));});
+  };
+  var originalSaveTaskOnline=window.firebaseSaveTask;
+  window.firebaseSaveTask=async function(t){
+    if(t && deleted.has(String(t.id))){toast('This task was deleted. Create a new task to save new work.');return false;}
+    return originalSaveTaskOnline.apply(this,arguments);
+  };
+  var deletionSyncStarted=false, publishingDeletionHistory=false;
+  var knownCloudDeleted=new Set();
+  async function publishPastDeletions() {
+    if(publishingDeletionHistory)return;
+    publishingDeletionHistory=true;
+    try {
+      var missing=Array.from(deleted).filter(function(id){return validDeletedId(id)&&!knownCloudDeleted.has(id);});
+      for(var offset=0;offset<missing.length;offset+=400){
+        var part=missing.slice(offset,offset+400),batch=fbDb.batch();
+        part.forEach(function(id){batch.set(deletionRef(id),deletionMarker(id),{merge:true});});
+        await batch.commit();
+        part.forEach(function(id){knownCloudDeleted.add(id);});
+      }
+      deletionSyncStatus('Deleted records synced across browsers.');
+    } catch(error) {
+      console.error('Deletion history sync failed',error);
+      deletionSyncStatus('Deleted records are not fully synced. Check your connection and reload.');
+    } finally {publishingDeletionHistory=false;}
+  }
+  function startDeletionSync() {
+    if(deletionSyncStarted || !firebaseReady || !fbDb)return false;
+    deletionSyncStarted=true;
+    deletionSyncStatus('Syncing deleted records…');
+    try {
+      fbDb.collection('azpExecutionRecords').where('module','==','taskDeletionLog').onSnapshot({includeMetadataChanges:true},function(snapshot){
+        // A local pending write can still be rejected; only apply acknowledged deletions.
+        if(snapshot.metadata.hasPendingWrites)return;
+        var changed=false;
+        snapshot.forEach(function(doc){
+          var data=doc.data(),id=data.deletedTaskId;
+          if(data.module!=='taskDeletionLog'||!validDeletedId(id))return;
+          if(!snapshot.metadata.hasPendingWrites)knownCloudDeleted.add(id);
+          if(!deleted.has(id)){deleted.add(id);changed=true;}
+        });
+        if(changed)removeDeletedFromBrowser();
+        if(!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites)publishPastDeletions();
+      },function(error){
+        console.error('Deletion history listener failed',error);
+        deletionSyncStatus('Deleted-record sync unavailable. Reload when connected.');
+      });
+    } catch(error) {
+      console.error('Deletion history listener could not start',error);
+      deletionSyncStatus('Deleted-record sync unavailable. Reload when connected.');
+    }
+    return true;
+  }
+  if(!startDeletionSync()){
+    var deletionStartupTimer=setInterval(function(){if(startDeletionSync())clearInterval(deletionStartupTimer);},500);
+    window.addEventListener('pagehide',function(){clearInterval(deletionStartupTimer);},{once:true});
+  }
+
+  window.firebaseDeleteTask = async function (id) {
+    if (!firebaseReady || !fbDb || navigator.onLine === false) throw new Error('Connect to Firebase and try Delete again.');
+    id = String(id);
+    if (!id || id.indexOf('/') !== -1) throw new Error('Invalid task ID.');
+    var refs = new Map();
+    function add(ref) { refs.set(ref.path, ref); }
+    // Read all mirrors before any write. A denied query leaves every record intact.
+    for (var collection of ['taskMaster', 'azpExecutionRecords', 'staffTasks', 'assignedStaffTasks']) {
+      var snapshot = await fbDb.collection(collection).where('id', '==', id).get({source:'server'});
+      snapshot.forEach(function (doc) {
+        var data = doc.data();
+        if (collection !== 'azpExecutionRecords' || data.module === 'taskManagement') add(doc.ref);
+      });
+    }
+    add(fbDb.collection('taskMaster').doc(id));
+    add(fbDb.collection('staffTasks').doc(id));
+    add(fbDb.collection('azpExecutionRecords').doc('TASK_' + id));
+    if (refs.size > 450) throw new Error('Too many task copies for one safe delete. Please ask the developer to clean up this task.');
+    var batch = fbDb.batch();
+    refs.forEach(function (ref) { batch.delete(ref); });
+    // Record the deletion atomically so other browsers cannot revive cached copies.
+    batch.set(deletionRef(id), deletionMarker(id), {merge:true});
+    await batch.commit();
+    return true;
+  };
+  function confirmTaskDeletion(t) {
+    // A page dialog keeps the browser responsive while awaiting the user's choice.
+    return new Promise(function(resolve){
+      var dialog=document.createElement('dialog');
+      dialog.setAttribute('aria-label','Confirm permanent task deletion');
+      dialog.style.cssText='max-width:520px;width:calc(100% - 48px);border:0;border-radius:16px;padding:24px;box-shadow:0 15px 60px #0006;white-space:pre-wrap';
+      var heading=document.createElement('h2');
+      heading.textContent='Delete this task permanently?';
+      var details=document.createElement('p');
+      details.textContent=String(t.title||t.id)+'\nMobile: '+String(resolveTaskPhone(t)||'Not available')+'\nTask ID: '+String(t.id)+'\nThe linked CRM lead will be kept.';
+      var cancel=document.createElement('button');
+      cancel.type='button';cancel.textContent='Cancel';cancel.className='btn secondary';
+      var approve=document.createElement('button');
+      approve.type='button';approve.textContent='Delete permanently';approve.className='btn red';
+      approve.style.marginLeft='12px';
+      var settled=false;
+      function finish(value){if(settled)return;settled=true;dialog.remove();resolve(value);}
+      cancel.addEventListener('click',function(){finish(false);});
+      approve.addEventListener('click',function(){finish(true);});
+      dialog.addEventListener('cancel',function(event){event.preventDefault();finish(false);});
+      dialog.addEventListener('close',function(){finish(false);});
+      dialog.append(heading,details,cancel,approve);document.body.appendChild(dialog);
+      try{dialog.showModal();cancel.focus();}catch(error){dialog.remove();resolve(false);toast('Could not open deletion confirmation. Please use an updated browser.');}
+    });
+  }
+  function reportTaskDeleteError(error){
+    console.error('Task deletion was not confirmed',error);
+    var box=document.getElementById('azpTaskDeleteError');
+    if(!box){box=document.createElement('div');box.id='azpTaskDeleteError';box.setAttribute('role','alert');box.style.cssText='padding:14px;margin:12px 0;background:#fee2e2;color:#991b1b;border-radius:10px';document.getElementById('tasks').prepend(box);}
+    box.textContent='Delete could not finish: '+String(error&&error.message||error)+'. Refresh to verify the record before retrying.';
+  }
+  window.deleteTask = async function (id) {
+    id = String(id);
+    if (deleting.has(id)) return false;
+    var t = find(id); if (!t) return false;
+    deleting.add(id);
+    try {
+      if(!await confirmTaskDeletion(t))return false;
+      // Keep the task until the existing server-side atomic delete is acknowledged.
+      await window.firebaseDeleteTask(id);
+      deleted.add(id);
+      tasks = tasks.filter(function (x) { return String(x.id) !== id; });
+      try{localStorage.setItem('azp_deleted_task_ids_v1', JSON.stringify(Array.from(deleted)));}
+      catch(error){console.warn('Deleted task cache could not be saved',error);}
+      ['az_tasks_pro','az_tasks','az_tasks_smart','az_tasks_quick','az_task_master','taskMaster','tasks'].forEach(function (key) {
+        try {
+          var list = JSON.parse(localStorage.getItem(key) || '[]');
+          if (Array.isArray(list)) localStorage.setItem(key, JSON.stringify(list.filter(function (x) { return String(x.id) !== id; })));
+        } catch (error) { console.warn('Task cache cleanup failed', key, error); }
+      });
+      persist();
+      try{renderAll();}catch(error){console.warn('Task was deleted; list refresh failed',error);}
+      var oldError=document.getElementById('azpTaskDeleteError');if(oldError)oldError.remove();
+      toast('Task deleted successfully.');
+      return true;
+    } catch (error) {
+      reportTaskDeleteError(error);
+      return false;
+    } finally { deleting.delete(id); }
+  };
+  window.copyMsg = async function (id) {
+    var t = find(id); if (!t) return false;
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(message(t));
+      toast('Task message copied'); return true;
+    } catch (error) {
+      window.prompt('Copy this task message:', message(t)); return false;
+    }
+  };
+})();
+
+</script>
 </body></html>
