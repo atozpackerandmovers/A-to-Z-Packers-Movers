@@ -413,7 +413,7 @@
       material:{label:'Material Issue',subtitle:'Job-wise material issue • stock auto deduction • final usage and cost report',icon:'package',collection:'material', fields:[['date','Issue Date','date'],['job_id','Job ID','text'],['customer_name','Customer Name','text'],['team_leader','Team Leader Name','masterSelect','employeeMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['from_location','From Location','text'],['to_location','To Location','text'],['work_type','Work Type','select',['Household Shifting','Office Shifting','Bike Transport','Car Transport','Packing Only','Loading/Unloading','Storage','Other']],['issued_by','Issued By','text'],['received_by','Received By (Team Leader)','masterSelect','employeeMaster'],['lamination_percent','Lamination (%)','number'],['bubble_sheet_percent','Bubble Sheet (%)','number'],['fabric_sheet_percent','Fabric Sheet (%)','number'],['corrugated_sheet_percent','Corrugated Sheet (%)','number'],['blue_foam_percent','Blue Foam (%)','number'],['stretch_film_percent','Stretch Film (%)','number'],['thermocol_qty','Thermocol (Quantity)','number'],['cartons_qty','Cartons (Quantity)','number'],['cello_tape_qty','Cello Tape (Quantity)','number'],['rope_qty','Rope (Quantity)','number'],['material_cost','Material Cost (₹) — Auto / Manual Entry','number'],['remarks','Remarks','textarea']]}, 
       fooding:{label:'Fooding',subtitle:'Team fooding expense',icon:'utensils',collection:'fooding', fields:[['date','Date','date'],['job_id','Job ID','text'],['team','Team/Names','text'],['persons','No. of Persons','number'],['amount','Amount (₹)','number'],['remarks','Remarks','textarea']]},
       vendors:{label:'Vendors',subtitle:'All Odisha / All India vendor directory + job allotment',icon:'handshake',collection:'vendors', fields:[['vendor_name','Vendor Name','text'],['contact_number','Contact Number','tel'],['whatsapp_number','WhatsApp Number','tel'],['vendor_city','Vendor City','text'],['vendor_state','Vendor State','text'],['coverage_type','Coverage Type','select',['All Odisha','All India','City Wise','State Wise','Route Wise']],['service_area','Service Area / Cities Covered','textarea'],['vendor_category','Vendor Category','select',['AC Mechanic','Electrician','Fitter','Carpenter','Painter','Plumber','Local Transport','Packing Material','Other']],['service_type','Service Type','text'],['source_type','Source Type','select',['Online Third Party','Local Vendor','Own Network','Reference']],['job_id','Job ID (only if allotted)','text'],['payment_due','Vendor Cost / Payment Due (₹)','number'],['payment_status','Payment Status','select',['Pending','Partial','Paid']],['vendor_status','Vendor Status','select',['Active','Preferred','Blacklist','Inactive']],['vendor_rating','Vendor Rating (1-5)','number'],['remarks','Remarks','textarea']]},
-      repairing:{label:'Repairing',subtitle:'Vehicle repairing expense and maintenance report',icon:'wrench',collection:'repairing', fields:[['job_id','Job ID (optional)','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['repair_date','Repair Date','date'],['garage_name','Garage Name','text'],['garage_mobile','Garage Mobile Number','tel'],['repair_status','Repair Status','select',['Emergency','Routine Service','Breakdown']],['repair_type','Repair Type','select',['Engine','Tyre','Battery','Brake','Clutch','Electrical','AC','Body Work','Other']],['vehicle_km_reading','Vehicle KM Reading','number'],['next_service_due_km','Next Service Due KM','number'],['description','Description','textarea'],['amount','Amount (₹)','number'],['bill_available','Bill Available','select',['Yes','No']],['approved_by','Approved By','select',['Manoj Kumar Swain','Office Staff']],['remarks','Remarks','textarea']]},
+      repairing:{label:'Repairing',subtitle:'Vehicle repairing expense and maintenance report',icon:'wrench',collection:'repairing', fields:[['job_id','Job ID (optional)','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver_name','Driver Name','masterSelect','driverMaster'],['repair_date','Repair Date','date'],['garage_name','Garage Name','text'],['garage_mobile','Garage Mobile Number','tel'],['repair_status','Repair Status','select',['Emergency','Routine Service','Breakdown']],['repair_type','Repair Type','select',['Engine','Tyre','Battery','Brake','Clutch','Electrical','AC','Body Work','Other']],['initial_meter_reading','Initial Meter Reading','number'],['vehicle_km_reading','Vehicle KM Reading','number'],['next_service_due_km','Next Service Due KM','number'],['description','Description','textarea'],['amount','Amount (₹)','number'],['bill_available','Bill Available','select',['Yes','No']],['approved_by','Approved By','select',['Manoj Kumar Swain','Office Staff']],['remarks','Remarks','textarea']]},
       documents:{label:'Vehicle Docs',subtitle:'Insurance, fitness, permit expiry',icon:'file-text',collection:'documents', fields:[['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['insurance_expiry','Insurance Expiry','date'],['pollution_expiry','Pollution Expiry','date'],['fitness_expiry','Fitness Expiry','date'],['permit_expiry','Permit Expiry','date'],['remarks','Remarks','textarea']]},
       payroll:{label:'Salary',subtitle:'Salary cycle, base paid, extra days carry-forward, fooding, bonus and deduction with automatic driver app update',icon:'banknote',collection:'payroll', fields:[['employee_name','Employee','masterSelect','employeeMaster'],['role','Role','select',['Driver','Worker','Office','Vendor']],['vehicle_type','Vehicle Type','select',['Pickup','Mini','407','10 ft','14 ft','17 ft','18 ft','Container','Big Vehicle','All']],['month','Month','month'],['salary','Salary (₹)','number'],['fooding_days','Fooding Days','number'],['fooding_amount','Fooding Amount (₹)','number'],['absent_days','Absent Days','number'],['absent_deduction_amount','Absent Deduction (₹)','number'],['fooding_deduction_amount','Fooding Deduction (₹)','number'],['advance','Advance (₹)','number'],['deduction','Other Deduction (₹)','number'],['bonus','Bonus (₹)','number'],['paid_amount','Paid Base Salary (₹)','number'],['extra_paid_amount','Extra Days Paid Amount (₹)','number'],['payment_status','Payment Status','select',['Pending','Paid']],['paid_date','Paid Date','date'],['net_salary','Net Salary (₹)','number'],['remarks','Remarks','textarea']]},
       bonus:{label:'Bonus',subtitle:'Extra bonus and reward',icon:'gift',collection:'bonus', fields:[['employee_name','Employee Name','masterSelect','attendanceStaffMaster'],['role','Role','select',['Driver','Worker','Indoor Staff','Office','Vendor']],['reason','Reason','text'],['amount','Amount (₹)','number'],['date','Date','date']]},
@@ -964,7 +964,7 @@
       const c=document.getElementById('form-fields'); c.innerHTML='';
       mod.fields.forEach(([key,label,type,opts])=>{
         const wrap=document.createElement('div');
-        let val=fieldValue(record,key)||'';
+        let val=fieldValue(record,key)??'';
         if(currentModule==='salaryFinalApproval'&&record&&Number(record.manual_paid_amount||0)>0){
           if(key==='payment_status')val='Paid';
           if(key==='paid_amount')val=record.manual_paid_amount;
@@ -3156,11 +3156,61 @@
     function renderPremiumAttendance(list,empty){document.body.classList.add('azp-attendance-mode');empty?.classList.add('hidden');const staff=azpAttStaffByKey(window.azpAttendanceSelected);if(staff)azpRenderAttendanceDetail(list,staff);else{window.azpAttendanceSelected='';azpRenderAttendanceStaffList(list)}requestAnimationFrame(()=>{try{lucide.createIcons()}catch(_e){}})}
     // ===== END PREMIUM ATTENDANCE MODULE V1 =====
 
+
+    // Repairing: display-only fallback leaves historical meter readings untouched.
+    function repairingFields(record){
+      const display=value=>value===undefined||value===null||String(value).trim()===''?'Not recorded':String(value);
+      return [
+        ['Driver Name',display(record.driver_name)],['Vehicle Number',display(record.vehicle_number)],
+        ['Repair Date',display(record.repair_date)],['Repair / Fault Type',display(record.repair_type||record.repair_status)],
+        ['Fault Description',display(record.description||record.remarks)],['Repair Amount',record.amount==null||record.amount===''?'Not recorded':money(record.amount)],
+        ['Initial Meter Reading',display(record.initial_meter_reading)],['Vehicle KM Reading',display(record.vehicle_km_reading)]
+      ];
+    }
+    function repairingMatches(record,query){
+      const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
+      const queryText=normalize(query);
+      const text=normalize([record.driver_name,record.vehicle_number,record.repair_type,record.repair_status,record.description,record.remarks].join(' '));
+      return !queryText||text.includes(queryText)||normalize(record.vehicle_number).replace(/[^a-z0-9]/g,'').includes(queryText.replace(/[^a-z0-9]/g,''))&&/[a-z0-9]/.test(queryText);
+    }
+    function repairingDetailsHtml(record){
+      return repairingFields(record).map(([label,value])=>'<div class="p-2"><span class="text-xs text-slate-500">'+azpEsc(label)+'</span><p class="font-bold">'+azpEsc(value)+'</p></div>').join('');
+    }
+    function printRepairingBill(record){
+      const popup=window.open('','_blank','width=850,height=750');
+      if(!popup){showToast('Allow the repair bill window to open, then try again.',true);return;}
+      popup.document.write('<!doctype html><html><head><title>Repairing Bill</title><style>body{font-family:Arial,sans-serif;padding:28px}p{margin:4px 0 14px}span{color:#555}button{padding:10px}@media print{button{display:none}}</style></head><body><h1>A TO Z Packers &amp; Movers</h1><h2>Repairing Bill</h2><p>Record: '+azpEsc(record.id)+'</p>'+repairingDetailsHtml(record)+'<button id="print-bill" type="button">Print / Save PDF</button></body></html>');
+      popup.document.close();
+      popup.document.getElementById('print-bill').addEventListener('click',()=>popup.print());
+    }
+    function renderRepairing(list,empty){
+      const old=document.getElementById('azp-repairing-search'),focused=document.activeElement===old,caret=old?.selectionStart||0;
+      const query=window.azpRepairingSearch||'';
+      const rows=allData.filter(r=>r.module==='repairing'||r.collection==='repairing').filter(r=>repairingMatches(r,query)).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+      list.innerHTML='<label for="azp-repairing-search" class="font-bold">Search Repairing</label><input id="azp-repairing-search" type="search" class="w-full border rounded-xl p-3 my-3" placeholder="Driver name, vehicle number, fault type or description"><p class="text-sm mb-3">'+rows.length+' matching records</p><div id="azp-repairing-results" class="space-y-3"></div>';
+      const search=document.getElementById('azp-repairing-search');search.value=query;
+      search.addEventListener('input',()=>{window.azpRepairingSearch=search.value;renderRepairing(list,empty);});
+      const results=document.getElementById('azp-repairing-results');
+      if(!rows.length)results.textContent='No repairing records match your search.';
+      rows.forEach(record=>{
+        const card=document.createElement('article');card.className='record-card border rounded-xl p-3 bg-white';
+        card.innerHTML='<div class="grid grid-cols-2">'+repairingDetailsHtml(record)+'</div>';
+        [['Edit',()=>window._edit(record.id)],['Print Bill',()=>printRepairingBill(record)]].forEach(([label,action])=>{
+          const button=document.createElement('button');button.type='button';button.textContent=label;button.className='px-3 py-2 mr-2 rounded bg-blue-50 text-blue-700';button.addEventListener('click',action);card.appendChild(button);
+        });
+        const remove=document.createElement('button');remove.type='button';remove.textContent='Delete';remove.className='px-3 py-2 rounded bg-red-50 text-red-700';remove.addEventListener('click',()=>window._del(record.id));card.appendChild(remove);
+        results.appendChild(card);
+      });
+      empty?.classList.add('hidden');
+      if(focused){search.focus();try{search.setSelectionRange(caret,caret);}catch(_error){}}
+    }
+
     function renderList(key){
       const mod=modules[key]; if(!mod.collection)return;
       const list=document.getElementById(key+'-list'), empty=document.getElementById(key+'-empty'); if(!list)return;
       if(key==='gps'){ renderGpsLiveList(); return; }
       if(key==='attendance'){ renderPremiumAttendance(list,empty); return; }
+      if(key==='repairing'){ renderRepairing(list,empty); return; }
 
       if(key==='indoorStaffMaster'){
         window.azpIndoorMasterSearchNow=value=>{window.azpIndoorMasterSearch=String(value||'');renderList('indoorStaffMaster')};
