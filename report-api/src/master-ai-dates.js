@@ -56,14 +56,15 @@ function addDays(iso, amount) {
 function explicitDateTokens(text) {
   const candidates = [];
   const patterns = [
-    /(?:^|\s)(20\d{2}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]20\d{2})(?=\s|$)/gu,
+    /(?:^|\s)(20\d{2}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]20\d{2})(?=\s|$|[?.!,।])/gu,
     new RegExp(`(?:^|\\s)(\\d{1,2}\\s+(?:${MONTH_PATTERN})\\s+20\\d{2})(?=\\s|$|[?.!,।])`, "gu"),
     new RegExp(`(?:^|\\s)((?:${MONTH_PATTERN})\\s+\\d{1,2},?\\s+20\\d{2})(?=\\s|$|[?.!,।])`, "gu"),
   ];
   for (const pattern of patterns) {
     for (const match of text.matchAll(pattern)) {
       const date = parseDateToken(match[1]);
-      if (date) candidates.push({date, index: match.index + match[0].indexOf(match[1])});
+      if (!date) throw new RangeError("Invalid calendar date. Please provide a valid date or date range.");
+      candidates.push({date, index: match.index + match[0].indexOf(match[1])});
     }
   }
   return candidates.sort((a, b) => a.index - b.index).map(({date}) => date);
@@ -73,7 +74,7 @@ function parseRange(command, now = new Date()) {
   const text = normalizeDigits(command).toLowerCase().replace(/\s+/g, " ").trim();
   const today = dateKey(now);
   const tokens = explicitDateTokens(text);
-  if (tokens.length >= 2 && /\bto\b|\bse\b|से|–|—/.test(text)) {
+  if (tokens.length >= 2 && /\bto\b|\bse\b|\bbetween\b|से|–|—|\s-\s/.test(text)) {
     const [from, to] = tokens[0] <= tokens[1] ? [tokens[0], tokens[1]] : [tokens[1], tokens[0]];
     return {from, to, label: `${from} to ${to}`};
   }

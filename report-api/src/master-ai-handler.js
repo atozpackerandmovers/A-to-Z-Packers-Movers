@@ -40,7 +40,12 @@ function createMasterAiHandler({repository, verifyToken, allowedUidsProvider = (
 
     const command = String(request.body?.command || "").trim();
     if (!command || command.length > 500) return send(response, 400, {success: false, error: "A command of 1-500 characters is required."}, acceptedOrigin);
-    const parsed = parseCommand(command, clock());
+    let parsed;
+    try { parsed = parseCommand(command, clock()); }
+    catch (error) {
+      if (error instanceof RangeError) return send(response, 400, {success: false, error: "Invalid calendar date. Please provide a valid date or date range."}, acceptedOrigin);
+      throw error;
+    }
     if (parsed.intent === "unknown") return send(response, 400, {success: false, error: "Command module could not be identified."}, acceptedOrigin);
 
     try {

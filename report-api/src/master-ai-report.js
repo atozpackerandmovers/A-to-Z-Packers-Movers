@@ -1,7 +1,7 @@
 "use strict";
 
 const {dateKey, normalizeStoredDate, parseRange, TIME_ZONE, utcBounds} = require("./master-ai-dates");
-const {COMMENT_FIELDS} = require("./master-ai-schema");
+const {COMMENT_FIELDS, DATE_FIELDS} = require("./master-ai-schema");
 
 function text(value) { return String(value ?? "").replace(/\s+/g, " ").trim(); }
 function first(row, keys) { for (const key of keys) if (text(row?.[key])) return row[key]; return ""; }
@@ -122,7 +122,19 @@ function recordLine(record, index) {
 }
 
 function buildReport(parsed, queryResult, refreshedAt = new Date()) {
-  let records = queryResult.rows.map((row) => normalizeRecord(row, parsed)).filter((row) => matchesStatuses(row.raw, parsed));
+  // A partial/failed live query must never be presented as an exact count or zero.
+  if (!queryResult.diagnostics.length || queryResult.diagnostics.some((item) => item.truncated || item.errors?.length)) {
+    throw new Error("Live query incomplete; data could not be verified");
+  }
+  let rows = queryResult.rows;
+  if (parsed.intent === "quotation") {
+    const fields = parsed.dateBasis === "shifting" ? DATE_FIELDS.quotationShifting : DATE_FIELDS.quotationCreated;
+    rows = rows.filter((row) => {
+      const date = fields.map((field) => normalizeStoredDate(row[field])).find(Boolean);
+      return date && date >= parsed.range.from && date <= parsed.range.to;
+    });
+  }
+  let records = rows.map((row) => normalizeRecord(row, parsed)).filter((row) => matchesStatuses(row.raw, parsed));
   let comments = [];
   if (parsed.intent === "comments") { comments = records.flatMap(commentItems).filter((item) => !item.dateKey || (item.dateKey >= parsed.range.from && item.dateKey <= parsed.range.to)); records = []; }
   const total = parsed.intent === "comments" ? comments.length : records.length;
