@@ -1782,7 +1782,7 @@
     function getFoodingPaidRecords(){
       return foodingRelatedRecords().filter(r=>{
         const st=String(r.payment_status||r.status||'').toLowerCase();
-        return st.includes('paid') || st.includes('received') || st.includes('approved');
+        return ['paid','received','approved'].includes(st);
       }).sort((a,b)=>{
         const bd=String(b.paid_date||b.payment_date||b.date||b.cycle_end_date||'');
         const ad=String(a.paid_date||a.payment_date||a.date||a.cycle_end_date||'');
@@ -1790,31 +1790,31 @@
       });
     }
     function foodingCycleInfo(){
-      const rate = Number(staffMoneySettings().fooding || (currentUser?.role==='Driver'?250:150));
-      const cycleDays = 4;
-      const paid = getFoodingPaidRecords()[0] || {};
-      const rawPaidDate = paid.paid_date || paid.payment_date || paid.date || paid.cycle_start_date || '';
-      const lastPaidDate = normalizeDateValue(rawPaidDate);
       const master=staffMasterRecord(currentUser);
-
-      // FINAL A TO Z RULE - SAME FOR ALL DRIVER / WORKER
-      // Paid Date is DAY 1. 4 days are: Paid Date, +1, +2, +3.
-      // Next Due Date is 5th day: Paid Date + 4 days.
-      // Example: Paid 26/06/2026 => Cycle 26 to 29 => Due 30/06/2026.
-      // Example: Paid 27/06/2026 => Cycle 27 to 30 => Due 01/07/2026.
-      // Never use old Firebase cycle_end_date / next_due_date for preview.
-      const cycleStartDate = lastPaidDate || staffJoinDate() || today();
-      const cycleEndDate = cycleStartDate ? addDaysISO(cycleStartDate, 3) : '';
-      const nextDueDate = cycleStartDate ? addDaysISO(cycleStartDate, 4) : today();
+      const key=staffKey(master,currentUser);
+      const cycles=myRecords('foodingCycle').filter(r=>
+        (r.staff_key && key && String(r.staff_key)===String(key)) ||
+        (sameName(r.staff_name||r.employee_name||'',currentUser?.name||'') &&
+          (!r.role || String(r.role).toLowerCase()===String(currentUser?.role||'').toLowerCase()))
+      ).sort((a,b)=>String(b.cycle_start_date||'').localeCompare(String(a.cycle_start_date||'')) || (b.updatedAtMs||0)-(a.updatedAtMs||0));
+      const active=cycles[0]||null;
+      const legacyPaid=active?{}:(getFoodingPaidRecords()[0]||{});
+      const rate=Number(active?.daily_rate||active?.per_day_fooding||staffMoneySettings().fooding||(currentUser?.role==='Driver'?250:150));
+      const cycleDays=Number(active?.total_days||active?.cycle_days||4);
+      const lastPaidDate=normalizeDateValue(active?.last_paid_date||active?.paid_date||legacyPaid.paid_date||legacyPaid.payment_date||legacyPaid.date||'');
+      const cycleStartDate=normalizeDateValue(active?.cycle_start_date||'') || lastPaidDate || '';
+      const cycleEndDate=cycleStartDate?addDaysISO(cycleStartDate,cycleDays-1):'';
+      const nextDueDate=cycleStartDate?addDaysISO(cycleStartDate,cycleDays):'';
       const attendance=cycleStartDate&&cycleEndDate?staffAttendanceLedger(cycleStartDate,cycleEndDate):{foodingEligibleDays:0};
       const eligibleDays=staffMasterIsActive(master)?attendance.foodingEligibleDays:0;
-      const cycleAmount = rate * eligibleDays;
-      const lastPaidAmount = Number(paid.paid_amount || paid.amount || paid.fooding_amount || paid.due_amount || 0);
+      const cycleAmount=active?Number(active.due_amount||rate*cycleDays):rate*cycleDays;
+      const lastPaidAmount=Number(active?.last_paid_amount||active?.paid_amount||legacyPaid.paid_amount||legacyPaid.amount||legacyPaid.fooding_amount||0);
       const todayDate = today();
-      const due = nextDueDate && nextDueDate <= todayDate;
-      const overdueDays = (nextDueDate && todayDate > nextDueDate) ? inclusiveDayDiff(nextDueDate, todayDate) : 0;
+      const status=String(active?.payment_status||active?.status||legacyPaid.payment_status||legacyPaid.status||'Not recorded');
+      const due = !!nextDueDate && nextDueDate <= todayDate && status.toLowerCase()!=='paid';
+      const overdueDays = (due && todayDate > nextDueDate) ? inclusiveDayDiff(nextDueDate, todayDate) : 0;
       const dueToday = (nextDueDate && todayDate === nextDueDate);
-      return {rate, cycleDays,eligibleDays,cycleAmount, paid, lastPaidDate:cycleStartDate, lastPaidAmount, cycleEndDate, nextDueDate, due, dueToday, overdueDays};
+      return {rate,cycleDays,eligibleDays,cycleAmount,paid:active||legacyPaid,status,lastPaidDate,lastPaidAmount,cycleStartDate,cycleEndDate,nextDueDate,due,dueToday,overdueDays,hasRecord:!!active};
     }
     function fooding(){
       const info = foodingCycleInfo();
@@ -1823,7 +1823,8 @@
         <div class="space-y-4">
           <div class="card p-5 max-w-2xl">
             <h3 class="font-black text-2xl mb-2">Fooding Date & Payment</h3>
-            <p class="text-sm text-slate-500 font-bold">Every 4 days fooding payment cycle. Execution Software me company Mark Paid karegi, aur yahan automatically Paid Date / Amount reflect hoga.</p>
+            <p class="text-sm text-slate-500 font-bold">Execution Software • Fooding 4-Day Cycle. Company payment updates appear here automatically.</p>
+            ${!info.hasRecord?'<p class="mt-2 text-sm font-bold text-amber-800">Execution Fooding record is not available for this staff yet.</p>':''}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
               <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-4">
                 <p class="text-xs font-black text-emerald-700 uppercase">Per Day Fooding</p>
@@ -1833,7 +1834,7 @@
               <div class="rounded-2xl bg-blue-50 border border-blue-200 p-4">
                 <p class="text-xs font-black text-blue-700 uppercase">4 Days Amount</p>
                 <p class="text-3xl font-black text-blue-800">${money(info.cycleAmount)}</p>
-                <p class="text-sm font-bold text-blue-700 mt-1">${money(info.rate)} × 4 days</p>
+                <p class="text-sm font-bold text-blue-700 mt-1">${money(info.rate)} × ${info.cycleDays} days • Execution due amount</p>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
@@ -1844,7 +1845,7 @@
               </div>
               <div class="rounded-2xl ${info.due?'bg-red-50 border-red-200':'bg-amber-50 border-amber-200'} border p-4">
                 <p class="text-xs font-black ${info.due?'text-red-700':'text-amber-700'} uppercase">Next Due Date (5th Day)</p>
-                <p class="text-sm font-black text-slate-600 mt-1">4 Days Cycle: ${humanDate(info.lastPaidDate)} → ${humanDate(info.cycleEndDate)}</p>
+                <p class="text-sm font-black text-slate-600 mt-1">4 Days Cycle: ${humanDate(info.cycleStartDate)} → ${humanDate(info.cycleEndDate)}</p>
                 <p class="font-black text-lg ${info.due?'text-red-900':'text-amber-900'}">${humanDate(info.nextDueDate)}</p>
                 <p class="chip ${info.due?'bg-red-100 text-red-800':'bg-amber-100 text-amber-900'} mt-2">Amount: ${money(info.cycleAmount)}</p>
                 ${info.overdueDays>0 ? `<p class="mt-3 rounded-xl bg-red-100 border border-red-200 p-2 text-red-800 font-black">⚠️ Overdue: ${info.overdueDays} day${info.overdueDays>1?'s':''} late</p>` : (info.dueToday ? `<p class="mt-3 rounded-xl bg-orange-100 border border-orange-200 p-2 text-orange-800 font-black">⚠️ Payment due today</p>` : '')}
@@ -1857,7 +1858,7 @@
             <h3 class="font-black text-xl mb-3">Company Payment Status</h3>
             <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p class="text-xs font-black text-slate-500 uppercase">Payment Status</p>
-              <p class="text-2xl font-black ${String(info.paid.payment_status||info.paid.status||'').toLowerCase().includes('paid')?'text-emerald-700':'text-red-700'}">${esc(info.paid.payment_status||info.paid.status||'Pending')}</p>
+              <p class="text-2xl font-black ${info.status.toLowerCase()==='paid'?'text-emerald-700':'text-red-700'}">${esc(info.status)}</p>
               ${info.paid.company_remark||info.paid.remarks?`<p class="mt-2 text-sm font-bold text-slate-700">Company Remark: ${esc(info.paid.company_remark||info.paid.remarks)}</p>`:''}
             </div>
           </div>

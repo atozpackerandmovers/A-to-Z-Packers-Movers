@@ -2088,10 +2088,10 @@
       const currentEnd=parseDateForCalc(rec.cycle_end_date) || addDaysISO(currentStart,days-1);
 
       // Example: current cycle 13–16 -> next active cycle 17–20.
-      // The displayed next due date must be 20, as requested.
+      // Payment is due on the fifth day, after all four cycle days.
       const nextStart=addDaysISO(currentEnd,1);
       const nextEnd=addDaysISO(nextStart,days-1);
-      const nextDue=nextEnd;
+      const nextDue=addDaysISO(nextEnd,1);
 
       const rate=Number(rec.daily_rate||rec.per_day_fooding||0);
       const completedAmount=Number(rec.due_amount||rec.paid_amount||(rate*days)||0);
@@ -3826,8 +3826,8 @@
         // Always rebuild the cycle from the start date so stale Firebase values
         // such as 19-to-21 marked as "4 days" cannot appear on the card.
         out.cycle_end_date=azpFoodingAdd(start, days-1);
-        // Company rule: payment is due on the final day of the active 4-day cycle.
-        out.next_due_date=out.cycle_end_date;
+        // Company rule: payment is due on the fifth day, after the four-day cycle.
+        out.next_due_date=azpFoodingAdd(start,days);
       }
       out.daily_rate=rate;
       out.due_amount=Number(out.due_amount || out.amount || (rate*days)) || (rate*days);
