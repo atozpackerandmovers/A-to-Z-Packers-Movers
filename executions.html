@@ -3444,7 +3444,9 @@
     }
     function azpNeedsSalaryWrite(oldRec, calc, staff){
       if(!oldRec) return true;
-      return String(oldRec.calc_signature||'')!==azpSalaryCalcSignature(calc)||String(oldRec.master_id||'')!==String(staff.master_id||'')||normName(oldRec.payment_status)==='paid'||oldRec.settlement_locked    async function azpAutoSyncCurrentMonthSalary(){
+      return String(oldRec.calc_signature||'')!==azpSalaryCalcSignature(calc)||String(oldRec.master_id||'')!==String(staff.master_id||'')||normName(oldRec.payment_status)==='paid'||oldRec.settlement_locked==='Yes';
+    }
+    async function azpAutoSyncCurrentMonthSalary(){
       if(azpAutoSalarySyncBusy){azpAutoSalarySyncRequested=true;return;}
       azpAutoSalarySyncBusy=true;
       try{
