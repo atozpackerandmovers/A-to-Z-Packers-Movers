@@ -595,8 +595,8 @@
     };
     const myJobs=()=>{ if(hasFreshStartActive(currentUser)) return []; return all.filter(r=>isJobRecord(r)&&isMine(r)&&isAfterFreshStart(r)).map(normalizeJob).sort((a,b)=>String(b.work_date||b.shifting_date||b.date||'').localeCompare(String(a.work_date||a.shifting_date||a.date||''))); };
     const myRecords=m=>{ if(hasFreshStartActive(currentUser) && m!=='attendance') return []; return byModule(m).filter(r=>isMine(r)&&(m==='attendance'||isAfterFreshStart(r))).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)); };
-    const myReferralRecords=()=> myRecords('referral').filter(r=>{ const st=String(r.approval_status||r.status||'').toLowerCase(); return st.includes('approved') || st.includes('pending') || st==='' ; });
-    const referralAmount=r=> Number(r.bonus_amount||r.amount||500);
+    const myReferralRecords=()=> myRecords('referral').filter(r=>lower(r.approval_status)==='approved');
+    const referralAmount=()=>500;
     const referralPaid=r=> String(r.payment_status||r.paid_status||'').toLowerCase().includes('paid') || Number(r.paid_amount||0)>0;
     const levelRecordsForUser = (user=currentUser)=> all.filter(r=>{
       const isLevelRecord=['list','blackWhiteLevel','blackWhiteList','blacklistWhitelist'].some(m=>r.module===m||r.collection===m);
@@ -1495,7 +1495,7 @@
       const mine=r=>String(r.staff_key||'')===key || sameName(r.employee_name||r.staff_name||r.driver_name||r.worker_name||'',n);
       const month=today().slice(0,7);
       const salaryMasters=all.filter(r=>(r.module==='staffSalaryMaster'||r.collection==='staffSalaryMaster'||r.module==='salarySettings'||r.collection==='salarySettings') && mine(r)).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
-      const finalRows=all.filter(r=>(r.module==='salaryFinalApproval'||r.collection==='salaryFinalApproval') && mine(r) && (!r.month||String(r.month)===month)).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
+      const finalRows=all.filter(r=>(r.module==='salaryFinalApproval'||r.collection==='salaryFinalApproval') && mine(r) && r.hidden_from_salary!=='Yes' && (!r.month||String(r.month)===month)).sort((a,b)=>Number(String(b.id||'').startsWith('SALARY_LIVE_'))-Number(String(a.id||'').startsWith('SALARY_LIVE_')) || (b.updatedAtMs||0)-(a.updatedAtMs||0));
       const payrollRows = myRecords('payroll').filter(mine).sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
       const latestFinal=finalRows[0]||{};
       const latestMaster=salaryMasters[0]||{};
@@ -1887,53 +1887,56 @@
       const latestFinal=d.latestFinal||{};
       const directBonusRows=myRecords('bonus').filter(r=>!r.date||String(r.date).slice(0,7)===month);
       const referralRows=myReferralRecords();
-      const approvedReferralRows=referralRows.filter(r=>{ const st=String(r.approval_status||r.status||'').toLowerCase(); return st.includes('approved') || st==='' || st.includes('pending'); });
-      const referralCount=approvedReferralRows.length;
-      const referralBonusTotal=approvedReferralRows.reduce((a,r)=>a+referralAmount(r),0);
+      const approvedReferralRows=referralRows;
+      const canonical=String(latestFinal.id||'').startsWith('SALARY_LIVE_') && latestFinal.salary_formula_version && latestFinal.calculation_blocked!=='Yes';
+      const referralCount=canonical?Number(latestFinal.included_referral_ids?.length||0):approvedReferralRows.length;
+      const referralBonusTotal=canonical?Number(latestFinal.referral_bonus_amount||0):approvedReferralRows.reduce((a,r)=>a+referralAmount(r),0);
       const directBonusTotal=directBonusRows.reduce((a,r)=>a+(+r.amount||0),0) + (+latest.bonus||0) + (+latest.extra_bonus||0);
       const monthlySalary=+latestFinal.monthly_salary || +latest.salary || d.salary || 0;
       const perDaySalary=+latestFinal.per_day_salary || (monthlySalary?Math.round(monthlySalary/30):d.salaryDay);
       const attSum=staffAttendanceSummary();
-      const presentDays=Number(attSum.presentDays||0);
+      const presentDays=canonical?Number(latestFinal.present_days||0):Number(attSum.presentDays||0);
       const paidAttendanceDays=Number(attSum.paidDays??presentDays);
       const serviceDays=Number(attSum.serviceDays||0);
       const absentDays=Number(attSum.absentDays||0);
-      const salaryDays=Math.min(30,paidAttendanceDays);
-      const extraDays=Math.max(0,paidAttendanceDays-30);
-      const baseSalary=(salaryDays>=30 && monthlySalary) ? monthlySalary : perDaySalary*salaryDays;
-      const extraAmount=extraDays*perDaySalary;
+      const salaryDays=canonical?Number(latestFinal.eligible_days||0):Math.min(30,paidAttendanceDays);
+      const extraDays=canonical?0:Math.max(0,paidAttendanceDays-30);
+      const baseSalary=canonical?Math.max(0,Number(latestFinal.salary_gross||0)-Number(latestFinal.salary_deduction||0)):(salaryDays>=30 && monthlySalary) ? monthlySalary : perDaySalary*salaryDays;
+      const extraAmount=canonical?0:extraDays*perDaySalary;
       const salaryEarned=baseSalary + extraAmount;
       // A TO Z final rule: If staff completes full 30 days duty in the salary cycle,
       // they are eligible for the 3-day no-leave bonus amount.
       // This prevents old/pending leave records from wrongly blocking Ajay-type full-duty cases.
-      const noLeaveBonusDays=(paidAttendanceDays>=30&&absentDays===0&&Number(attSum.halfDays||0)===0) ? (currentUser?.role==='Driver'?3:1) : 0;
-      const noLeaveBonusAmount=noLeaveBonusDays*perDaySalary;
+      const monthEnd=`${month}-${String(new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate()).padStart(2,'0')}`;
+      const completeMonth=attSum.monthStart?.endsWith('-01') && attSum.monthEnd===monthEnd;
+      const noLeaveBonusDays=canonical?Number(latestFinal.attendance_reward_days||0):(completeMonth&&absentDays===0&&Number(attSum.halfDays||0)===0) ? (currentUser?.role==='Driver'?3:1) : 0;
+      const noLeaveBonusAmount=canonical?Number(latestFinal.attendance_reward_amount||0):noLeaveBonusDays*perDaySalary;
       // Final all Driver/Worker formula: referral bonus + full-duty/no-leave bonus + approved bonus all add together.
       // Do NOT override this with latestFinal.bonus_amount; otherwise 3-day no-leave bonus will not reflect in final salary.
       // Prevent duplicate bonus: Execution salary-final bonus may already contain the same
       // referral/full-duty amount. The summary must exactly match the detailed bonus card.
       const calculatedBonusTotal=directBonusTotal+referralBonusTotal+noLeaveBonusAmount;
-      const bonusTotal=(latestFinal.bonus_amount!==undefined&&latestFinal.bonus_amount!=='')?Number(latestFinal.bonus_amount||0):calculatedBonusTotal;
-      const baseSalaryCut=(salaryDays>=30) ? 0 : Math.max(0, monthlySalary - baseSalary);
-      const advance=+latest.advance||0;
-      const otherDeduction=(+latest.deduction||0)+(+latestFinal.fine_amount||0);
+      const bonusTotal=canonical?Number(latestFinal.regular_bonus_amount||0)+referralBonusTotal+Number(latestFinal.extra_bonus||0)+noLeaveBonusAmount:calculatedBonusTotal;
+      const baseSalaryCut=canonical?Number(latestFinal.salary_deduction||0):(salaryDays>=30) ? 0 : Math.max(0, monthlySalary - baseSalary);
+      const advance=canonical?0:+latest.advance||0;
+      const otherDeduction=canonical?Number(latestFinal.fine_deduction||0):(+latest.deduction||0)+(+latestFinal.fine_amount||0);
       const approvedStatus=String(latestFinal.payment_status||latest.payment_status||latest.status||'').toLowerCase();
-      const explicitPaidRaw=Number(latestFinal.paid_amount||latest.paid_amount||latest.salary_paid||latest.paid_salary||latest.payment_amount||latest.amount_paid||0);
+      const explicitPaidRaw=canonical?Number(latestFinal.manual_paid_amount||latestFinal.paid_credit_amount||0):Number(latestFinal.paid_amount||latest.paid_amount||latest.salary_paid||latest.paid_salary||latest.payment_amount||latest.amount_paid||0);
       // Only a separately recorded payroll extra-day payment may reduce Extra Amount.
       // Do not read salary-final bonus/adjustment fields as extra payment; that caused bonus values
       // such as ₹3,999 to be wrongly deducted from Current Payable Amount.
       const extraPaidAmount=0; // Final rule: old/ambiguous Extra Paid fields must not reduce current payable. Only Base Salary paid and actual deductions are considered.
       let paidAmount=explicitPaidRaw;
       // Business rule: salary payment closes only regular 30-day/base salary. Extra days remain payable unless extra payment is separately entered.
-      if(!paidAmount && approvedStatus.includes('paid')) paidAmount = Math.min(baseSalary, monthlySalary || baseSalary);
-      if(extraAmount>0 && paidAmount>=salaryEarned && !extraPaidAmount) paidAmount = Math.min(baseSalary, monthlySalary || baseSalary);
+      if(!canonical&&!paidAmount && approvedStatus.includes('paid')) paidAmount = Math.min(baseSalary, monthlySalary || baseSalary);
+      if(!canonical&&extraAmount>0 && paidAmount>=salaryEarned && !extraPaidAmount) paidAmount = Math.min(baseSalary, monthlySalary || baseSalary);
       // Final payable must be calculated component-wise so paid base salary can never reduce
       // Extra Days Amount or Bonus by mistake.
       const paidBaseAmount=Math.min(Math.max(0,paidAmount),Math.max(0,baseSalary));
       const paidDays=paidBaseAmount>0 ? Math.min(30, Math.floor(paidBaseAmount / Math.max(1,perDaySalary))) : 0;
       const unpaidBaseAmount=Math.max(0,baseSalary-paidBaseAmount);
       const unpaidExtraAmount=Math.max(0,extraAmount);
-      const pendingSalary=Math.max(0, unpaidBaseAmount + unpaidExtraAmount + bonusTotal - advance - otherDeduction);
+      const pendingSalary=canonical?Number(latestFinal.final_salary_payable||0):Math.max(0, unpaidBaseAmount + unpaidExtraAmount + bonusTotal - advance - otherDeduction);
       const score=Number(attSum.attendancePercentage||0);
       const offerText=latest.company_remark || latestFinal.company_remark || latest.odia_offer || latest.company_offer_odia || latest.offer_text_odia || latest.salary_message_odia || 'ଆପଣଙ୍କ ପରିଶ୍ରମର ସଠିକ୍ ହିସାବ କମ୍ପାନୀ ରଖୁଛି। ନିୟମିତ କାମ କରନ୍ତୁ, ଆଗକୁ ବଢନ୍ତୁ। ଭଲ କାମ ପାଇଁ Bonus ଏବଂ Extra Work payment ସୁଯୋଗ ରହିଛି।';
       document.getElementById('content').innerHTML=`<div class="space-y-4">
@@ -1942,13 +1945,13 @@
             <div>
               <p class="text-xs font-black text-blue-700 uppercase tracking-wide">My Salary Wallet</p>
               <h3 class="font-black text-2xl">${esc(currentUser?.name||'Staff')} Salary Section</h3>
-              <p class="text-sm text-slate-500 font-bold mt-1">Auto logic: Salary aur attendance Worker/Driver Master ki Joining Date se aaj tak date-wise calculate hoga. Calendar month ki 1 तारीख se reset nahi hoga.</p>
+              <p class="text-sm text-slate-500 font-bold mt-1">${canonical?'Execution Salary Final Approval se live calculation.':'Joining date aur attendance se provisional calculation.'}</p>
             </div>
             <span class="chip bg-emerald-100 text-emerald-800">Score ${score}%</span><span class="chip bg-purple-100 text-purple-800">Bonus Auto</span>
           </div>
           <div class="azp-marquee mt-4"><span>🎁 ${esc(offerText)}</span></div>
           <div class="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 font-black text-blue-900">
-            Final formula: Salary/attendance start Execution Software ke Driver Master / Worker Master ki Joining Date se hoga. Joining Date se aaj tak continuous present days calculate honge; 30 days ke baad remaining days Extra Days me jayenge.
+            ${canonical?'Salary cycle '+esc(latestFinal.salary_cycle_start||'')+' to '+esc(latestFinal.salary_cycle_end||'')+'. Approved referrals aur complete month reward Execution se liye gaye hain.':'Salary/attendance start Driver Master / Worker Master ki Joining Date se hoga. Final payable Execution approval ke baad confirm hoga.'}
           </div>
         </div>
 
@@ -1956,34 +1959,34 @@
           <div class="card p-5 bg-gradient-to-br from-emerald-50 to-white border-emerald-200">
             <p class="text-xs font-black text-emerald-700 uppercase">Monthly Salary</p>
             <p class="text-4xl font-black text-emerald-800">${money(monthlySalary)}</p>
-            <p class="text-sm font-bold text-emerald-700 mt-1">30 days fixed salary cap</p>
+            <p class="text-sm font-bold text-emerald-700 mt-1">Monthly rate</p>
           </div>
           <div class="card p-5 bg-gradient-to-br from-blue-50 to-white border-blue-200">
             <p class="text-xs font-black text-blue-700 uppercase">Total Present Days</p>
             <p class="text-4xl font-black text-blue-800">${presentDays}</p>
-            <p class="text-sm font-bold text-blue-700 mt-1">Joining ${humanDate(attSum.joinDate)} se aaj tak</p>
+            <p class="text-sm font-bold text-blue-700 mt-1">${canonical?'Current unpaid cycle':'Current month'} attendance</p>
           </div>
           <div class="card p-5 bg-gradient-to-br from-purple-50 to-white border-purple-200">
-            <p class="text-xs font-black text-purple-700 uppercase">Extra Days Amount</p>
-            <p class="text-4xl font-black text-purple-800">${money(extraAmount)}</p>
-            <p class="text-sm font-bold text-purple-700 mt-1">${extraDays} extra days × ${money(perDaySalary)}</p>
+            <p class="text-xs font-black text-purple-700 uppercase">${canonical?'Approved Overtime':'Extra Days Amount'}</p>
+            <p class="text-4xl font-black text-purple-800">${money(canonical?latestFinal.overtime_addition:extraAmount)}</p>
+            <p class="text-sm font-bold text-purple-700 mt-1">${canonical?'Execution approved overtime':extraDays+' extra days × '+money(perDaySalary)}</p>
           </div>
           <div class="card p-5 bg-gradient-to-br from-amber-50 to-white border-amber-200">
             <p class="text-xs font-black text-amber-700 uppercase">Referral + No Leave Bonus</p>
             <p class="text-4xl font-black text-amber-800">${money(referralBonusTotal + noLeaveBonusAmount)}</p>
             <div class="mt-2 grid grid-cols-1 gap-2 text-sm font-black text-amber-800">
-              <div>👥 Referral: ${referralCount} staff × approved amount = ${money(referralBonusTotal)}</div>
-              <div>🏆 Full-duty/no-leave bonus: ${noLeaveBonusDays} days × ${money(perDaySalary)} = ${money(noLeaveBonusAmount)}</div>
+              <div>👥 Referral: ${referralCount} approved staff × ₹500 = ${money(referralBonusTotal)}</div>
+              <div>🏆 Full-month attendance reward: ${noLeaveBonusDays} days = ${money(noLeaveBonusAmount)}</div>
             </div>
-            <p class="text-xs font-bold text-amber-700 mt-2">Education/Execution master me referral bonus add hote hi yahan auto show hoga.</p>
+            <p class="text-xs font-bold text-amber-700 mt-2">Execution Referral Management approval ke baad bonus show hoga.</p>
           </div>
         </div>
 
         <div class="card p-5 max-w-3xl">
           <h3 class="font-black text-xl mb-3">Total Salary Summary</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-            <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-3"><p class="text-xs font-black text-emerald-700">Base Salary</p><p class="text-xl font-black">${money(baseSalary)}</p><p class="text-[11px] font-black text-emerald-700">${salaryDays} salary days</p></div>
-            <div class="rounded-2xl bg-purple-50 border border-purple-200 p-3"><p class="text-xs font-black text-purple-700">Extra Amount</p><p class="text-xl font-black">${money(extraAmount)}</p><p class="text-[11px] font-black text-purple-700">${extraDays} days</p></div>
+            <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-3"><p class="text-xs font-black text-emerald-700">Attendance Salary</p><p class="text-xl font-black">${money(baseSalary)}</p><p class="text-[11px] font-black text-emerald-700">${salaryDays} eligible days</p></div>
+            <div class="rounded-2xl bg-purple-50 border border-purple-200 p-3"><p class="text-xs font-black text-purple-700">${canonical?'Overtime':'Extra Amount'}</p><p class="text-xl font-black">${money(canonical?latestFinal.overtime_addition:extraAmount)}</p><p class="text-[11px] font-black text-purple-700">${canonical?'Approved':'Extra '+extraDays+' days'}</p></div>
             <div class="rounded-2xl bg-amber-50 border border-amber-200 p-3"><p class="text-xs font-black text-amber-700">Total Bonus</p><p class="text-xl font-black">${money(bonusTotal)}</p><p class="text-[11px] font-black text-amber-700">Referral + full-duty bonus</p></div>
             <div class="rounded-2xl bg-blue-50 border border-blue-200 p-3"><p class="text-xs font-black text-blue-700">Paid Base Salary</p><p class="text-xl font-black">${money(paidBaseAmount)}</p><p class="text-[11px] font-black text-blue-700">Paid days: ${paidDays}</p></div>
             <div class="rounded-2xl bg-red-50 border border-red-200 p-3"><p class="text-xs font-black text-red-700">Cut / Deduction</p><p class="text-xl font-black">${money(baseSalaryCut+advance+otherDeduction)}</p><p class="text-[11px] font-black text-red-700">Absent/advance/other</p></div>
@@ -1992,7 +1995,7 @@
             <p class="text-sm font-black text-emerald-100 uppercase tracking-wide">Current Payable Amount</p>
             <p class="text-5xl font-black mt-2 text-white drop-shadow">${money(pendingSalary)}</p>
             <div class="mt-3 rounded-2xl bg-white/15 border border-white/25 px-3 py-2">
-              <p class="text-sm font-extrabold text-white leading-relaxed">Payable = Unpaid Base ${money(unpaidBaseAmount)} + Full Extra Amount ${money(unpaidExtraAmount)} + Total Bonus ${money(bonusTotal)} - Deduction ${money(advance+otherDeduction)}.</p>
+              <p class="text-sm font-extrabold text-white leading-relaxed">${canonical?'Execution total earned '+money(latestFinal.total_salary_earned_before_paid)+' - paid/advance '+money(explicitPaidRaw)+' = '+money(pendingSalary):'Payable = Unpaid Base '+money(unpaidBaseAmount)+' + Extra '+money(unpaidExtraAmount)+' + Bonus '+money(bonusTotal)+' - Deduction '+money(advance+otherDeduction)}</p>
               <p class="text-xs font-bold text-emerald-100 mt-1">Fooding is not included in salary payable.</p>
             </div>
           </div>
