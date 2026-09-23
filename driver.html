@@ -120,7 +120,7 @@
     <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="top-title text-2xl md:text-3xl font-black tracking-tight">A TO Z Operations Portal</h1><p class="text-xs font-black text-emerald-200 mt-1">Driver/Worker Fooding 4-Day Final — Due on 5th Day</p>
-        <p class="text-white/75 text-sm mt-1">Connected with Execution Software • Firebase Permanent Storage • Build 2026.09.24 Fooding Sync</p>
+        <p class="text-white/75 text-sm mt-1">Connected with Execution Software • Firebase Permanent Storage • Build 2026.09.24 Worker Fooding Sync</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <span id="firebaseStatus" class="chip bg-amber-100 text-amber-900">Connecting...</span>
@@ -1789,15 +1789,31 @@
         return bd.localeCompare(ad) || (b.updatedAtMs||0)-(a.updatedAtMs||0);
       });
     }
+    function foodingStaffNameKey(value){
+      const plain=String(value||'')
+        .replace(/\([^)]*\)/g,' ')
+        .replace(/(?:[_\s-]+)(?:work|worker|driver)$/i,' ')
+        .trim();
+      const key=nameKey(plain);
+      // These are the names actually used for the same workers in the two apps.
+      return ({dambru:'dambarudhara',harish:'harishchandra'})[key]||key;
+    }
+    function foodingCycleForStaff(user=currentUser){
+      if(!user || user.role==='Admin Preview') return null;
+      const master=staffMasterRecord(user);
+      const key=staffKey(master,user);
+      const names=[user.name,master?.worker_name,master?.driver_name,master?.staff_name,master?.employee_name,master?.name]
+        .map(foodingStaffNameKey).filter(Boolean);
+      const role=String(user.role||'').toLowerCase();
+      return byModule('foodingCycle').filter(r=>{
+        if(r.role && String(r.role).toLowerCase()!==role) return false;
+        if(r.staff_key && key && String(r.staff_key)===String(key)) return true;
+        return names.includes(foodingStaffNameKey(r.staff_name||r.employee_name||r.worker_name||r.driver_name));
+      }).sort((a,b)=>String(b.cycle_start_date||'').localeCompare(String(a.cycle_start_date||'')) || (b.updatedAtMs||0)-(a.updatedAtMs||0))[0]||null;
+    }
     function foodingCycleInfo(){
       const master=staffMasterRecord(currentUser);
-      const key=staffKey(master,currentUser);
-      const cycles=myRecords('foodingCycle').filter(r=>
-        (r.staff_key && key && String(r.staff_key)===String(key)) ||
-        (sameName(r.staff_name||r.employee_name||'',currentUser?.name||'') &&
-          (!r.role || String(r.role).toLowerCase()===String(currentUser?.role||'').toLowerCase()))
-      ).sort((a,b)=>String(b.cycle_start_date||'').localeCompare(String(a.cycle_start_date||'')) || (b.updatedAtMs||0)-(a.updatedAtMs||0));
-      const active=cycles[0]||null;
+      const active=foodingCycleForStaff(currentUser);
       const legacyPaid=active?{}:(getFoodingPaidRecords()[0]||{});
       const rate=Number(active?.daily_rate||active?.per_day_fooding||staffMoneySettings().fooding||(currentUser?.role==='Driver'?250:150));
       const cycleDays=Number(active?.total_days||active?.cycle_days||4);
