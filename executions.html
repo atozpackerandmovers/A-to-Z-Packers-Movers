@@ -3377,7 +3377,7 @@
                 <p class="text-sm text-slate-600 mt-1">Next Due Date: <b>${next}</b></p>
                 ${r.remarks?`<p class="text-sm text-slate-600 mt-2">${r.remarks}</p>`:''}
                 ${isDue?`<p class="mt-2 p-2 rounded-lg bg-red-50 text-red-700 text-sm font-black">⚠️ Fooding payment time ho gaya hai. Amount: ${money(due)}</p>`:''}
-                <p class="mt-2 p-2 rounded-lg bg-orange-50 text-orange-800 text-sm font-bold">⚠️ ଫୁଡିଂ ପେମେଣ୍ଟ ସମୟ ହୋଇଗଲା । ଦୟାକରି ପେମେଣ୍ଟ ଅପଡେଟ୍ କରନ୍ତୁ।</p>
+                ${isDue?`<p class="mt-2 p-2 rounded-lg bg-orange-50 text-orange-800 text-sm font-bold">⚠️ ଫୁଡିଂ ପେମେଣ୍ଟ ସମୟ ହୋଇଗଲା । ଦୟାକରି ପେମେଣ୍ଟ ଅପଡେଟ୍ କରନ୍ତୁ।</p>`:''}
                 ${r.company_remark?`<p class="text-sm font-bold text-slate-700 mt-2">Company Remark: ${r.company_remark}</p>`:''}
               </div>
               <span class="chip ${cls}">${status}</span>
@@ -3819,7 +3819,8 @@
       const start=azpFoodingISO(out.cycle_start_date || out.last_paid_date || out.date || out.paid_date);
       const daysRaw=Number(out.total_days || out.cycle_days || 4);
       const days=Number.isFinite(daysRaw) && daysRaw>0 ? daysRaw : 4;
-      const rate=Number(out.daily_rate || out.per_day_fooding || 250) || 250;
+      const defaultRate=String(out.role||'').toLowerCase()==='worker'?150:250;
+      const rate=Number(out.daily_rate || out.per_day_fooding || defaultRate) || defaultRate;
       if(start){
         out.cycle_start_date=start;
         out.total_days=days;
