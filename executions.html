@@ -309,7 +309,7 @@
 
   <script type="module">
     import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, runTransaction, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-storage.js';
 
     const firebaseConfig = {
@@ -3444,22 +3444,28 @@
     }
     function azpNeedsSalaryWrite(oldRec, calc, staff){
       if(!oldRec) return true;
-      return String(oldRec.calc_signature||'')!==azpSalaryCalcSignature(calc)||String(oldRec.master_id||'')!==String(staff.master_id||'')||normName(oldRec.payment_status)==='paid'||oldRec.settlement_locked==='Yes';
-    }
-    async function azpAutoSyncCurrentMonthSalary(){
+      return String(oldRec.calc_signature||'')!==azpSalaryCalcSignature(calc)||String(oldRec.master_id||'')!==String(staff.master_id||'')||normName(oldRec.payment_status)==='paid'||oldRec.settlement_locked    async function azpAutoSyncCurrentMonthSalary(){
       if(azpAutoSalarySyncBusy){azpAutoSalarySyncRequested=true;return;}
       azpAutoSalarySyncBusy=true;
       try{
         const today=azpSalaryIndiaToday(),month=today.slice(0,7);
         const existing=allData.filter(r=>r.module==='salaryFinalApproval'||r.collection==='salaryFinalApproval');
         for(const staff of azpStaffForAutoSalary()){
-          const id=azpSalaryLiveRecordId(staff),old=existing.find(r=>r.id===id),pendingDuplicates=existing.filter(r=>r.id!==id&&normName(r.payment_status)!=='paid'&&r.hidden_from_salary!=='Yes'&&azpSalaryRecordMatchesStaff(r,staff));
-          const manualSource=[old,...pendingDuplicates].find(r=>Number(r?.manual_paid_amount||(normName(r?.payment_status)==='paid'&&r?.settlement_locked!=='Yes'?r?.paid_amount:0)||0)>0)||old||pendingDuplicates[0]||{};
-          const manualPaid=Math.max(0,Number(manualSource.manual_paid_amount||(normName(manualSource.payment_status)==='paid'&&manualSource.settlement_locked!=='Yes'?manualSource.paid_amount:0)||0)),manualPaidDate=parseDateForCalc(manualSource.manual_paid_date||manualSource.paid_date||'');
-          const extra=Number(old?.extra_bonus||pendingDuplicates[0]?.extra_bonus||0),calc=buildSalaryFinalData(staff.name,staff.role,month,staff.assigned_vehicle||staff.vehicle_type||staff.department||'',extra);
-          if(azpNeedsSalaryWrite(old,calc,staff)){
-            await setDoc(doc(db,MAIN_COLLECTION,id),{module:'salaryFinalApproval',collection:'salaryFinalApproval',record_type:'Current Unpaid',auto_generated:'Yes',employee_name:staff.name,staff_name:staff.name,role:calc.role||staff.role,master_id:staff.master_id||'',master_module:staff.master_module||'',master_joining_date:calc.joining_date||'',month,...calc,calc_signature:azpSalaryCalcSignature(calc),approval_status:old?.approval_status||pendingDuplicates[0]?.approval_status||'Pending',company_approval:old?.company_approval||pendingDuplicates[0]?.company_approval||'Pending',payment_status:'Pending',salary_paid_status:manualPaid>0?(calc.final_salary_payable>0?'Part Paid':'Paid Credit Applied'):'Pending',manual_paid_amount:manualPaid,manual_paid_date:manualPaidDate,manual_paid_cycle_start:calc.salary_cycle_start,partial_payment_status:manualPaid>0?'Paid Credit Applied':'None',paid_amount:manualPaid,paid_date:manualPaidDate,settlement_locked:'No',company_remark:old?.company_remark||'Live unpaid salary; continues automatically until Mark Paid.',updatedAt:serverTimestamp()},{merge:true});
-          }
+          const id=azpSalaryLiveRecordId(staff),pendingDuplicates=existing.filter(r=>r.id!==id&&normName(r.payment_status)!=='paid'&&r.hidden_from_salary!=='Yes'&&azpSalaryRecordMatchesStaff(r,staff));
+          const ref=doc(db,MAIN_COLLECTION,id);
+          await runTransaction(db,async transaction=>{
+            // Read the latest server record. The snapshot in allData may predate a manual advance save.
+            const snap=await transaction.get(ref),old=snap.exists()?snap.data():null;
+            const manualSource=[old,...pendingDuplicates].find(r=>Number(r?.manual_paid_amount||(normName(r?.payment_status)==='paid'&&r?.settlement_locked!=='Yes'?r?.paid_amount:0)||0)>0)||old||pendingDuplicates[0]||{};
+            const manualPaid=Math.max(0,Number(manualSource.manual_paid_amount||(normName(manualSource.payment_status)==='paid'&&manualSource.settlement_locked!=='Yes'?manualSource.paid_amount:0)||0));
+            const manualPaidDate=parseDateForCalc(manualSource.manual_paid_date||manualSource.paid_date||'');
+            const extra=Number(old?.extra_bonus||pendingDuplicates[0]?.extra_bonus||0);
+            const calc=buildSalaryFinalData(staff.name,staff.role,month,staff.assigned_vehicle||staff.vehicle_type||staff.department||'',extra);
+            const earned=Number(calc.total_salary_earned_before_paid||calc.salary_gross||0);
+            const currentCalc={...calc,total_salary_earned_before_paid:earned,paid_credit_amount:manualPaid,final_salary_payable:Math.max(0,earned-manualPaid)};
+            if(!azpNeedsSalaryWrite(old,currentCalc,staff)&&Number(old?.manual_paid_amount||0)===manualPaid)return;
+            transaction.set(ref,{module:'salaryFinalApproval',collection:'salaryFinalApproval',record_type:'Current Unpaid',auto_generated:'Yes',employee_name:staff.name,staff_name:staff.name,role:calc.role||staff.role,master_id:staff.master_id||'',master_module:staff.master_module||'',master_joining_date:calc.joining_date||'',month,...currentCalc,calc_signature:azpSalaryCalcSignature(currentCalc),approval_status:old?.approval_status||pendingDuplicates[0]?.approval_status||'Pending',company_approval:old?.company_approval||pendingDuplicates[0]?.company_approval||'Pending',payment_status:'Pending',salary_paid_status:manualPaid>0?(currentCalc.final_salary_payable>0?'Part Paid':'Paid Credit Applied'):'Pending',manual_paid_amount:manualPaid,manual_paid_date:manualPaidDate,manual_paid_cycle_start:calc.salary_cycle_start,partial_payment_status:manualPaid>0?'Paid Credit Applied':'None',paid_amount:manualPaid,paid_date:manualPaidDate,settlement_locked:'No',company_remark:old?.company_remark||'Live unpaid salary; continues automatically until Mark Paid.',updatedAt:serverTimestamp()},{merge:true});
+          });
           if(pendingDuplicates.length){await Promise.all(pendingDuplicates.map(r=>setDoc(doc(db,MAIN_COLLECTION,r.id),{hidden_from_salary:'Yes',salary_duplicate_of:id,updatedAt:serverTimestamp()},{merge:true})))}
         }
       }catch(err){ console.error('Auto salary sync failed',err); }
