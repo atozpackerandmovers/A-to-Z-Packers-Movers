@@ -10013,7 +10013,16 @@ button{pointer-events:auto!important}
     }
     add(fbDb.collection('taskMaster').doc(id));
     add(fbDb.collection('staffTasks').doc(id));
-    add(fbDb.collection('azpExecutionRecords').doc('TASK_' + id));
+    // A colliding document ID must never delete a CRM/job/non-task record.
+    var canonicalTaskRef=fbDb.collection('azpExecutionRecords').doc('TASK_' + id);
+    var canonicalTask=await canonicalTaskRef.get({source:'server'});
+    if(canonicalTask.exists){
+      var canonicalData=canonicalTask.data();
+      if(canonicalData.module!=='taskManagement' || (canonicalData.id!=null&&String(canonicalData.id)!==id)) {
+        throw new Error('Task document identity mismatch. No records were deleted.');
+      }
+      add(canonicalTaskRef);
+    }
     if (refs.size > 450) throw new Error('Too many task copies for one safe delete. Please ask the developer to clean up this task.');
     var batch = fbDb.batch();
     refs.forEach(function (ref) { batch.delete(ref); });

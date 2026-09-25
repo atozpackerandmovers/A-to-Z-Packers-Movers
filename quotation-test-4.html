@@ -2116,7 +2116,9 @@ function formatCurrency(amount) {
 
 
     // Download PDF - Beautiful Colorful Quotation Output
-    async function downloadPDF(prepareOnly = false) {
+    async function downloadPDF(prepareOnly = false, quotationSnapshot = currentPreviewData) {
+      // Keep one quotation throughout asynchronous QR/image generation.
+      const currentPreviewData = quotationSnapshot;
       if (!currentPreviewData) {
         showToast('No quotation data available for PDF.', 'error');
         return false;
@@ -2435,32 +2437,62 @@ function formatCurrency(amount) {
 
       if (!validateAmountInputs()) return;
 
+      const form = e.currentTarget;
+      if (form.dataset.azpSaving === '1') return;
+      form.dataset.azpSaving = '1';
       const submitButton = e.submitter || e.currentTarget.querySelector('button[type="submit"]');
       const originalButtonHtml = submitButton ? submitButton.innerHTML : '';
       if (submitButton) {
-        if (submitButton.dataset.azpSaving === '1') return;
         submitButton.dataset.azpSaving = '1';
         submitButton.disabled = true;
         submitButton.innerHTML = '⏳ Saving quotation...';
         submitButton.classList.add('opacity-70', 'cursor-wait');
       }
 
-      const formData = getFormData();
-      currentPreviewData = formData;
-
+      let confirmedId = '';
       try {
+        const formData = getFormData();
+        // Preserve the existing ID format, including across a failed-submit retry.
+        if (!form.__azpSaveIdentity) form.__azpSaveIdentity = {
+          quotation_number: formData.quotation_number, created_at: formData.created_at
+        };
+        Object.assign(formData, form.__azpSaveIdentity);
+        const inventoryId = window.__azpPendingInventoryRemovalAfterSave || '';
+        currentPreviewData = formData;
         if (!window.saveQuotationToFirebase) {
           throw new Error('Firebase is not ready.');
         }
 
         // CRITICAL WRITE FIRST. No PDF/SMS/item-list task is allowed to block this save.
         const firebaseId = await window.saveQuotationToFirebase(formData);
+        if (!firebaseId) throw new Error('Firebase did not confirm a quotation ID.');
+        confirmedId = firebaseId;
+
+        // Isolate every secondary action, including synchronous exceptions.
+        const afterSave = (label, action) => Promise.resolve().then(action).catch(error => {
+          console.error('Quotation saved; ' + label + ' failed:', error);
+          showToast('Quotation saved, but ' + label + ' needs retry.', 'error');
+        });
+        afterSave('SMS', () => window.azpQuotationSmsIntegration?.quotationSent?.({
+          quotationDocId: firebaseId, quotationNumber: formData.quotation_number,
+          customerName: formData.customer_name, partyMobile: formData.party_mobile
+        }));
+        afterSave('inventory cleanup', () => window.__azpRemovePendingInventoryAfterQuote?.(inventoryId));
+        afterSave('Item List', () => window.saveItemListToFirebase?.({...formData, linked_quotation_id: firebaseId}));
+        afterSave('PDF generation', async () => {
+          if (!await downloadPDF(false, formData)) throw new Error('PDF generation did not complete');
+        });
 
         // Make History reflect the confirmed write immediately without a full-history reload.
+        try {
         syncHistoryFromSources(mergeQuotations([
           { __backendId: firebaseId, ...formData }
         ], quotations));
         renderHistory();
+        } catch (error) {
+          console.error('Quotation saved; History refresh failed:', error);
+          showToast('Quotation saved. Reload History to view it.', 'error');
+        }
 
         showToast('✅ Quotation saved successfully. PDF & SMS are processing.', 'success');
 
@@ -2476,42 +2508,13 @@ function formatCurrency(amount) {
         // All secondary work below is detached so it cannot hold the Save button/UI.
         resetForm();
 
-        Promise.resolve().then(() => {
-          // SMS starts independently; PDF or Item List delays cannot hold it.
-          if (typeof window.azpQuotationSmsIntegration?.quotationSent === 'function') {
-            window.azpQuotationSmsIntegration.quotationSent({
-              quotationDocId: firebaseId,
-              quotationNumber: formData.quotation_number,
-              customerName: formData.customer_name,
-              partyMobile: formData.party_mobile
-            }).catch(error => console.error('Quotation sent SMS flow failed', error));
-          }
-
-          // Inventory cleanup is allowed ONLY now, after confirmed quotation save.
-          if (typeof window.__azpRemovePendingInventoryAfterQuote === 'function') {
-            window.__azpRemovePendingInventoryAfterQuote()
-              .catch(inventoryErr => console.error('Inventory post-save cleanup failed:', inventoryErr));
-          }
-
-          // Save Item List once (duplicate quotation-submit hook was removed).
-          if (window.saveItemListToFirebase) {
-            window.saveItemListToFirebase({ ...formData, linked_quotation_id: firebaseId })
-              .catch(itemErr => console.error('Item List Firebase save failed:', itemErr));
-          }
-
-          // Generate/download PDF independently after the core save.
-          currentPreviewData = formData;
-          Promise.resolve(downloadPDF()).then(pdfOk => {
-            if (!pdfOk) showToast('Quotation saved, but PDF could not be generated.', 'error');
-          }).catch(pdfErr => {
-            console.error('Post-save PDF generation failed:', pdfErr);
-            showToast('Quotation saved, but PDF could not be generated.', 'error');
-          });
-        });
-
       } catch (err) {
         console.error('Firebase save failed:', err);
-        showToast('❌ Quotation not saved. Your filled data is kept—check internet/Firebase and try again.', 'error');
+        showToast(confirmedId
+          ? 'Quotation saved. The form could not refresh; reload History before retrying.'
+          : '❌ Quotation not saved. Your filled data is kept—check internet/Firebase and try again.', 'error');
+      } finally {
+        form.dataset.azpSaving = '0';
         if (submitButton) {
           submitButton.disabled = false;
           submitButton.innerHTML = originalButtonHtml;
@@ -2536,6 +2539,7 @@ function formatCurrency(amount) {
 
     // Reset form
     function resetForm() {
+      delete document.getElementById('quotation-form').__azpSaveIdentity;
       document.getElementById('quotation-form').reset();
       document.getElementById('items-container').innerHTML = '';
       document.getElementById('electrification-amount-wrapper').classList.add('hidden');
@@ -7396,6 +7400,8 @@ function installSaveWrapper(){
     forceFormDate();
     const extra = formExtras();
     const payload = { ...formData, ...extra };
+    payload.created_at = formData.created_at || extra.created_at;
+    payload.createdAtText = payload.created_at;
 
     payload.total_amount = money(payload.total_amount ?? payload.totalAmount ?? payload.manual_amount ?? payload.amount);
     payload.totalAmount = payload.total_amount;
@@ -8680,8 +8686,8 @@ window.azpLeadPipelineDeleteFromFirebase=async function(id){const docId=safeId(i
 
     // Expose a post-save cleanup hook. The main quotation flow calls this ONLY after
     // Firestore confirms the quotation write. PDF generation no longer deletes inventory.
-    window.__azpRemovePendingInventoryAfterQuote = async function(){
-      const id = window.__azpPendingInventoryRemovalAfterSave || getSelectedId();
+    window.__azpRemovePendingInventoryAfterQuote = async function(capturedId){
+      const id = arguments.length ? capturedId : (window.__azpPendingInventoryRemovalAfterSave || getSelectedId());
       if(!id) return false;
       const removed = await removeInventoryRecordAfterQuote(id);
       if(removed){

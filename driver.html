@@ -1232,6 +1232,14 @@
     // Planning Sheet, Phase 1 navigation and existing GPS/tracking records stay read-only.
     let azpEtaMapsPromise=null,azpEtaBusy=false,azpEtaLastGpsSignature='',azpEtaRouteCallable=null,azpEtaFailureCount=0,azpEtaRetryAfter=0;
     const AZP_ETA_REQUEST_TIMEOUT_MS=20000,AZP_ETA_MAX_BACKOFF_MS=300000;
+    let azpEtaLastRouteAt=0;
+    const AZP_ETA_REFRESH_MS=60000;
+    function azpEtaRouteSignature(userName,point,jobs){
+      return [nameKey(userName),point.lat.toFixed(6),point.lng.toFixed(6),...jobs.map(job=>{
+        const coords=azpNavigationCoordinates(job,'delivery');
+        return [azpEtaJobKey(job),coords?`${coords.lat},${coords.lng}`:String(job.to_location||'').trim(),azpEtaJobStatus(job)].join(':');
+      })].join('|');
+    }
     const azpEtaStatusDone=s=>['completed','cancelled'].includes(String(s||'').trim().toLowerCase());
     function azpEtaJobStatus(j){return String(pick(j,['status','job_status','planning_status','execution_status','work_status'])||'').trim()}
     function azpEtaJobKey(j){
@@ -1393,9 +1401,10 @@
       const point=azpEtaLivePoint();if(!point)return;
       const jobs=myJobs().filter(j=>azpEtaDriverOwnsJob(j)&&!azpEtaStatusDone(azpEtaJobStatus(j))&&(String(j.to_location||'').trim()||azpNavigationCoordinates(j,'delivery')));
       if(!jobs.length)return;
-      const signature=[nameKey(currentUser.name),point.lat.toFixed(6),point.lng.toFixed(6),...jobs.map(azpEtaJobKey)].join('|');
-      if(signature===azpEtaLastGpsSignature)return;
+      const signature=azpEtaRouteSignature(currentUser.name,point,jobs);
+      if(signature===azpEtaLastGpsSignature&&Date.now()-azpEtaLastRouteAt<AZP_ETA_REFRESH_MS)return;
       azpEtaBusy=true;azpEtaLastGpsSignature=signature;
+      azpEtaLastRouteAt=Date.now();
       try{
         let next=0,complete=true;
         async function worker(){while(next<jobs.length){const job=jobs[next++];if(!(await azpEtaUpdateJob(job,point)))complete=false}}
@@ -1405,6 +1414,7 @@
     }
     setInterval(azpEtaSecondTick,1000);
     setInterval(azpEtaPoll,10000);
+    window.addEventListener('online',()=>{azpEtaLastGpsSignature='';azpEtaRetryAfter=0;azpEtaPoll();});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){azpEtaLastGpsSignature='';setTimeout(azpEtaPoll,800);}});
     setTimeout(azpEtaPoll,1800);
     function azpShortPlace(value){
