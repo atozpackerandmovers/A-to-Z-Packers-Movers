@@ -760,6 +760,9 @@
          <label class="block text-sm font-medium text-gray-700 mb-1">Party Mobile Number</label> <input type="tel" id="party_mobile" inputmode="numeric" pattern="[0-9+ ]{10,15}" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all" placeholder="Enter customer mobile number">
         </div>
         <div>
+         <label class="block text-sm font-medium text-gray-700 mb-1" for="customer_gst_number">Customer GST Number (Optional)</label> <input type="text" id="customer_gst_number" maxlength="15" autocapitalize="characters" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all uppercase" placeholder="Enter customer's GSTIN, if applicable">
+        </div>
+        <div>
          <label class="block text-sm font-medium text-gray-700 mb-1">Service Type</label> <input type="text" id="service_type" value="Household Shifting" class="w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:border-blue-500 focus:outline-none transition-all">
         </div>
         <div>
@@ -1794,6 +1797,7 @@ function formatCurrency(amount) {
         quotation_number: generateQuotationNumber(),
         customer_name: document.getElementById('customer_name').value.trim(),
         party_mobile: document.getElementById('party_mobile').value.trim(),
+        customer_gst_number: document.getElementById('customer_gst_number').value.trim().toUpperCase(),
         from_location: document.getElementById('from_location').value.trim(),
         to_location: document.getElementById('to_location').value.trim(),
         service_type: document.getElementById('service_type').value.trim(),
@@ -1955,6 +1959,7 @@ function formatCurrency(amount) {
                 <p style="margin:0 0 7px 0;color:#92400e;font-size:12px;font-weight:900;">CUSTOMER</p>
                 <p style="margin:0;color:#1e3a5f;font-size:18px;font-weight:900;">${data.customer_name}</p>
                 ${data.party_mobile ? `<p style="margin:7px 0 0 0;color:#374151;font-size:13px;font-weight:800;">Mobile: ${data.party_mobile}</p>` : ''}
+                ${data.customer_gst_number ? `<p style="margin:7px 0 0 0;color:#374151;font-size:13px;font-weight:800;">Customer GSTIN: ${data.customer_gst_number}</p>` : ''}
               </div>
             </div>
 
@@ -1989,6 +1994,7 @@ function formatCurrency(amount) {
               <div class="azp-section-title">💰 PRICING DETAILS</div>
               <table class="azp-table">
                 <tr><td class="azp-label">Base Amount (Transport + Packing + Loading/Unloading)</td><td class="azp-value" style="text-align:right;">${formatCurrency(data.base_amount)}</td></tr>
+                <tr><td class="azp-label">Electrification Required</td><td class="azp-value" style="text-align:right;">${data.electrification_required ? 'Yes' : 'No'}</td></tr>
                 ${data.electrification_required ? `<tr><td class="azp-label">Electrification Charges</td><td class="azp-value" style="text-align:right;">${formatCurrency(data.electrification_amount)}</td></tr>` : ''}
                 ${((data.transit_insurance || data.pranjeet_insurance || 0) > 0) ? `<tr><td class="azp-label">Transit Insurance</td><td class="azp-value" style="text-align:right;">${formatCurrency(data.transit_insurance || data.pranjeet_insurance || 0)}</td></tr>` : ''}
                 ${data.gst_percentage > 0 ? `<tr><td class="azp-label">GST (${data.gst_percentage}%)</td><td class="azp-value" style="text-align:right;">${formatCurrency(data.gst_amount)}</td></tr>` : ''}
@@ -2266,6 +2272,7 @@ function formatCurrency(amount) {
       doc.setFontSize(8);
       doc.setTextColor(...darkText);
       doc.text(`Mobile: ${currentPreviewData.party_mobile || ''}`, margin + cardW + 10, y + 22);
+      if (currentPreviewData.customer_gst_number) doc.text(`Customer GSTIN: ${currentPreviewData.customer_gst_number}`, margin + cardW + 10, y + 29);
       y += 37;
 
       sectionTitle('SERVICE DETAILS', 'SERVICE');
@@ -2299,7 +2306,8 @@ function formatCurrency(amount) {
 
       sectionTitle('PRICING DETAILS', 'PRICE');
       tableRow('Base Amount', money(currentPreviewData.base_amount), { alignRight: true });
-      if (Number(currentPreviewData.electrification_amount || 0) > 0) {
+      tableRow('Electrification Required', currentPreviewData.electrification_required ? 'Yes' : 'No');
+      if (currentPreviewData.electrification_required && Number(currentPreviewData.electrification_amount || 0) > 0) {
         tableRow('Electrification Charges', money(currentPreviewData.electrification_amount), { alignRight: true });
       }
       if (Number(currentPreviewData.transit_insurance || currentPreviewData.pranjeet_insurance || 0) > 0) {
@@ -2637,6 +2645,7 @@ function formatCurrency(amount) {
           q.quotation_number,
           q.customer_name,
           q.party_mobile,
+          q.customer_gst_number || q.customerGstNumber,
           q.from_location,
           q.to_location,
           routeText,
@@ -2672,6 +2681,7 @@ function formatCurrency(amount) {
                 <span class="text-sm text-gray-500">${q.quotation_date ? formatDate(q.quotation_date) : ''}</span>
               </div>
               <h3 class="font-semibold text-gray-800 mt-2">${q.customer_name || ''}</h3>
+              ${q.customer_gst_number ? `<p class="text-sm text-gray-600">Customer GSTIN: ${q.customer_gst_number}</p>` : ''}
               <p class="text-sm text-gray-600">${q.from_location || ''} → ${q.to_location || ''}</p>
               <div class="azp-card-info-row">
                 ${(() => { const vt = q.vehicle_type || q.vehicleType || q.vehicle_label || ''; return vt ? `<span class="azp-info-chip azp-info-vehicle">🚚 Vehicle: ${vt === 'Mini' ? 'Mini Vehicle' : vt === 'Heavy' ? 'Heavy Vehicle' : vt}</span>` : ''; })()}
@@ -2747,6 +2757,7 @@ function formatCurrency(amount) {
       if (!quotation) return;
 
       document.getElementById('customer_name').value = quotation.customer_name || '';
+      document.getElementById('customer_gst_number').value = quotation.customer_gst_number || quotation.customerGstNumber || '';
       document.getElementById('service_type').value = quotation.service_type || 'Household Shifting';
       document.getElementById('from_location').value = quotation.from_location || '';
       document.getElementById('to_location').value = quotation.to_location || '';
@@ -2755,7 +2766,7 @@ function formatCurrency(amount) {
       document.getElementById('vehicle_type').value = quotation.vehicle_type || 'Mini';
       document.getElementById('distance_km').value = quotation.distance_km || '';
       document.getElementById('manual_amount').value = quotation.manual_amount || '';
-      document.getElementById('electrification_required').value = quotation.electrification_required ? 'yes' : 'no';
+      document.getElementById('electrification_required').value = (quotation.electrification_required === true || quotation.electrificationRequired === true || String(quotation.electrification_required || quotation.electrification_label || '').toLowerCase() === 'yes') ? 'yes' : 'no';
       document.getElementById('electrification_amount').value = quotation.electrification_amount || 2000;
       document.getElementById('transit_insurance').value = quotation.transit_insurance || quotation.pranjeet_insurance || 0;
       document.getElementById('gst_percentage').value = quotation.gst_percentage || 0;
@@ -3046,6 +3057,7 @@ function formatCurrency(amount) {
                 <div style="font-size:12px;color:#92400e;font-weight:900;">CUSTOMER</div>
                 <div style="font-size:18px;color:#1e3a5f;font-weight:900;">${data.customer_name || ''}</div>
                 ${data.party_mobile ? `<div style="font-size:13px;color:#374151;font-weight:800;margin-top:6px;">Mobile: ${data.party_mobile}</div>` : ''}
+                ${data.customer_gst_number ? `<div style="font-size:13px;color:#374151;font-weight:800;margin-top:6px;">Customer GSTIN: ${data.customer_gst_number}</div>` : ''}
               </div>
             </div>
             <div style="margin-bottom:20px;">
@@ -6996,6 +7008,7 @@ function normalizeQuote(id,d={}){
     quotationId: qid,
     customerName: d.customer_name || d.customerName || d.partyName || d.party_name || '',
     customerMobile: d.party_mobile || d.partyMobile || d.customerMobile || d.mobile || d.contactNumber || '',
+    customerGstNumber: d.customer_gst_number || d.customerGstNumber || '',
     fromLocation: d.from_location || d.fromLocation || d.from || '',
     toLocation: d.to_location || d.toLocation || d.to || '',
     totalAmount: money(d.total_amount ?? d.totalAmount ?? d.manual_amount ?? d.amount ?? d.base_amount),
@@ -7201,6 +7214,7 @@ function card(r,type,meta={}){
     <div class="azp-v9-id-priority-row"><div class="azp-v9-qid">${esc(r.quotationId || '-')}</div>${prioritySwitch}</div>
     <div class="azp-v9-name">${esc(r.customerName || 'No Name')}</div>
     <p class="azp-v9-mobile">📱 ${esc(r.customerMobile || '-')}</p>
+    ${r.customerGstNumber ? `<p class="azp-v9-mobile">Customer GSTIN: ${esc(r.customerGstNumber)}</p>` : ''}
     ${chips(r)}
     <div class="azp-v9-route"><div><b>🚚 From:</b><br>${esc(r.fromLocation || '-')}</div><div><b>📍 To:</b><br>${esc(r.toLocation || '-')}</div></div>
     <p class="azp-v9-amount">💰 Rs. ${fmt(r.totalAmount)}</p>
@@ -7299,6 +7313,7 @@ async function saveStatusV9(r,status,reason='',actionDate=''){
     quotationId: r.quotationId,
     quotationDocId: r.docId || '',
     customerName: r.customerName || '', customerMobile: r.customerMobile || '',
+    customerGstNumber: r.customerGstNumber || '', customer_gst_number: r.customerGstNumber || '',
     fromLocation: r.fromLocation || '', toLocation: r.toLocation || '',
     totalAmount: money(r.totalAmount), quotationDate: r.displayDate || r.quotationDate || today,
     vehicleType: r.vehicleType || '', vehicle_type: r.vehicleType || '', vehicleLabel: r.vehicleType || '', vehicle_label: r.vehicleType || '',
@@ -7394,6 +7409,8 @@ function installSaveWrapper(){
     payload.customer_name = payload.customer_name || payload.customerName || '';
     payload.partyMobile = payload.partyMobile || payload.party_mobile || '';
     payload.party_mobile = payload.party_mobile || payload.partyMobile || '';
+    payload.customer_gst_number = String(document.getElementById('customer_gst_number')?.value || payload.customer_gst_number || payload.customerGstNumber || '').trim().toUpperCase();
+    payload.customerGstNumber = payload.customer_gst_number;
     payload.fromLocation = payload.fromLocation || payload.from_location || '';
     payload.from_location = payload.from_location || payload.fromLocation || '';
     payload.toLocation = payload.toLocation || payload.to_location || '';
