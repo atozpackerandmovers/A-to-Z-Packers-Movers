@@ -31,19 +31,34 @@
   .modal{background:#fff;border-radius:16px;max-width:720px;width:min(96vw,720px);padding:18px;border:1px solid #eef2f7}
   .modal .x{float:right;border:0;background:#111;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
 
-header{position:static;text-align:left;background:linear-gradient(120deg,#0f172a,#075985);padding:24px;border-radius:18px}
+header{position:static;text-align:center;background:linear-gradient(90deg,var(--olive),var(--blue));padding:22px 14px;border-radius:16px}
 .wrap{margin:0 auto;padding:12px;max-width:1100px}.card{box-shadow:0 3px 16px #0f172a0a}
 .balance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.metric{padding:16px;border:1px solid #dbeafe;border-radius:14px;background:#f8fafc}.metric strong{display:block;font-size:1.5rem;margin:8px 0}.metric small{display:block;color:#475569}
 .positive{background:#ecfdf5;border-color:#a7f3d0}.negative{background:#fff7ed;border-color:#fed7aa}.wide{grid-column:1/-1}.notice{padding:12px;border-radius:12px;background:#fffbeb;color:#92400e;margin-top:12px;font-size:.9rem}
 input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disabled{color:#334155;background:#f1f5f9}button:disabled{opacity:.5;cursor:wait}.status{padding:12px;border-radius:12px;background:#eff6ff;margin:14px 0;overflow-wrap:anywhere}th{font-size:.75rem;color:#475569;text-transform:uppercase}td{font-size:.85rem;vertical-align:top;white-space:nowrap}.review{background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;margin-top:16px}#saveMessage,#projection{white-space:pre-wrap}h2,h3{margin-top:0}.muted{line-height:1.5}
 @media(max-width:480px){.wrap{padding:6px}.card{padding:14px}.metric{padding:12px}.metric strong{font-size:1.25rem}}
+.photo-camera{display:inline-block;padding:10px 14px;border-radius:10px;color:white;cursor:pointer;font-size:.9rem;margin:0}.camera-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.photo-confirm{display:flex;gap:10px;align-items:center;margin:16px 0 6px}#gpsPreview{max-width:100%;max-height:400px;border-radius:12px;margin-top:12px;object-fit:contain}#shareLinks a{padding:10px 12px;background:#166534;color:white;border-radius:10px;text-decoration:none;font-weight:800}.grid>*{min-width:0}input[type=file]{font-size:.85rem;padding:10px}#sessionRows button{margin:3px} .wrap{padding-bottom:24px}
 </style></head><body><main class="wrap">
-<header><h1>Fuel Entry & Settlement</h1><div>Fuel खर्च और company payment का साफ हिसाब</div><div id="identity" style="margin-top:12px;font-weight:800">Connecting to Driver App…</div></header>
+<header><h1>Fuel Consumption Entry & Reporting</h1><div>A to Z Packers & Movers · Boss WhatsApp: <strong>9338888550</strong></div><div id="identity" style="margin-top:12px;font-weight:800">Connecting to Driver App…</div><button id="btnRestartSession" class="btn-red tiny" style="margin-top:12px">🔄 Restart (New Session)</button></header>
 <p id="connection" class="status" role="status">Loading your Execution fuel records…</p>
-<section class="card" aria-label="Saved fuel balance"><h2>Saved Fuel Balance</h2>
-<div id="balance" class="balance-grid"></div><div id="reviewNote"></div>
-<p class="muted">Balance = previous balance + fuel consumption − company money received. Positive (+): pay driver. Negative (−): return to company. Amounts are based on saved entries.</p></section>
-<section class="card fuel"><h2>New Fuel Entry</h2><div class="grid cols-2" style="margin-bottom:16px"><div><label for="driverSel">Logged-in Driver</label><select id="driverSel" disabled></select></div><div><label for="vehicleSel">Assigned Vehicle</label><select id="vehicleSel"></select></div></div>
+<section class="card"><h2>Settings & Master Lists</h2>
+<div class="grid cols-2">
+<div><label for="boss1">Boss WhatsApp #1</label><input id="boss1" type="tel" value="+919338888550" autocomplete="tel"></div>
+<div><label for="boss2">Boss WhatsApp #2 (optional)</label><input id="boss2" type="tel" placeholder="+91XXXXXXXXXX"></div>
+<div><label for="driverSel">Driver (logged in)</label><select id="driverSel" disabled></select><p class="muted">Driver name is filled from your login.</p></div>
+<div><label for="vehicleSel">Vehicle (select)</label><select id="vehicleSel"></select>
+<div class="grid" style="grid-template-columns:minmax(0,1fr) auto;margin-top:8px"><input id="vehicleNew" placeholder="OD 05 BD 8855" aria-label="New vehicle number"><button id="addVehicle" class="btn-olive tiny">+ Add</button></div>
+<div class="grid" style="grid-template-columns:minmax(0,1fr) auto;margin-top:8px"><input id="initMeterInput" type="number" min="0" inputmode="decimal" placeholder="Set initial meter (one-time)" aria-label="Initial meter"><button id="setInitMeterBtn" class="btn-black tiny">Set Initial Meter</button></div>
+<p id="initialNote" class="muted">Set initial meter when starting with a vehicle.</p></div></div></section>
+<section class="card fuel"><h2>Fuel Entry</h2>
+<div class="sideBox" style="margin-bottom:18px">
+<label for="gpsSnap">GPS Camera Screenshot (optional)</label><input id="gpsSnap" type="file" accept="image/*">
+<div class="controls"><label for="gpsCamera" class="btn-blue photo-camera">📷 Take Photo</label><input id="gpsCamera" class="camera-input" type="file" accept="image/*" capture="environment" aria-label="Take GPS camera photo"></div>
+<label class="photo-confirm"><input id="gpsApprove" type="checkbox"> I confirm the GPS screenshot is clear</label>
+<p class="muted">Form is usable even without photo. Upload a GPS camera screenshot or take a photo. Existing GPS details on your photo are preserved.</p>
+<div id="photoPanel" hidden><img id="gpsPreview" alt="Selected GPS camera photo preview"><div class="controls"><button id="downloadPhoto" class="btn-blue tiny">Download Stamped Photo</button><button id="removePhoto" class="btn-red tiny">Remove Photo</button></div></div>
+<p id="photoStatus" class="muted" role="status">Photo is shared separately using WhatsApp or downloaded. It is not uploaded by Save Entry.</p>
+</div>
     <div class="grid cols-2">
       <div>
         <label for="meterStart">Meter Starting Reading</label>
@@ -86,12 +101,14 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
       <div>🛞 Mileage: <span id="outMileage">8.0</span>:1</div>
       <div>💵 Price/Litre: ₹<span id="outPpl">93.00</span></div>
       <div>🧮 Consumption Amount: <span id="outConsumption">₹0.00</span></div>
-      <div style="font-size:1.25rem">Fuel cost (draft): <span id="outTotal" style="font-weight:900">₹0.00</span></div>
+      <div style="font-size:1.25rem">⚖ Total: <span id="outTotal" style="font-weight:900">₹0.00</span></div>
     </div>
 
 
 <p id="meterNote" class="muted"></p>
-<div class="controls"><button type="button" class="btn-blue" id="btnReview" disabled>Review & Save to Execution</button><button type="button" class="btn-yellow" id="btnReset">Clear Draft</button></div>
+<div class="controls"><button id="btnAdd" class="btn-blue">➕ Add to Session</button><button id="btnSend" class="btn-olive">📤 Send (Primary) to WhatsApp</button><button type="button" class="btn-yellow" id="btnReset">Reset Draft</button></div>
+<p id="shareStatus" class="muted" role="status"></p><div id="shareLinks" class="controls"></div>
+<div class="review"><h3>Execution Auto-entry</h3><p class="muted">Review the company payment and save this fuel entry in Execution.</p><button type="button" class="btn-blue" id="btnReview" disabled>Review & Save to Execution</button></div>
 <div id="review" class="review" hidden><h3>Company Payment & Review</h3>
 <label for="bossAmount">Company money received for this entry (₹)</label><input id="bossAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter 0 if no new payment">
 <p class="muted">Enter only newly received money. Do not repeat an earlier advance or fuel payment.</p>
@@ -99,7 +116,13 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <div id="projection" class="status" aria-live="polite"></div>
 <button type="button" class="btn-olive" id="btnSave">Save Entry</button><p id="saveMessage" role="status"></p></div>
 </section>
-<section class="card"><h2>Saved Execution Records</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
-<div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">Download PDF</button><button id="btnWA" class="btn-olive">Share Summary on WhatsApp</button></div>
+<section class="card"><h2>Added Records (This Session)</h2><p class="muted">Session drafts are separate from saved Execution records. Use Review / Save on each draft to save it.</p>
+<div class="controls"><button id="btnSessionWA" class="btn-olive tiny">📤 WhatsApp (Session → Boss #1)</button><label for="sessionMonth">Report month</label><input id="sessionMonth" type="month" style="max-width:190px"><button id="btnMonthPDF" class="btn-blue tiny">📄 Monthly PDF</button></div>
+<div style="overflow:auto"><table><thead><tr><th>#</th><th>Driver</th><th>Vehicle</th><th>Start</th><th>End</th><th>KM</th><th>Mileage</th><th>Consumption (₹)</th><th>Status / Action</th></tr></thead><tbody id="sessionRows"></tbody></table></div></section>
+<section class="card" aria-label="Saved fuel balance"><h2>Saved Fuel Balance</h2>
+<div id="balance" class="balance-grid"></div><div id="reviewNote"></div>
+<p class="muted">Balance = previous balance + fuel consumption − company money received. Positive (+): pay driver. Negative (−): return to company. Amounts are based on saved entries.</p></section>
+<section class="card"><h2>Stored Records (All Time)</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
+<div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">📄 PDF (All Records)</button><button id="btnWA" class="btn-olive">📤 WhatsApp (to Boss #1 & #2)</button></div>
 <div style="overflow:auto;max-height:520px"><table><thead><tr><th>Date / Vehicle</th><th>Meter / KM</th><th>Fuel Cost</th><th>Company Paid</th><th>Difference</th><th>Note</th></tr></thead><tbody id="history"></tbody></table></div>
-</section></main><script src="driver-fuel-form.js?v=20260928-3"></script></body></html>
+</section></main><script src="driver-fuel-form.js?v=20260928-4"></script><script src="driver-fuel-features.js?v=20260928-4"></script></body></html>

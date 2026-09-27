@@ -75,3 +75,7 @@ test('switching driver accounts never reuses another driver money or meter draft
  f.receive({...f.context,driver:'Mahesh'});assert.equal(f.el('meterEnd').value,'');assert.equal(f.el('bossAmount').value,'');
  f.receive(f.context);assert.equal(f.el('meterEnd').value,'1400');assert.equal(f.el('bossAmount').value,'3000');
 });
+test('explicit personal vehicle addition saves only a fuel record and remains bound to logged-in driver',async()=>{
+ const b=bridge();await b.send({...b.data,entry:{...b.data.entry,vehicle:'OD 05 AB 1234',vehicle_manual:true}});
+ assert.equal(b.messages.at(-1).ok,true);const r=[...b.dbRows.values()][0];assert.equal(r.vehicle_number,'OD 05 AB 1234');assert.equal(r.vehicle_entry_mode,'Driver entered');assert.equal(r.driver,'Somnath');assert.equal(r.module,'fuel');
+});

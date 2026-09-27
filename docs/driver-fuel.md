@@ -35,3 +35,22 @@ Validation: `node --test tests/fuel-ledger.test.cjs` covers balance signs, carry
 unknown payments, group separation, strict numeric validation, driver binding,
 origin/source checks, idempotent retries and database errors. Tests mock database
 writes; no sample fuel payments are written into the production ledger.
+
+## Video-reference form restored (28 September 2026)
+
+The entry form appears first; the balance dashboard is below the session list.
+Settings, GPS screenshot upload / camera capture, clear-photo confirmation,
+preview, stamped JPEG output, primary WhatsApp, session drafts, monthly session
+PDF and stored-record sharing are available within the embedded form. The logged-in
+driver remains fixed. Vehicle additions are personal form choices, not edits to
+Vehicle Master. New registrations are explicitly marked Driver entered on save.
+
+Photo selection and stamping happen on the device. Save Entry saves the fuel
+ledger, not the photo. Use the explicit Share or Download Stamped Photo action
+for the image. The original image and existing GPS overlay are retained; the
+added footer says report-generation time and never invents capture coordinates.
+Native-share cancellation keeps the draft. On unsupported browsers the stamped
+JPEG downloads and a WhatsApp compose link is offered for manual attachment.
+
+Session entries are labelled drafts until the Execution save acknowledgement.
+Restart clears only session drafts; it does not erase saved financial records.
