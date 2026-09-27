@@ -114,6 +114,7 @@
     @media(min-width:700px){.azp-fabric-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 </style>
+<link rel="stylesheet" href="vehicle-documents.css?v=20260928-1">
 </head>
 <body class="min-h-screen">
   <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white px-4 py-5 sticky top-0 z-40 no-print">
@@ -173,6 +174,8 @@
 
   <script src="fuel-ledger.js?v=20260928-1"></script>
   <script src="repair-entry.js?v=20260928-1"></script>
+  <script src="vehicle-documents.js?v=20260928-1"></script>
+  <script src="vehicle-documents-store.js?v=20260928-1"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, runTransaction, serverTimestamp, query, writeBatch } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
@@ -771,7 +774,7 @@
       return true;
     }
     window.logout=async()=>{localStorage.removeItem('azp_staff_login');try{await firebaseSignOut(prodAuth)}catch(_){}location.reload();};
-    window.switchTab=t=>{currentTab=t;buildNav();render();};
+    window.switchTab=t=>{if(currentTab==='vehicle'&&t!=='vehicle'){const cabinet=document.getElementById('vehicle-document-cabinet')?.__vehicleDocs;if(cabinet&&!cabinet.canLeave())return;cabinet?.destroy();}currentTab=t;buildNav();render();};
     function buildNav(){ const nav=document.getElementById('desktopNav'),bot=document.getElementById('bottomNav'); let list=allowedTabs(); nav.innerHTML=list.map(([k,l,ic])=>`<button onclick="switchTab('${k}')" class="navbtn ${currentTab===k?'active':'bg-white text-slate-700'} border border-slate-200 rounded-2xl px-3 py-3 font-black text-xs flex flex-col items-center gap-1"><i data-lucide="${ic}" style="width:17px;height:17px"></i>${l}</button>`).join(''); bot.innerHTML=list.map(([k,l])=>`<button onclick="switchTab('${k}')" class="${currentTab===k?'bg-slate-900 text-white':'bg-slate-100 text-slate-700'}">${l.split('/')[0]}</button>`).join(''); setTimeout(()=>lucide.createIcons(),20); }
 
     function notificationRecordsForUser(user=currentUser){
@@ -2359,7 +2362,22 @@
         <div class="card p-5"><h3 class="font-black text-xl">Nearest Services Near ${esc(x.name||currentUser.name)}</h3><p class="text-sm text-slate-500 font-bold mt-1">Only this logged-in driver's Production GPS coordinates are used. Manoj/office/Cuttack or browser location is never used.</p><div class="azp-nearby-source ${x.coords?'':'waiting'}">${x.coords?`📍 Driver: ${esc(x.name||currentUser.name)} • ${esc(d.id)}<br>Coordinates: ${x.lat.toFixed(6)}, ${x.lng.toFixed(6)}<br>Location updated: ${azpProdAge(x.ts)}`:`⚠️ ${esc(currentUser.name)} ki Production GPS coordinates abhi available nahi hain. Nearest Services tab tak disabled rahegi; koi default location nahi khulegi.`}</div><div class="azp-nearby-grid">${azpNearbyTypes.map(([i,l,q])=>`<button class="azp-nearby-btn" onclick="azpOpenNearby('${q}')" ${x.coords&&azpProdAuthUser?'':'disabled'}>${i} ${l}</button>`).join('')}</div><p class="text-xs text-slate-500 font-black mt-3">Build 2026.08.02.3 • Odia Daily Check + driver-location-only fix</p></div></div>`;
     }
 
-    function vehicle(){ const vehs=byModule('vehicleMaster').filter(isMine), docs=byModule('documents').filter(d=>vehs.some(v=>v.vehicle_number===d.vehicle_number)||isMine(d)); document.getElementById('content').innerHTML=`<div class="space-y-3"><div class="card p-5"><h3 class="font-black text-xl">Vehicle Document Renewal Date</h3></div>${[...vehs,...docs].map(r=>`<div class="card p-4"><b>${esc(r.vehicle_number)}</b><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm"><div>Insurance<br><b>${esc(r.insurance_expiry||'-')}</b></div><div>Pollution<br><b>${esc(r.pollution_expiry||'-')}</b></div><div>Fitness<br><b>${esc(r.fitness_expiry||'-')}</b></div><div>Permit<br><b>${esc(r.permit_expiry||'-')}</b></div></div></div>`).join('')||empty('No assigned vehicle document found.')}</div>`; }
+    function vehicleDocumentAccess(){
+      if(!currentUser)return {vehicles:[],drivers:[]};
+      const masters=byModule('vehicleMaster'),staff=staffMasterRecord()||{};
+      const admin=currentUser.role==='Admin Preview';
+      const explicit=[staff.assigned_vehicle,staff.vehicle_number,staff.vehicle_no,...masters.filter(v=>isMine(v)&&String(v.status||'').toLowerCase()!=='inactive').map(v=>v.vehicle_number)].filter(Boolean);
+      // Use current master assignment first; never infer access from old fuel/job history.
+      const values=admin?masters.map(v=>v.vehicle_number):explicit.length?explicit:[azpProdDriver()?.vehicle].filter(Boolean);
+      return {vehicles:[...new Map(values.map(v=>[AZPVehicleDocs.key(v),String(v)])).values()],drivers:admin?byModule('driverMaster').map(r=>r.driver_name).filter(Boolean):[currentUser.name]};
+    }
+    const vehicleDocumentStore=AZPVehicleDocsStore.create({db,collectionName:MAIN,doc,runTransaction,serverTimestamp,storage:getStorage(app),storageRef:repairStorageRef,uploadBytes:repairUploadBytes,getDownloadURL:repairDownloadURL,allowed:vehicleDocumentAccess,actor:()=>currentUser?.name||'',isAdmin:()=>currentUser?.role==='Admin Preview'});
+    function vehicle(){
+      const content=document.getElementById('content');
+      let host=document.getElementById('vehicle-document-cabinet');
+      if(!host){content.innerHTML='<div id="vehicle-document-cabinet"></div>';host=document.getElementById('vehicle-document-cabinet');}
+      AZPVehicleDocs.mount(host,{identity:currentUser.name+'|'+currentUser.role,...vehicleDocumentAccess(),admin:currentUser.role==='Admin Preview',rows:byModule('documents'),legacy:[...byModule('vehicleMaster'),...byModule('documents').filter(r=>!r.record_type)],save:vehicleDocumentStore.save,review:vehicleDocumentStore.review});
+    }
     // Fuel settlement uses the same saved ledger as Execution, independent of attendance resets.
     const fuelRowsForMe=()=>byModule('fuel').filter(r=>currentUser&&(currentUser.role==='Admin Preview'||AZPFuelLedger.name(AZPFuelLedger.driver(r))===AZPFuelLedger.name(currentUser.name))).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.createdAtMs||b.updatedAtMs||0)-(a.createdAtMs||a.updatedAtMs||0));
     function fuelVehicleOptions(){
