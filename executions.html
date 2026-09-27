@@ -727,7 +727,7 @@
       const d=new Date(s);
       return isNaN(d) ? '' : d.toISOString().slice(0,10);
     }
-    const AZP_SALARY_FORMULA_VERSION='CONTINUOUS_UNPAID_V6_PAID_CREDIT';
+    const AZP_SALARY_FORMULA_VERSION='CURRENT_MONTH_V7_PAID_CREDIT';
     let azpSalaryDataVersion=0;
     const azpSalaryCalcCache=new Map();
     function azpInvalidateSalaryCache(){azpSalaryDataVersion++;azpSalaryCalcCache.clear()}
@@ -763,13 +763,25 @@
     function azpSalaryLiveCycleStart(staff){
       const join=typeof azpAttJoinDate==='function'?azpAttJoinDate(staff):parseDateForCalc(staff?.joining_date);
       const last=azpSalaryPaidHistory(staff)[0];
-      if(!last) return join;
+      // The owner has settled the earlier months. A missing Paid History row must
+      // not make the current salary start again at the original joining date.
+      const monthStart=`${azpSalaryIndiaToday().slice(0,7)}-01`;
+      if(!last) return join>monthStart?join:monthStart;
       const explicit=parseDateForCalc(last.next_cycle_start_date||'');
-      if(explicit) return explicit<join?join:explicit;
+      if(explicit) return [join,monthStart,explicit].sort().at(-1);
       const paidDate=parseDateForCalc(last.paid_date||'');
-      if(paidDate) return paidDate<join?join:paidDate;
+      if(paidDate) return [join,monthStart,paidDate].sort().at(-1);
       const through=parseDateForCalc(last.paid_through_date||last.salary_cycle_end||'');
-      const next=through?azpSalaryAddDays(through,1):join;return next<join?join:next;
+      const next=through?azpSalaryAddDays(through,1):join;return [join,monthStart,next].sort().at(-1);
+    }
+    function azpSalaryCycleAdjustment(staff,amount){
+      const record=allData.find(r=>String(r.id)===String(azpSalaryLiveRecordId(staff)));
+      // This exact legacy adjustment only offset the June-August balance.
+      // Once that period is excluded, applying it again would erase September pay.
+      if(Number(amount)===-25200&&Number(record?.extra_bonus)===-25200&&
+         /Owner-authorized balance reconciliation on 2026-09-27/.test(String(record?.company_remark||''))&&
+         azpSalaryLiveCycleStart(staff)>='2026-09-01') return 0;
+      return Number(amount||0);
     }
     function azpSalaryClaimedSourceIds(staff){
       const ids=new Set();azpSalaryPaidHistory(staff).forEach(r=>['included_bonus_ids','included_referral_ids'].forEach(k=>(Array.isArray(r[k])?r[k]:[]).forEach(id=>ids.add(String(id)))));return ids;
@@ -815,7 +827,7 @@
     function azpSalarySavedAdjustment(staff){
       const id=azpSalaryLiveRecordId(staff);
       const record=allData.find(r=>String(r.id)===String(id));
-      return Number(record?.extra_bonus??0);
+      return azpSalaryCycleAdjustment(staff,record?.extra_bonus??0);
     }
     function buildSalaryFinalData(name,role,month,vehicleType,extraBonus=0,options={}){
       const master=getStaffMasterRecord(name,role)||getStaffMasterRecord(name),staff=master&&typeof azpAttStaff==='function'?azpAttStaff().find(s=>String(s.master_id)===String(master.id)):null;
@@ -823,7 +835,7 @@
       if(!identity.name)identity.name=name;if(!identity.role)identity.role=role;if(!identity.master_id&&master)identity.master_id=String(master.id||'');if(!identity.master_module&&master)identity.master_module=azpMasterModule(master);
       const start=options.startDate||azpSalaryLiveCycleStart(identity),end=options.endDate||azpSalaryIndiaToday(),cacheKey=[azpSalaryDataVersion,identity.master_id||normName(name),normName(role),start,end,Number(extraBonus||0)].join('|');
       if(azpSalaryCalcCache.has(cacheKey))return azpSalaryCalcCache.get(cacheKey);
-      const calculated=buildLiveSalarySettlement(identity,start,end,extraBonus);azpSalaryCalcCache.set(cacheKey,calculated);return calculated;
+      const calculated=buildLiveSalarySettlement(identity,start,end,azpSalaryCycleAdjustment(identity,extraBonus));azpSalaryCalcCache.set(cacheKey,calculated);return calculated;
     }
     function optionValue(o){ return (o && typeof o==='object') ? String(o.value ?? '') : String(o ?? ''); }
     function optionLabel(o){ return (o && typeof o==='object') ? String(o.label ?? o.value ?? '') : String(o ?? ''); }
@@ -2219,7 +2231,7 @@
       if(normName(source.payment_status)==='paid'||source.settlement_locked==='Yes'){showToast('This paid settlement is already locked.',true);return;}
       const rows=azpSalaryFinalCycleRecords(source),paidDate=azpSalaryIndiaToday(),cycleStart=azpSalaryLiveCycleStart(staff),settleEnd=azpSalaryAddDays(paidDate,-1),localNow=Date.now();
       if(!cycleStart||cycleStart>settleEnd){showToast('No completed salary day is available to settle before today.',true);return;}
-      const settled=buildLiveSalarySettlement(staff,cycleStart,settleEnd,source.extra_bonus||0);
+      const settled=buildLiveSalarySettlement(staff,cycleStart,settleEnd,azpSalaryCycleAdjustment(staff,source.extra_bonus||0));
       if(settled.calculation_blocked==='Yes'){showToast(settled.calculation_message||'Salary payment blocked.',true);return;}
       const historyId=safeId('SALARY_PAID_'+(staff.master_id||staff.name)+'_'+cycleStart+'_'+settleEnd+'_'+Date.now());
       const historyPayload={
