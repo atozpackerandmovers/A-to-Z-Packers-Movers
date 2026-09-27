@@ -676,7 +676,7 @@
       </div>
       <div class="azp-nav-grid">
        <button onclick="showView('inquiry')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="inquiry">Inquiry</button>
-       <button onclick="showView('form')" class="nav-btn transition-all bg-white/20 hover:bg-white/30" data-view="form">New Quote</button>
+       <button onclick="startNewQuotation()" class="nav-btn transition-all bg-white/20 hover:bg-white/30" data-view="form">New Quote</button>
        <button onclick="showView('history')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="history">History</button>
        <button onclick="showView('today-work')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="today-work">Today's Work</button>
        <button onclick="showView('sales')" class="nav-btn transition-all bg-white/10 hover:bg-white/20" data-view="sales">Sales</button>
@@ -874,7 +874,7 @@
     </div><!-- Preview View -->
     <div id="preview-view" class="view hidden">
      <div class="mb-4 flex flex-wrap gap-3 justify-center no-print">
-      <button onclick="showView('form')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all"> ← Back to Form </button> <button onclick="downloadPDF()" class="px-6 py-2 btn-primary text-white rounded-lg font-medium transition-all"> 📥 Download PDF </button> <button onclick="shareQuotation()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-all"> 📤 Share </button> <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"> 🖨️ Print </button>
+      <button onclick="showView('form', true)" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all"> ← Back to Form </button> <button onclick="downloadPDF()" class="px-6 py-2 btn-primary text-white rounded-lg font-medium transition-all"> 📥 Download PDF </button> <button onclick="shareQuotation()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-all"> 📤 Share </button> <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"> 🖨️ Print </button>
      </div>
      <div id="pdf-preview-container" class="pdf-preview rounded-xl overflow-hidden card-shadow"></div>
     </div><!-- History View -->
@@ -1424,6 +1424,37 @@ A/c Name: A To Z Packers And Movers</textarea></div>
     // Application state
     let quotations = [];
     let currentPreviewData = null;
+    let quotationRevisionContext = null;
+    function clearQuotationRevision() {
+      quotationRevisionContext = null;
+      document.getElementById('azp-revision-banner')?.remove();
+    }
+    function startNewQuotation() { resetForm(); showView('form'); }
+    function setQuotationRevision(quotation) {
+      clearQuotationRevision();
+      const root = quotation.originalQuotationId || quotation.quotation_number;
+      quotationRevisionContext = {
+        isRevision: true,
+        originalQuotationId: root,
+        originalQuotationDocId: quotation.originalQuotationDocId || quotation.__backendId || '',
+        revisedFromQuotationId: quotation.quotation_number,
+        revisedFromDocId: quotation.__backendId || ''
+      };
+      const banner = document.createElement('div');
+      banner.id = 'azp-revision-banner';
+      banner.className = 'p-4 mb-4 rounded-xl bg-violet-50 text-violet-900 border border-violet-200';
+      const label = document.createElement('strong');
+      label.textContent = 'Revised quotation — Original: ' + root;
+      banner.appendChild(label);
+      const note = document.createElement('p');
+      note.textContent = 'Saving creates a linked copy in Revise. The original quotation is preserved.';
+      banner.appendChild(note);
+      const cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = 'Cancel revision / New quotation';
+      cancel.className = 'mt-2 underline font-bold'; cancel.onclick = startNewQuotation;
+      banner.appendChild(cancel);
+      document.getElementById('quotation-form').prepend(banner);
+    }
     let lastGeneratedPdfBlob = null;
     let lastGeneratedPdfName = 'quotation.pdf';
     let itemCount = 0;
@@ -1794,6 +1825,7 @@ function formatCurrency(amount) {
       const transitProvided = document.getElementById('transit_provided').value === 'yes';
       
       return {
+        ...(quotationRevisionContext || {}),
         quotation_number: generateQuotationNumber(),
         customer_name: document.getElementById('customer_name').value.trim(),
         party_mobile: document.getElementById('party_mobile').value.trim(),
@@ -2276,6 +2308,7 @@ function formatCurrency(amount) {
       y += 37;
 
       sectionTitle('SERVICE DETAILS', 'SERVICE');
+      if (currentPreviewData.isRevision) tableRow('Revised Quotation - Original', currentPreviewData.originalQuotationId || '');
       tableRow('Service Type', currentPreviewData.service_type);
       tableRow('From Location', currentPreviewData.from_location);
       tableRow('To Location', currentPreviewData.to_location);
@@ -2536,6 +2569,7 @@ function formatCurrency(amount) {
 
     // Reset form
     function resetForm() {
+      clearQuotationRevision();
       document.getElementById('quotation-form').reset();
       document.getElementById('items-container').innerHTML = '';
       document.getElementById('electrification-amount-wrapper').classList.add('hidden');
@@ -2548,7 +2582,8 @@ function formatCurrency(amount) {
     }
 
     // View navigation
-    function showView(viewName) {
+    function showView(viewName, keepRevision = false) {
+      if (viewName === 'form' && !keepRevision) clearQuotationRevision();
       document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
       document.getElementById(`${viewName}-view`).classList.remove('hidden');
       
@@ -2692,7 +2727,7 @@ function formatCurrency(amount) {
             </div>
             <div class="azp-history-action-row">
               <button onclick="viewQuotation('${quoteId}')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-all">View</button>
-              <button onclick="editQuotation('${quoteId}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-all">Edit</button>
+              <button onclick="editQuotation('${quoteId}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-all">Revise</button>
               <button onclick="convertQuotationToSale('${quoteId}')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm hover:bg-emerald-100 transition-all">Convert<br>to Sale</button>
               <button type="button" onclick="azpRegisterComplaintFromHistory('${quoteId}')" class="azp-history-complaint-btn">⚠️ Register<br>Complaint</button>
               <button type="button" onclick="azpOpenComplaintStatus('${quoteId}')" class="azp-history-complaint-status-btn">🛠️ Complaint<br>Status</button>
@@ -2755,6 +2790,8 @@ function formatCurrency(amount) {
     function editQuotation(id) {
       const quotation = findQuotationById(id);
       if (!quotation) return;
+      setQuotationRevision(quotation);
+      document.getElementById('party_mobile').value = quotation.party_mobile || quotation.partyMobile || '';
 
       document.getElementById('customer_name').value = quotation.customer_name || '';
       document.getElementById('customer_gst_number').value = quotation.customer_gst_number || quotation.customerGstNumber || '';
@@ -2789,8 +2826,8 @@ function formatCurrency(amount) {
       document.getElementById('electrification-amount-wrapper').classList.toggle('hidden', !(quotation.electrification_required));
       document.getElementById('transit-details-wrapper').classList.toggle('hidden', !(quotation.transit_provided));
       updatePricePreview();
-      showView('form');
-      showToast('Quotation loaded into form for editing.', 'success');
+      showView('form', true);
+      showToast('Revision loaded. Save to keep the new copy in Revise.', 'success');
     }
 
 
@@ -7006,6 +7043,10 @@ function normalizeQuote(id,d={}){
   return {
     docId: id,
     quotationId: qid,
+    isRevision: d.isRevision === true || !!d.originalQuotationId,
+    originalQuotationId: d.originalQuotationId || '',
+    originalQuotationDocId: d.originalQuotationDocId || '',
+    revisedFromQuotationId: d.revisedFromQuotationId || '',
     customerName: d.customer_name || d.customerName || d.partyName || d.party_name || '',
     customerMobile: d.party_mobile || d.partyMobile || d.customerMobile || d.mobile || d.contactNumber || '',
     customerGstNumber: d.customer_gst_number || d.customerGstNumber || '',
@@ -7102,6 +7143,8 @@ function rowsBy(type){
   const rows = baseRows().filter(r => {
     const s = statusNorm(r.status);
     const id = safeId(r.quotationId);
+    if (type === 'revise') return r.isRevision;
+    if (r.isRevision) return false;
     if (type === 'priority') return isPriorityV9(id) && !['confirmed','cancelled'].includes(s);
     return type === 'followup' ? !['confirmed','cancelled'].includes(s) : s === type;
   });
@@ -7110,7 +7153,7 @@ function rowsBy(type){
 }
 function passSearch(r,q){
   return azpSearchMatch([
-    r.quotationId,r.customerName,r.customerMobile,r.totalAmount,r.vehicleType,r.status,r.quotationDate,r.createdText
+    r.quotationId,r.originalQuotationId,r.customerName,r.customerMobile,r.totalAmount,r.vehicleType,r.status,r.quotationDate,r.createdText
   ], r.fromLocation, r.toLocation, q || '');
 }
 function daysAgoFrom(dateIso){
@@ -7135,8 +7178,9 @@ function ensureTabs(){
     <button type="button" id="azp-v9-tab-followup"><span>📞</span><span>Follow Up</span></button>
     <button type="button" id="azp-v9-tab-confirmed"><span>✅</span><span>Confirmed</span></button>
     <button type="button" id="azp-v9-tab-cancelled"><span>❌</span><span>Cancelled</span></button>
-    <button type="button" id="azp-v9-tab-priority"><span>⭐</span><span>Priority</span></button>`;
-  [['followup','orange'],['confirmed','green'],['cancelled','red'],['priority','amber']].forEach(([name]) => {
+    <button type="button" id="azp-v9-tab-priority"><span>⭐</span><span>Priority</span></button>
+    <button type="button" id="azp-v9-tab-revise"><span>📝</span><span>Revise</span></button>`;
+  [['followup','orange'],['confirmed','green'],['cancelled','red'],['priority','amber'],['revise','violet']].forEach(([name]) => {
     const el = document.getElementById('azp-v9-tab-' + name);
     if (!el) return;
     el.onclick = () => { azpActiveTabV9 = name; azpDatabaseRenderLimitV9 = 120; renderV9(); };
@@ -7148,12 +7192,14 @@ function styleTabs(){
     followup:['#ea580c','#fff','#fff7ed','#c2410c'],
     confirmed:['#047857','#fff','#ecfdf5','#047857'],
     cancelled:['#dc2626','#fff','#fef2f2','#991b1b'],
-    priority:['#f59e0b','#111827','#fffbeb','#92400e']
+    priority:['#f59e0b','#111827','#fffbeb','#92400e'],
+    revise:['#7c3aed','#fff','#f5f3ff','#6d28d9']
   };
   Object.keys(cfg).forEach(k => {
     const el = document.getElementById('azp-v9-tab-' + k);
     if (!el) return;
     const c = cfg[k];
+    el.classList.toggle('azp-db-active', azpActiveTabV9 === k);
     if (azpActiveTabV9 === k) {
       el.style.background = c[0]; el.style.color = c[1]; el.style.border = '0'; el.style.boxShadow = '0 12px 24px rgba(15,23,42,.12)';
     } else {
@@ -7181,7 +7227,7 @@ function buildDateMeta(rows,type){
 function dateSummaryHtml(counts,type){
   const entries = Object.entries(counts || {}).sort((a,b)=>String(b[0]).localeCompare(String(a[0]))).slice(0,10);
   if (!entries.length) return '';
-  const label = type === 'priority' ? 'Priority' : type === 'confirmed' ? 'Confirmed' : type === 'cancelled' ? 'Cancelled' : 'Pending';
+  const label = type === 'revise' ? 'Revised' : type === 'priority' ? 'Priority' : type === 'confirmed' ? 'Confirmed' : type === 'cancelled' ? 'Cancelled' : 'Pending';
   return `<div class="azp-v9-date-summary"><b style="width:100%;color:#0f766e;font-size:13px;">📅 Date-wise ${label} Count</b>${entries.map(([d,c])=>`<span>${esc(d)} : ${c}</span>`).join('')}</div>`;
 }
 
@@ -7198,16 +7244,18 @@ function chips(r){
 function card(r,type,meta={}){
   const id = safeId(r.quotationId);
   const priorityOn = isPriorityV9(id);
-  const badge = type === 'priority' ? '⭐ Priority' : type === 'followup' ? '🟠 Pending Follow Up' : type === 'confirmed' ? '✅ Confirmed' : '❌ Cancelled';
-  const bstyle = type === 'priority' ? 'background:#fef3c7;color:#92400e;' : type === 'followup' ? 'background:#ffedd5;color:#c2410c;' : type === 'confirmed' ? 'background:#dcfce7;color:#166534;' : 'background:#fee2e2;color:#991b1b;';
-  const dateLine = type === 'priority' ? `📅 Priority / Sent ${esc(daysAgoFrom(r.displayDate || r.quotationDate))} ago` : type === 'followup' ? `📅 Sent ${esc(daysAgoFrom(r.displayDate || r.quotationDate))} ago` : type === 'confirmed' ? `📅 Confirmed: ${esc(r.confirmedDate || '-')}` : `📅 Cancelled: ${esc(r.cancelledDate || '-')}`;
-  const prioritySwitch = `<button type="button" class="azp-v9-priority-toggle ${priorityOn ? 'on' : ''}" onclick="azpV9TogglePriority('${id}')"><span>Priority</span><b>${priorityOn ? 'YES' : 'NO'}</b></button>`;
-  const actions = type === 'followup'
+  const badge = type === 'revise' ? '📝 Revised Quotation' : type === 'priority' ? '⭐ Priority' : type === 'followup' ? '🟠 Pending Follow Up' : type === 'confirmed' ? '✅ Confirmed' : '❌ Cancelled';
+  const bstyle = type === 'revise' ? 'background:#ede9fe;color:#6d28d9;' : type === 'priority' ? 'background:#fef3c7;color:#92400e;' : type === 'followup' ? 'background:#ffedd5;color:#c2410c;' : type === 'confirmed' ? 'background:#dcfce7;color:#166534;' : 'background:#fee2e2;color:#991b1b;';
+  const dateLine = type === 'revise' ? `Original: ${esc(r.originalQuotationId || '-')} · Status: ${esc(r.status || 'follow_up')}` : type === 'priority' ? `📅 Priority / Sent ${esc(daysAgoFrom(r.displayDate || r.quotationDate))} ago` : type === 'followup' ? `📅 Sent ${esc(daysAgoFrom(r.displayDate || r.quotationDate))} ago` : type === 'confirmed' ? `📅 Confirmed: ${esc(r.confirmedDate || '-')}` : `📅 Cancelled: ${esc(r.cancelledDate || '-')}`;
+  const prioritySwitch = type === 'revise' ? '' : `<button type="button" class="azp-v9-priority-toggle ${priorityOn ? 'on' : ''}" onclick="azpV9TogglePriority('${id}')"><span>Priority</span><b>${priorityOn ? 'YES' : 'NO'}</b></button>`;
+  const actions = type === 'revise'
+    ? `<div class="azp-v9-actions"><button type="button" onclick="azpV9OpenQuote('${id}',false)" style="background:#7c3aed;">View / PDF</button><button type="button" onclick="azpV9OpenQuote('${id}',true)" style="background:#2563eb;">Revise Again</button><button type="button" onclick="azpV9OpenQuote('${safeId(r.originalQuotationId)}',false)" style="background:#475569;">Original</button></div>`
+    : type === 'followup'
     ? `<div class="azp-v9-actions azp-v9-actions-followup"><button type="button" onclick="azpV9Confirm('${id}')" style="background:#059669;">✅<br>Confirm</button><button type="button" onclick="azpV9Cancel('${id}')" style="background:#dc2626;">❌<br>Cancel</button><button type="button" onclick="azpDirectCallByPhone('${esc(r.customerMobile || '')}')" style="background:#f97316;">📞<br>Call</button><button type="button" onclick="azpV9GentleReminder('${id}')" class="azp-v9-wa-logo-btn" aria-label="WhatsApp Gentle Reminder">${azpV9WhatsAppLogo()}</button></div>`
     : `<div class="azp-v9-actions"><button type="button" onclick="azpDirectCallByPhone('${esc(r.customerMobile || '')}')" style="background:#0f766e;">📞<br>Call</button><button type="button" onclick="azpV9MoveFollow('${id}')" style="background:#334155;">↩<br>Follow</button><button type="button" onclick="azpV9MoveFollow('${id}')" style="background:#dc2626;">🗑<br>Clear</button></div>`;
   const recNo = meta.index || 1;
   const dateTotal = meta.total || 1;
-  const countLabel = type === 'priority' ? 'Date Priority' : type === 'confirmed' ? 'Date Confirmed' : type === 'cancelled' ? 'Date Cancelled' : 'Date Pending';
+  const countLabel = type === 'revise' ? 'Date Revised' : type === 'priority' ? 'Date Priority' : type === 'confirmed' ? 'Date Confirmed' : type === 'cancelled' ? 'Date Cancelled' : 'Date Pending';
   return `<div class="azp-v9-card ${priorityOn ? 'azp-v9-priority-card' : ''}" data-qid="${esc(r.quotationId)}">
     <div class="azp-v9-date-count-bar">📌 Record No: ${recNo} / ${dateTotal} <span style="opacity:.7;">|</span> ${countLabel}: ${dateTotal} <span style="opacity:.7;">|</span> 📅 ${esc(meta.date || r.displayDate || r.quotationDate || '')}</div>
     <div class="azp-v9-top"><span class="azp-v9-status" style="${bstyle}">${badge}</span><span class="azp-v9-date">${esc(r.displayDate || r.quotationDate || '')}</span></div>
@@ -7221,6 +7269,7 @@ function card(r,type,meta={}){
     <p class="azp-v9-sent">${dateLine}</p>
     ${r.cancelReason ? `<p style="color:#dc2626;font-size:14px;font-weight:700;">Reason: ${esc(r.cancelReason)}</p>` : ''}
     ${actions}
+    ${type === 'followup' || type === 'priority' ? `<div class="azp-revise-tools"><button type="button" onclick="azpV9OpenQuote('${id}',true)">📝 Create Revision</button><button type="button" onclick="azpV9LinkRevision('${id}')">Move existing to Revise</button></div>` : ''}
   </div>`;
 }
 function renderV9(){
@@ -7232,12 +7281,12 @@ function renderV9(){
   const title = document.querySelector('#database-view .planning-section-title');
   const note = document.querySelector('#database-view section p.text-sm');
   const q = (document.getElementById('marketing-db-search')?.value || '').trim().toLowerCase();
-  const type = azpActiveTabV9 === 'confirmed' ? 'confirmed' : azpActiveTabV9 === 'cancelled' ? 'cancelled' : azpActiveTabV9 === 'priority' ? 'priority' : 'followup';
+  const type = azpActiveTabV9 === 'revise' ? 'revise' : azpActiveTabV9 === 'confirmed' ? 'confirmed' : azpActiveTabV9 === 'cancelled' ? 'cancelled' : azpActiveTabV9 === 'priority' ? 'priority' : 'followup';
   const rows = rowsBy(type).filter(r => passSearch(r,q));
   const visibleRows = rows.slice(0, azpDatabaseRenderLimitV9);
-  if (badge) badge.textContent = (type === 'priority' ? '⭐ Priority : ' : type === 'followup' ? '📞 Follow Up : ' : type === 'confirmed' ? '✅ Confirmed : ' : '❌ Cancelled : ') + rows.length;
-  if (title) title.textContent = type === 'priority' ? 'Priority Section' : type === 'followup' ? 'Follow Up Section' : type === 'confirmed' ? 'Confirmed Section' : 'Cancelled Section';
-  if (note) note.textContent = type === 'priority' ? 'Priority records are also kept in Follow Up until confirmed or cancelled.' : type === 'followup' ? 'All quotation history records appear here automatically from Firebase quotations. Confirmed/Cancelled records disappear permanently.' : type === 'confirmed' ? 'Confirmed records are saved permanently in Firebase.' : 'Cancelled records are saved permanently in Firebase.';
+  if (badge) badge.textContent = (type === 'revise' ? '📝 Revise : ' : type === 'priority' ? '⭐ Priority : ' : type === 'followup' ? '📞 Follow Up : ' : type === 'confirmed' ? '✅ Confirmed : ' : '❌ Cancelled : ') + rows.length;
+  if (title) title.textContent = type === 'revise' ? 'Revised Quotations' : type === 'priority' ? 'Priority Section' : type === 'followup' ? 'Follow Up Section' : type === 'confirmed' ? 'Confirmed Section' : 'Cancelled Section';
+  if (note) note.textContent = type === 'revise' ? 'Linked revised / duplicate copies are kept here. Original quotations remain in their existing Follow Up, Confirmed or Cancelled section.' : type === 'priority' ? 'Priority records are also kept in Follow Up until confirmed or cancelled.' : type === 'followup' ? 'Original quotations awaiting follow-up appear here. Revised copies are kept in Revise.' : type === 'confirmed' ? 'Confirmed records are saved permanently in Firebase.' : 'Cancelled records are saved permanently in Firebase.';
   if (rows.length) {
     const meta = buildDateMeta(rows,type);
     list.innerHTML = dateSummaryHtml(meta.counts,type) + visibleRows.map(r => card(r,type, meta.metaById[safeId(r.quotationId || r.docId)] || {})).join('') +
@@ -7246,6 +7295,34 @@ function renderV9(){
     list.innerHTML = `<p class="text-gray-500 text-center py-8 md:col-span-2">No ${type === 'followup' ? 'follow up' : type} records found.</p>`;
   }
 }
+window.azpV9OpenQuote = function(id, revise){
+  const record = findRecord(id);
+  if (!record) return alert('Original quotation is unavailable. Please refresh or check History.');
+  const key = record.docId || record.quotationId;
+  if (revise) window.editQuotation(key); else window.viewQuotation(key);
+};
+window.azpV9LinkRevision = async function(id){
+  const record = findRecord(id);
+  if (!record || record.isRevision) return;
+  if (baseRows().some(r => r.originalQuotationId === record.quotationId)) {
+    return alert('This quotation already has revisions. Keep it as the original.');
+  }
+  const number = prompt('Enter the ORIGINAL quotation number for this duplicate copy:', '');
+  if (!number || !number.trim()) return;
+  const original = baseRows().find(r => r.quotationId === number.trim());
+  if (!original || original.isRevision || original.quotationId === record.quotationId) {
+    return alert('Choose a different existing original quotation number.');
+  }
+  if (!confirm(`Move ${record.quotationId} (${record.customerName}) to Revise? Original: ${original.quotationId} (${original.customerName}).`)) return;
+  try {
+    const patch = {isRevision:true, originalQuotationId:original.quotationId,
+      originalQuotationDocId:original.docId, revisedFromQuotationId:original.quotationId,
+      revisedFromDocId:original.docId, revisionLinkedAt:new Date().toISOString()};
+    await setDoc(doc(db,'quotations',record.docId),patch,{merge:true});
+    azpQuotesV9 = azpQuotesV9.map(r => r.docId === record.docId ? {...r,...patch} : r);
+    azpActiveTabV9 = 'revise'; renderV9();
+  } catch(error) { console.error(error); alert('Revision was not saved. Please retry.'); }
+};
 window.azpV9LoadMore = function(){ azpDatabaseRenderLimitV9 += 120; renderV9(); };
 function findRecord(id){ return baseRows().find(r => safeId(r.quotationId) === id || safeId(r.docId) === id); }
 function askConfirmationDateV9(r){
@@ -7867,6 +7944,7 @@ setTimeout(bootV9, 1200);
   };
 
   function ensureDbTabs(){
+    if (window.renderCrmDatabase) { window.renderCrmDatabase(); return; }
     const section = document.querySelector("#database-view section");
     if(!section) return;
     let tabs = document.getElementById("azp-crm-tabs");
@@ -7901,7 +7979,7 @@ setTimeout(bootV9, 1200);
       if(el) el.classList.toggle("azp-db-active", k === tab);
     });
     if(title) title.textContent = tab === "confirmed" ? "Confirmed Section" : tab === "cancelled" ? "Cancelled Section" : "Follow Up Section";
-    if(note) note.textContent = tab === "confirmed" ? "Confirmed records are saved permanently in Firebase." : tab === "cancelled" ? "Cancelled records are saved permanently in Firebase." : "All quotation history records appear here automatically from Firebase quotations. Confirmed/Cancelled records disappear permanently.";
+    if(note) note.textContent = tab === "confirmed" ? "Confirmed records are saved permanently in Firebase." : tab === "cancelled" ? "Cancelled records are saved permanently in Firebase." : "Original quotations awaiting follow-up appear here. Revised copies are kept in Revise.";
     if(badge && !/Follow Up|Confirmed|Cancelled/.test(badge.textContent || "")){
       badge.textContent = tab === "confirmed" ? "✅ Confirmed : 0" : tab === "cancelled" ? "❌ Cancelled : 0" : "📞 Follow Up : 0";
     }
@@ -8120,6 +8198,7 @@ setTimeout(bootV9, 1200);
   }
 
   window.azpFillQuotationFromInventory = function(id){
+    clearQuotationRevision();
     const rec = readInventoryRows().find(r => r.id === id);
     if(!rec){
       alert("Inventory record not found.");
@@ -12130,6 +12209,14 @@ import { getFirestore, collection, onSnapshot, getDocs } from 'https://www.gstat
 </script>
 <!-- END AZP LIVE VENDOR ALL-COLLECTION OVERRIDE -->
 
+<style id="azp-revise-section-css">
+#database-view #azp-v9-tab-revise.azp-db-active{background:#7c3aed!important;color:#fff!important;border:0!important;}
+#database-view #azp-crm-tabs.azp-v9-tabs-priority{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+#database-view .azp-v9-tabs-priority button{min-width:0!important;}
+.azp-revise-tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.azp-revise-tools button{padding:10px 12px;border-radius:12px;background:#f5f3ff;color:#6d28d9;font-weight:800;border:1px solid #ddd6fe;}
+@media(max-width:640px){#database-view #azp-crm-tabs.azp-v9-tabs-priority{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
+</style>
 </body>
 </html>
 <!-- AZP INSTANT VENDOR SEARCH FIX - Firebase config untouched -->
@@ -13891,6 +13978,7 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
   }
 
   window.azpAddQuoteFromReceivedInventory=function(id,button){
+    clearQuotationRevision();
     const rec=findRecord(id);
     if(!rec){alert('Inventory record not found.');return;}
     if(typeof window.azpFillQuotationFromInventory!=='function'){
