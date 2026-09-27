@@ -274,6 +274,7 @@
 
       <div class="content-pad p-6" id="content-area">
         <section id="mod-dashboard">
+          <div id="fuel-office-dashboard"></div>
           <div id="azp-salary-due-home-box" hidden aria-live="polite"></div>
           <div class="stat-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <div class="card-stat bg-white p-4 rounded-xl shadow-sm border"><p class="text-xs text-slate-500 uppercase tracking-wide">Total Jobs</p><p id="count-jobs" class="text-2xl font-extrabold text-slate-800 mt-1">0</p></div>
@@ -307,6 +308,7 @@
 
   <div id="toast" class="fixed top-4 right-4 z-[60] hidden"><div class="toast bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-bold"></div></div>
 
+  <script src="fuel-ledger.js?v=20260928-1"></script>
   <script type="module">
     import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, runTransaction, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
@@ -406,7 +408,7 @@
       referralManagement:{label:'Referral Management',subtitle:'Approve ₹500 driver/worker referral bonus after 30 days completion',icon:'trophy',collection:'referral', fields:[['referrer_name','Referrer Name','masterSelect','employeeMaster'],['role','Referrer Role','select',['Driver','Worker','Office','Vendor']],['new_staff_name','New Staff Name','text'],['new_staff_role','New Staff Role','select',['Driver','Worker']],['new_staff_mobile','New Staff Mobile','tel'],['join_date','Join Date','date'],['days_completed','30 Days Completed?','select',['No','Yes']],['bonus_amount','Bonus Amount (₹)','number'],['approval_status','Approval Status','select',['Pending','Approved','Rejected']],['payment_status','Payment Status','select',['Pending','Paid']],['paid_amount','Paid Amount (₹)','number'],['paid_date','Paid Date','date'],['company_remark','Company Remark','textarea']]},
       salaryFinalApproval:{label:'Salary Final Approval',subtitle:'Continuous unpaid salary: Staff Master → Joining/Last Paid Cycle → Attendance → Final Payable',icon:'badge-check',collection:'salaryFinalApproval', fields:[['employee_name','Staff Name','masterSelect','attendanceStaffMaster'],['role','Role','select',['Driver','Worker','Indoor Staff']],['month','Salary Reminder Month','month'],['salary_due_date','Salary Due Date (Reminder Only)','date'],['extra_bonus','Extra Bonus / Adjustment (₹)','number'],['approval_status','Company Approval','select',['Pending','Approved','Rejected']],['payment_status','Payment Status','select',['Pending','Paid']],['paid_amount','Paid Amount (₹)','number'],['paid_date','Paid Date','date'],['company_remark','Company Remark','textarea']]},
       foodingCycle:{label:'Fooding 4-Day Cycle',subtitle:'Driver/worker 4-day fooding payment due, paid status and company remarks',icon:'calendar-clock',collection:'foodingCycle', fields:[['staff_name','Driver / Worker Name','masterSelect','driverWorkerMaster'],['role','Role','select',['Driver','Worker']],['daily_rate','Daily Fooding Rate (₹)','number'],['cycle_start_date','Cycle Start Date','date'],['cycle_end_date','Cycle End Date','date'],['total_days','Total Days','number'],['due_amount','Due Amount (₹)','number'],['payment_status','Payment Status','select',['Pending','Paid']],['paid_amount','Paid Amount (₹)','number'],['paid_date','Paid Date','date'],['next_due_date','Next Due Date','date'],['company_remark','Company Remark','textarea']]},
-      fuel:{label:'Fuel',subtitle:'Vehicle fuel and meter expense',icon:'fuel',collection:'fuel', fields:[['date','Date','date'],['job_id','Job ID','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver','Driver','masterSelect','driverMaster'],['fuel_litre','Fuel Litres','number'],['fuel_cost','Fuel Cost (₹)','number'],['meter_reading','Meter Reading','number'],['remarks','Remarks','textarea']]},
+      fuel:{label:'Fuel',subtitle:'Vehicle fuel and meter expense',icon:'fuel',collection:'fuel', fields:[['date','Date','date'],['job_id','Job ID','text'],['vehicle_number','Vehicle No.','masterSelect','vehicleMaster'],['driver','Driver','masterSelect','driverMaster'],['fuel_litre','Fuel Litres','number'],['fuel_cost','Fuel Cost (₹)','number'],['boss_amount','Company money paid (₹) — blank if unknown','number'],['company_returned','Money returned by driver (₹)','number'],['meter_reading','Meter Reading','number'],['remarks','Remarks','textarea']]},
       freshStart:{label:'Fresh Start',subtitle:'Company-only admin reset: Jobs, Pending, Present, Score and dues become zero for selected staff',icon:'refresh-ccw',collection:'freshStart', fields:[['date','Reset Date','date'],['target_role','Reset Target','select',['All Staff','All Drivers','All Workers','Individual Staff']],['target_staff','Individual Staff Name','masterSelect','employeeMaster'],['reset_type','Reset Type','select',['Full Dashboard Fresh Start','Jobs + Pending Reset','Fuel Only Reset','Salary/Fooding Reset']],['status','Status','select',['Active','Inactive']],['reset_note','Company Reason / Note','textarea']]} ,
       fuelReset:{label:'Fuel Reset',subtitle:'Company-only control to reset fuel dashboard for drivers/workers',icon:'rotate-ccw',collection:'fuelReset', fields:[['date','Date','date'],['target_role','Reset Target','select',['All Staff','All Drivers','All Workers','Individual Staff']],['target_staff','Individual Staff Name','masterSelect','employeeMaster'],['reset_type','Reset Type','select',['Fuel Dashboard Reset']],['status','Status','select',['Active','Inactive']],['remarks','Reason / Company Note','textarea']]},
       materialStock:{label:'Material Stock',subtitle:'Godown stock, purchase, automatic issue deduction and available balance',icon:'warehouse',collection:'materialStock', fields:[['date','Date','date'],['item_name','Material Item','select',['Lamination','Bubble Sheet','Fabric Sheet','Cartons','Cello Tape','Rope','Stretch Film','Thermocol','Blue Foam','Corrugated Sheet','Other']],['unit_name','Stock Unit','select',['Percentage (%)','Quantity','Roll','Piece','Bundle','Kg','Other']],['vendor_name','Vendor Name','text'],['vendor_contact','Vendor Contact Number','tel'],['opening_stock','Opening Stock','number'],['purchase_qty','Purchase Qty','number'],['purchase_cost','Purchase Cost (₹)','number'],['unit_cost','Unit Cost (auto/manual ₹)','number'],['used_qty','Manual Used Qty (optional)','number'],['reorder_level','Reorder Level','number'],['remarks','Remarks','textarea']]},
@@ -981,7 +983,7 @@
       const c=document.getElementById('form-fields'); c.innerHTML='';
       mod.fields.forEach(([key,label,type,opts])=>{
         const wrap=document.createElement('div');
-        let val=fieldValue(record,key)||'';
+        let val=currentModule==='fuel'?(fieldValue(record,key)??''):(fieldValue(record,key)||'');
         if(currentModule==='salaryFinalApproval'&&record&&Number(record.manual_paid_amount||0)>0){
           if(key==='payment_status')val='Paid';
           if(key==='paid_amount')val=record.manual_paid_amount;
@@ -996,6 +998,7 @@
         else if(type==='checkbox') input=`<label class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 font-black text-emerald-800"><input id="field-${key}" type="checkbox" ${String(val).toLowerCase()==='yes'||String(val).toLowerCase()==='true'?'checked':''} class="w-5 h-5 accent-emerald-600"> Mark full paid / pending zero</label>`;
         else if(type==='textarea') input=`<textarea id="field-${key}" rows="3" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">${val}</textarea>`;
         else input=`<input id="field-${key}" type="${type||'text'}" value="${String(val).replace(/"/g,'&quot;')}" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+        if(currentModule==='fuel'&&type==='number')input=input.replace('type="number"','type="number" min="0" step="any"');
         wrap.setAttribute('data-field-key', key);
         wrap.innerHTML=`<label class="block text-xs font-bold text-slate-600 mb-1">${label}</label>${input}`;
         c.appendChild(wrap);
@@ -1891,6 +1894,18 @@
         data.material_cost_mode=hasAutoCost?'Stock Rate Auto':'Manual Entry';
         data.stock_deduction='Automatic';
         data.report_status='Calculated';
+      }
+      if(currentModule==='fuel'){
+        data.driver_name=data.driver||'';data.employee_name=data.driver||'';
+        for(const key of ['fuel_cost','boss_amount','company_returned']){
+          const value=AZPFuelLedger.amount(data[key]);
+          if(AZPFuelLedger.present(data[key])&&(value===null||value<0)){toast('Fuel amounts must be valid non-negative numbers.');return;}
+          data[key]=value;
+        }
+        // Keep cost/payment changes in sync with the driver's ledger; a blank payment remains unknown.
+        data.company_returned=data.company_returned??0;
+        data.consumption=data.fuel_cost;
+        const entry=AZPFuelLedger.entry(data);data.difference_amount=entry.delta;
       }
       if(currentModule==='profit'){ const exp=['fuel_expense','worker_expense','driver_expense','fooding_expense','material_expense','vendor_expense','repairing_expense','misc_expense'].reduce((a,k)=>a+(+data[k]||0),0); data.total_expense=exp; data.net_profit=(+data.revenue||0)-exp; }
       if(!editId) data.createdAt=serverTimestamp();
@@ -3175,6 +3190,15 @@
     function renderPremiumAttendance(list,empty){document.body.classList.add('azp-attendance-mode');empty?.classList.add('hidden');const staff=azpAttStaffByKey(window.azpAttendanceSelected);if(staff)azpRenderAttendanceDetail(list,staff);else{window.azpAttendanceSelected='';azpRenderAttendanceStaffList(list)}requestAnimationFrame(()=>{try{lucide.createIcons()}catch(_e){}})}
     // ===== END PREMIUM ATTENDANCE MODULE V1 =====
 
+    function fuelOfficeSummary(){
+      const rows=allData.filter(r=>r.module==='fuel'||r.collection==='fuel'),groups=AZPFuelLedger.groups(rows);
+      const due=groups.reduce((s,g)=>s+g.driverDue,0),back=groups.reduce((s,g)=>s+g.companyDue,0),unknown=groups.reduce((s,g)=>s+g.unknown,0);
+      return `<div class="bg-white rounded-2xl border border-blue-200 p-5 mb-5"><h3 class="font-black text-xl">Fuel Settlement — Driver / Company</h3><div class="grid grid-cols-2 gap-3 mt-3"><div class="rounded-xl bg-emerald-50 p-4"><p class="text-sm font-bold">Pay drivers (+)</p><b class="text-2xl">${money(due)}</b></div><div class="rounded-xl bg-orange-50 p-4"><p class="text-sm font-bold">Receive from drivers (−)</p><b class="text-2xl">${money(back)}</b></div></div><p class="text-xs text-slate-500 mt-3">Fuel cost − company money paid + money returned. Each driver's balance is kept separate.</p>${unknown?`<p class="text-sm font-bold text-amber-800 mt-3">${unknown} incomplete record(s) excluded. In Fuel → Edit, verify company payments before completing these records.</p>`:''}<div class="overflow-x-auto mt-3"><table class="w-full text-sm text-left"><thead><tr><th class="p-2">Driver</th><th class="p-2">Balance</th><th class="p-2">Action</th></tr></thead><tbody>${groups.map(g=>`<tr class="border-t"><td class="p-2 font-bold">${azpEsc(g.driver)}</td><td class="p-2 font-black whitespace-nowrap">${AZPFuelLedger.signed(g.balance)}</td><td class="p-2">${g.unknown?'Partial balance':AZPFuelLedger.label(g.balance)}${g.unknown?` · ${g.unknown} to review`:''}</td></tr>`).join('')||'<tr><td colspan="3" class="p-3">No saved fuel records.</td></tr>'}</tbody></table></div></div>`;
+    }
+    function fuelRecordSummary(r){
+      const e=AZPFuelLedger.entry(r);
+      return `<div class="mt-3 text-sm"><p>Fuel: <b>${e.expense===null?'Not recorded':money(e.expense)}</b> · Company paid: <b>${e.paid===null?'Not recorded':money(e.paid)}</b> · Returned: <b>${money(e.returned)}</b></p><p class="font-bold mt-1">${e.known?`Entry difference: ${AZPFuelLedger.signed(e.delta)} — ${AZPFuelLedger.label(e.delta)}`:'Needs office review — missing cost / payment / driver'}</p>${r.meter_start!==undefined?`<p class="text-xs text-slate-500 mt-1">Meter ${azpEsc(r.meter_start)} → ${azpEsc(r.meter_end)} · ${azpEsc(r.distance)} KM · Mileage ${azpEsc(r.mileage)} · ${azpEsc(r.party_location||'')}</p>`:''}</div>`;
+    }
     function renderList(key){
       const mod=modules[key]; if(!mod.collection)return;
       const list=document.getElementById(key+'-list'), empty=document.getElementById(key+'-empty'); if(!list)return;
@@ -3446,8 +3470,8 @@
         return;
       }
       const rows=allData.filter(r=>r.module===key || r.collection===mod.collection);
-      if(!rows.length){list.innerHTML='';empty?.classList.remove('hidden');return;} empty?.classList.add('hidden');
-      list.innerHTML=rows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)).map(r=>{ const extra = key==='profit'?`<div class="mt-2 chip ${(+r.net_profit||0)>=0?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">Net: ${money(r.net_profit)}</div>`: key==='payments'?`<div class="mt-2 chip ${(+r.pending_amount||0)<=0?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">Pending: ${money(r.pending_amount)}</div>`:''; const eta=key==='jobs'?azpExecutionEtaHtml(r):''; return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${extra}${eta}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''); }
+      if(!rows.length){list.innerHTML=key==='fuel'?fuelOfficeSummary():'';empty?.classList.remove('hidden');return;} empty?.classList.add('hidden');
+      list.innerHTML=(key==='fuel'?fuelOfficeSummary():'')+rows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)).map(r=>{ const extra = key==='fuel'?fuelRecordSummary(r):key==='profit'?`<div class="mt-2 chip ${(+r.net_profit||0)>=0?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">Net: ${money(r.net_profit)}</div>`: key==='payments'?`<div class="mt-2 chip ${(+r.pending_amount||0)<=0?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">Pending: ${money(r.pending_amount)}</div>`:''; const eta=key==='jobs'?azpExecutionEtaHtml(r):''; return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${extra}${eta}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''); }
 
 
     let azpAutoSalarySyncBusy=false,azpAutoSalarySyncRequested=false;
@@ -3680,7 +3704,7 @@
         }
       }catch(err){ console.warn('Full payment notice remove skipped', err); }
     }
-    function renderDashboard(){ azpRenderFullPayHomeNotice(); azpRenderTodaySalaryDue(); const jobs=allData.filter(r=>r.module==='jobs'); const payments=allData.filter(r=>r.module==='payments'); const attendance={length:Math.max(0,azpActiveStaffCount()-azpAbsentStaffToday())}; const profit=allData.filter(r=>r.module==='profit'); const pending=payments.reduce((a,r)=>a+(+r.pending_amount||0),0) + jobs.reduce((a,r)=>a+Math.max((+r.total_amount||0)-(+r.advance_received||0)-(+r.loading_payment||0)-(+r.unloading_payment||0),0),0); const exp=profit.reduce((a,r)=>a+(+r.total_expense||0),0); const net=profit.reduce((a,r)=>a+(+r.net_profit||0),0);
+    function renderDashboard(){ document.getElementById('fuel-office-dashboard').innerHTML=fuelOfficeSummary(); azpRenderFullPayHomeNotice(); azpRenderTodaySalaryDue(); const jobs=allData.filter(r=>r.module==='jobs'); const payments=allData.filter(r=>r.module==='payments'); const attendance={length:Math.max(0,azpActiveStaffCount()-azpAbsentStaffToday())}; const profit=allData.filter(r=>r.module==='profit'); const pending=payments.reduce((a,r)=>a+(+r.pending_amount||0),0) + jobs.reduce((a,r)=>a+Math.max((+r.total_amount||0)-(+r.advance_received||0)-(+r.loading_payment||0)-(+r.unloading_payment||0),0),0); const exp=profit.reduce((a,r)=>a+(+r.total_expense||0),0); const net=profit.reduce((a,r)=>a+(+r.net_profit||0),0);
       document.getElementById('count-jobs').textContent=jobs.length; document.getElementById('count-attendance').textContent=attendance.length; document.getElementById('count-pending').textContent=money(pending); document.getElementById('count-expense').textContent=money(exp); document.getElementById('count-profit').textContent=money(net); document.getElementById('recent-job-count').textContent=jobs.length;
       const recent=document.getElementById('recent-jobs'); recent.innerHTML=jobs.length?jobs.slice(-8).reverse().map(j=>`<div class="p-3 flex items-center justify-between gap-3"><div><p class="text-sm font-bold text-slate-800">${j.customer_name||'N/A'} — ${j.from_location||''} → ${j.to_location||''}</p><p class="text-xs text-slate-400">${j.work_date||''} | ${j.vehicle_number||''} | ${j.driver||''}</p></div><span class="chip ${j.status==='Completed'?'bg-emerald-100 text-emerald-700':'bg-yellow-100 text-yellow-700'}">${j.status||'N/A'}</span></div>`).join(''):'<p class="p-4 text-sm text-slate-400 text-center">No jobs yet</p>'; }
     let azpRenderTimer=null;
@@ -3688,7 +3712,7 @@
     let azpPendingRenderModules=null;
     function renderAll(){
       const changed=azpPendingRenderModules;azpPendingRenderModules=null;
-      const dashboardMods=new Set(['jobs','payments','attendance','leaveApproval','driverMaster','workerMaster','indoorStaffMaster','salaryFinalApproval','staffSalaryMaster','salarySettings','profit']);
+      const dashboardMods=new Set(['fuel','jobs','payments','attendance','leaveApproval','driverMaster','workerMaster','indoorStaffMaster','salaryFinalApproval','staffSalaryMaster','salarySettings','profit']);
       const salarySourceMods=new Set(['attendance','leaveApproval','driverMaster','workerMaster','indoorStaffMaster','salaryFinalApproval','staffSalaryMaster','salarySettings','bonus','referral','attendanceSettings']);
       const renderDashboardNow=!changed||currentModule==='dashboard'||[...changed].some(x=>dashboardMods.has(x));
       const renderCurrentNow=currentModule&&currentModule!=='dashboard'&&(!changed||changed.has(currentModule)||((currentModule==='attendance'||currentModule==='salaryFinalApproval')&&[...changed].some(x=>salarySourceMods.has(x))));

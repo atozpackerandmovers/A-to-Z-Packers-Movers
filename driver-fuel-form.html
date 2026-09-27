@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A TO Z — Driver Fuel</title>
+<script src="fuel-ledger.js?v=20260928-1"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<style>
+  :root{--olive:#556B2F;--blue:#1E88E5;--black:#0f172a;--red:#D32F2F;--yellow:#FBC02D;--green:#2E7D32;
+    --card:#ffffff;--muted:#64748b;--shadow:0 8px 22px rgba(0,0,0,.10);--blueShadow:0 16px 40px rgba(30,136,229,.28);--radius:16px}
+  *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#fff;color:var(--black)}
+  header{background:linear-gradient(90deg,var(--olive),var(--blue));color:#fff;padding:18px 14px;text-align:center;position:sticky;top:0;z-index:10}
+  header h1{font-size:1.25rem;margin:0 0 6px;font-weight:900}
+  .wrap{max-width:1024px;margin:22px auto;padding:0 14px}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;border:1px solid #eef2f7}
+  .card.fuel{box-shadow:var(--blueShadow);border-color:#cfe3fb}
+  .grid{display:grid;gap:12px} @media(min-width:720px){.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  label{font-weight:900;font-size:.95rem;display:block;margin-bottom:6px}
+  input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #d6deea;outline:none;font-size:1rem;background:#fff;font-weight:700}
+  input:disabled,select:disabled{background:#f1f5f9;color:#9aa4b2}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  button{border:0;padding:12px 16px;border-radius:12px;color:#fff;font-weight:900;cursor:pointer;box-shadow:var(--shadow)}
+  .btn-olive{background:var(--olive)} .btn-blue{background:var(--blue)} .btn-red{background:var(--red)} .btn-yellow{background:var(--yellow);color:#111} .btn-black{background:#111}
+  .muted{color:var(--muted);font-size:.9rem} .tiny{padding:6px 8px;border-radius:10px;font-size:.85rem}
+  .chip{display:inline-flex;gap:6px;padding:4px 8px;border-radius:999px;font-weight:800;background:#eef2ff;color:#1e40af;border:1px solid #c7d2fe}
+  .total-box{background:#e8f5e9;border:2px solid var(--green);color:#0b4211;border-radius:18px;padding:16px;font-weight:900;display:grid;gap:6px}
+  .thumb{margin-left:6px;font-size:1.2rem;display:none}.thumb.show{display:inline}
+  table{width:100%;border-collapse:collapse;font-size:.95rem} th,td{padding:10px 8px;border-bottom:1px solid #eef2f6;text-align:left}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .sideBox{background:#eef6ff;border:2px dashed #9cc3ff;padding:12px;border-radius:12px;font-weight:800;color:#0b3a70}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);display:none;z-index:60}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.5);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal{background:#fff;border-radius:16px;max-width:720px;width:min(96vw,720px);padding:18px;border:1px solid #eef2f7}
+  .modal .x{float:right;border:0;background:#111;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
+
+header{position:static;text-align:left;background:linear-gradient(120deg,#0f172a,#075985);padding:24px;border-radius:18px}
+.wrap{margin:0 auto;padding:12px;max-width:1100px}.card{box-shadow:0 3px 16px #0f172a0a}
+.balance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.metric{padding:16px;border:1px solid #dbeafe;border-radius:14px;background:#f8fafc}.metric strong{display:block;font-size:1.5rem;margin:8px 0}.metric small{display:block;color:#475569}
+.positive{background:#ecfdf5;border-color:#a7f3d0}.negative{background:#fff7ed;border-color:#fed7aa}.wide{grid-column:1/-1}.notice{padding:12px;border-radius:12px;background:#fffbeb;color:#92400e;margin-top:12px;font-size:.9rem}
+input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disabled{color:#334155;background:#f1f5f9}button:disabled{opacity:.5;cursor:wait}.status{padding:12px;border-radius:12px;background:#eff6ff;margin:14px 0;overflow-wrap:anywhere}th{font-size:.75rem;color:#475569;text-transform:uppercase}td{font-size:.85rem;vertical-align:top;white-space:nowrap}.review{background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:18px;margin-top:16px}#saveMessage{white-space:pre-wrap}h2,h3{margin-top:0}.muted{line-height:1.5}
+@media(max-width:480px){.wrap{padding:6px}.card{padding:14px}.metric{padding:12px}.metric strong{font-size:1.25rem}}
+</style></head><body><main class="wrap">
+<header><h1>Fuel Entry & Settlement</h1><div>Fuel खर्च और company payment का साफ हिसाब</div><div id="identity" style="margin-top:12px;font-weight:800">Connecting to Driver App…</div></header>
+<p id="connection" class="status" role="status">Loading your Execution fuel records…</p>
+<section class="card" aria-label="Saved fuel balance"><h2>Saved Fuel Balance</h2>
+<div id="balance" class="balance-grid"></div><div id="reviewNote"></div>
+<p class="muted">Balance = previous balance + fuel consumption − company money received. Positive (+): pay driver. Negative (−): return to company. Amounts are based on saved entries.</p></section>
+<section class="card fuel"><h2>New Fuel Entry</h2><div class="grid cols-2" style="margin-bottom:16px"><div><label for="driverSel">Logged-in Driver</label><select id="driverSel" disabled></select></div><div><label for="vehicleSel">Assigned Vehicle</label><select id="vehicleSel"></select></div></div>
+    <div class="grid cols-2">
+      <div>
+        <label for="meterStart">Meter Starting Reading</label>
+        <input id="meterStart" type="number" inputmode="numeric" placeholder="Auto or manual" />
+      </div>
+      <div>
+        <label for="meterEnd">Meter Ending Reading</label>
+        <input id="meterEnd" type="number" inputmode="numeric" placeholder="e.g., 78522" />
+      </div>
+
+      <div>
+        <label for="partyLocation">Party Location</label>
+        <input id="partyLocation" type="text" placeholder="e.g., Cuttack → Bhubaneswar" />
+      </div>
+
+      <div>
+        <label for="litres">Fuel Filled (in Litres) — optional</label>
+        <input id="litres" type="number" step="0.01" inputmode="decimal" placeholder="(not used in formula)" />
+      </div>
+
+      <div>
+        <label for="pricePerLitre">Price per Litre (₹)</label>
+        <input id="pricePerLitre" type="number" step="0.01" inputmode="decimal" value="93" />
+      </div>
+
+      <div>
+        <label for="mileage">Vehicle Mileage (KM:1)</label>
+        <select id="mileage"></select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <label>Survey & Material Report? <span class="chip">Optional</span></label>
+      <label><input id="srYes" type="radio" name="sr" value="yes"> Yes <span id="thumb" class="thumb">👍</span></label>
+      <label><input id="srNo" type="radio" name="sr" value="no" checked> No</label>
+    </div>
+
+    <div class="total-box" style="margin-top:14px">
+      <div>📏 Distance: <span id="outDistance">0</span> km</div>
+      <div>🛞 Mileage: <span id="outMileage">8.0</span>:1</div>
+      <div>💵 Price/Litre: ₹<span id="outPpl">93.00</span></div>
+      <div>🧮 Consumption Amount: <span id="outConsumption">₹0.00</span></div>
+      <div style="font-size:1.25rem">Fuel cost (draft): <span id="outTotal" style="font-weight:900">₹0.00</span></div>
+    </div>
+
+
+<p id="meterNote" class="muted"></p>
+<div class="controls"><button type="button" class="btn-blue" id="btnReview" disabled>Review & Save to Execution</button><button type="button" class="btn-yellow" id="btnReset">Clear Draft</button></div>
+<div id="review" class="review" hidden><h3>Company Payment & Review</h3>
+<label for="bossAmount">Company money received for this entry (₹)</label><input id="bossAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter 0 if no new payment">
+<p class="muted">Enter only newly received money. Do not repeat an earlier advance or fuel payment.</p>
+<label for="bossNote">Payment / trip note (optional)</label><input id="bossNote" placeholder="Cash / UPI reference or trip details" maxlength="500">
+<div id="projection" class="status" aria-live="polite"></div>
+<button type="button" class="btn-olive" id="btnSave">Save Entry</button><p id="saveMessage" role="status"></p></div>
+</section>
+<section class="card"><h2>Saved Execution Records</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
+<div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">Download PDF</button><button id="btnWA" class="btn-olive">Share Summary on WhatsApp</button></div>
+<div style="overflow:auto;max-height:520px"><table><thead><tr><th>Date / Vehicle</th><th>Meter / KM</th><th>Fuel Cost</th><th>Company Paid</th><th>Difference</th><th>Note</th></tr></thead><tbody id="history"></tbody></table></div>
+</section></main><script src="driver-fuel-form.js?v=20260928-1"></script></body></html>
