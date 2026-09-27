@@ -55,3 +55,10 @@ test('auto-sync preserves explicit zero rather than stale duplicate adjustment',
  const expression=source.match(/const extra=Number\((old\?\.extra_bonus[^;]+)\);/)[1];
  for(const amount of [-25200,0,1500])assert.equal(vm.runInNewContext('Number('+expression+')',{old:{extra_bonus:amount},pendingDuplicates:[{extra_bonus:999}]}),amount);
 });
+
+test('attendance earned salary ignores paid history, advances and bonuses',()=>{
+ const ctx={azpSalaryIndiaToday:()=> '2026-09-28',azpSalaryJoiningCycle:()=>({start:'2026-09-20'}),buildLiveSalarySettlement:(staff,start,end,extra)=>{assert.equal(start,'2026-09-20');assert.equal(end,'2026-09-28');assert.equal(extra,0);return {monthly_salary:20000,per_day_salary:667,salary_days:6,paid_credit_amount:40999,final_salary_payable:0,calculation_blocked:'No'};}};
+ vm.createContext(ctx);vm.runInContext(source.slice(source.indexOf('    function azpAttendanceEarnedSalary('),source.indexOf('    function azpSalarySavedAdjustment(')),ctx);
+ const result=ctx.azpAttendanceEarnedSalary({name:'Mahesh'});assert.equal(result.attendance_earned_salary,4002);assert.equal(result.final_salary_payable,4002);assert.equal(result.paid_credit_amount,0);
+ assert.equal((source.match(/liveSalary=azpAttendanceEarnedSalary\(staff\)/g)||[]).length,3);
+});
