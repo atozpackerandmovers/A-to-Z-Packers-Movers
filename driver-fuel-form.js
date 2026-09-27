@@ -40,7 +40,14 @@
     const d=e.data||{};
     if(d.type==='AZP_FUEL_CONTEXT'){
       if(!d.driver||!Array.isArray(d.records)||!Array.isArray(d.vehicles))return;
-      const first=!context;context=d;records=d.records;
+      const first=!context||context.driver!==d.driver;
+      if(context&&context.driver!==d.driver){
+        // Never carry another driver's unsaved money/meter draft across account switches.
+        inFlight=null;busy=false;restored=false;requestId=crypto.randomUUID();
+        fields.forEach(id=>$(id).value='');$('pricePerLitre').value='93';$('mileage').value='8';
+        $('srYes').checked=false;$('srNo').checked=true;$('review').hidden=true;$('saveMessage').textContent='';
+      }
+      context=d;records=d.records;
       $('identity').textContent=d.driver+' — Driver';$('driverSel').innerHTML='<option>'+esc(d.driver)+'</option>';
       const previous=$('vehicleSel').value;$('vehicleSel').innerHTML=d.vehicles.map(v=>'<option>'+esc(v)+'</option>').join('');
       if(d.vehicles.includes(previous))$('vehicleSel').value=previous;

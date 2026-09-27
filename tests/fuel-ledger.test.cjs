@@ -70,3 +70,8 @@ test('form retains typed draft during live refresh, preserves failed save and cl
  f.receive({type:'AZP_FUEL_SAVE_RESULT',requestId:request.requestId,ok:true,id:'saved',record:{...row('saved',3720,3000),meter_end:1400,vehicle_number:'OD 02 BY 8855'}});
  assert.equal(f.el('meterEnd').value,'');assert.equal(f.el('bossAmount').value,'');assert.equal(f.el('meterStart').value,1400);assert.match(f.el('saveMessage').textContent,/Saved to Execution/);
 });
+test('switching driver accounts never reuses another driver money or meter draft',()=>{
+ const f=form();f.receive(f.context);f.el('meterEnd').value='1400';f.el('bossAmount').value='3000';f.events.input();
+ f.receive({...f.context,driver:'Mahesh'});assert.equal(f.el('meterEnd').value,'');assert.equal(f.el('bossAmount').value,'');
+ f.receive(f.context);assert.equal(f.el('meterEnd').value,'1400');assert.equal(f.el('bossAmount').value,'3000');
+});
