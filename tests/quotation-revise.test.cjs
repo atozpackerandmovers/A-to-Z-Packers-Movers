@@ -56,5 +56,18 @@ assert.doesNotMatch(run("card(findRecord('REV1'),'revise')"),/>Follow<|>Clear<|P
  assert.equal(vm.runInContext('quotationRevisionContext.originalQuotationId',fc),'ORIGINAL');
  assert.equal(vm.runInContext('quotationRevisionContext.revisedFromQuotationId',fc),'REV2');
  vm.runInContext('clearQuotationRevision()',fc);assert.equal(vm.runInContext('quotationRevisionContext',fc),null);
+ // Reproduce navigation through the Firebase wrapper: it must forward the
+ // keepRevision argument or opening the form silently drops the lineage.
+ fc.document.querySelectorAll=()=>[];
+ fc.document.getElementById=()=>({remove(){},prepend(){},classList:{remove(){}}});
+ vm.runInContext('window = this',fc);
+ const navigation=classic.slice(classic.indexOf('function showView('),classic.indexOf('function azpNormalizeSearchText'));
+ vm.runInContext(navigation,fc);
+ const firebaseScript=scripts.find(x=>x[2].includes('const originalShowView = window.showView'))[2];
+ vm.runInContext(firebaseScript.slice(firebaseScript.lastIndexOf('  if (window.showView)')),fc);
+ vm.runInContext(`setQuotationRevision({quotation_number:'ORIGINAL',__backendId:'orig-doc'}); showView('form',true)`,fc);
+ assert.equal(vm.runInContext('quotationRevisionContext?.originalQuotationId',fc),'ORIGINAL', 'Opening a revision must preserve its original quotation link');
+ vm.runInContext(`showView('form')`,fc);
+ assert.equal(vm.runInContext('quotationRevisionContext',fc),null,'A new quotation must clear revision context');
  console.log(`PASS: ${parsed} inline scripts parse; revision separation, original preservation, lineage, save and linking guards.`);
 })().catch(e=>{console.error(e);process.exitCode=1});

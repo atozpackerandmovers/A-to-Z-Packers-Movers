@@ -5441,7 +5441,9 @@ function formatCurrency(amount) {
   if (window.showView) {
     const originalShowView = window.showView;
     window.showView = function(viewName) {
-      originalShowView(viewName);
+      // Preserve keepRevision when opening an existing quotation for revision.
+      // Dropping that argument clears its original link before the next save.
+      return originalShowView.apply(this, arguments);
       // Opening a view must never download every Firebase collection again.
       // Each view renders the in-memory realtime snapshot immediately.
     };
