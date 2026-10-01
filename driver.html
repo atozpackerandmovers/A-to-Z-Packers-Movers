@@ -2222,7 +2222,7 @@
       azpProdUnsubs.push(onValue(rtdbRef(prodRtdb,`gpsProduction/v1/drivers/${d.id}/profile`),s=>{azpProdProfile=s.exists()?s.val():null;const profileUid=String(azpProdFirst(azpProdProfile,['driverUid','driver_uid','authUid','auth_uid','uid'])||'');azpProdError=!profileUid?'Driver profile UID missing':(profileUid!==azpProdAuthUser?.uid?'Driver UID mismatch — GPS blocked':'');if(!azpProdError&&currentUser?.role==='Driver'){currentUser.firebaseUid=profileUid;localStorage.setItem('azp_staff_login',JSON.stringify(currentUser))}if(currentTab==='tracking')tracking()},e=>{azpProdError=e?.code||e?.message||'RTDB read error';if(currentTab==='tracking')tracking()}));
       azpProdUnsubs.push(onValue(rtdbRef(prodRtdb,`gpsProduction/v1/drivers/${d.id}/live`),s=>{azpProdLive=s.exists()?s.val():null;if(azpProdData().uidVerified){azpProdError='';setTimeout(azpEtaPoll,0)}if(currentTab==='tracking')tracking()},e=>{azpProdError=e?.code||e?.message||'RTDB read error';if(currentTab==='tracking')tracking()}));
     }
-    onAuthStateChanged(prodAuth,u=>{azpProdAuthUser=u||null;if(!u)azpStopProdSubscription();else{if(!currentUser)azpRestorePortalFromFirebase();azpSubscribeProductionGps()}if(currentUser&&currentTab==='tracking')tracking()});
+    onAuthStateChanged(prodAuth,u=>{azpProdAuthUser=u||null;if(!u)azpStopProdSubscription();else{if(!currentUser)azpRestorePortalFromFirebase();azpSubscribeProductionGps()}if(currentUser&&currentTab==='tracking')tracking();if(currentTab==='vehicle')updateVehicleDocumentSession()});
     window.azpProdLogin=async()=>{const email=String(document.getElementById('prod_gps_email')?.value||'').trim(),password=String(document.getElementById('prod_gps_password')?.value||'');if(!email||!password){toast('Production GPS email aur password enter kijiye.',true);return}azpProdLoginHoldUntil=Date.now()+30000;const b=document.getElementById('prod_gps_login');if(b){b.disabled=true;b.textContent='Connecting...'}try{if(!(await azpProdAuthPersistenceReady))throw new Error('Secure login persistence is unavailable on this device');await signInWithEmailAndPassword(prodAuth,email,password);const passwordEl=document.getElementById('prod_gps_password');if(passwordEl)passwordEl.value='';toast('Latest Production GPS connected — login securely remembered')}catch(e){toast('GPS login failed: '+(e?.code||e?.message||'check credentials'),true)}finally{azpProdLoginHoldUntil=0;if(b){b.disabled=false;b.textContent='Connect Latest GPS'}}};
     window.azpProdLogout=async()=>{try{await firebaseSignOut(prodAuth);toast('Production GPS disconnected')}catch(e){toast('GPS logout failed',true)}};
 
@@ -2372,10 +2372,16 @@
       return {vehicles:[...new Map(values.map(v=>[AZPVehicleDocs.key(v),String(v)])).values()],drivers:admin?byModule('driverMaster').map(r=>r.driver_name).filter(Boolean):[currentUser.name]};
     }
     const vehicleDocumentStore=AZPVehicleDocsStore.create({db,collectionName:MAIN,doc,runTransaction,serverTimestamp,storage:getStorage(app),storageRef:repairStorageRef,uploadBytes:repairUploadBytes,getDownloadURL:repairDownloadURL,allowed:vehicleDocumentAccess,actor:()=>currentUser?.name||'',isAdmin:()=>currentUser?.role==='Admin Preview'});
+    function updateVehicleDocumentSession(){
+      const panel=document.getElementById('vehicle-document-session');if(!panel)return;
+      const user=prodAuth.currentUser;
+      panel.innerHTML='<b>Document upload login</b><p class="text-sm mt-2">'+(user?'Firebase UID: <code class="break-all">'+esc(user.uid)+'</code>':'Firebase login is missing. Open Live GPS and connect your authorised account.')+'</p><p class="text-sm mt-1">Account: '+esc(user?.email|| (user?'Anonymous account':'Not signed in'))+'</p><p class="text-sm mt-1">Vehicle access and file permissions are checked by Firebase Storage.</p>';
+    }
     function vehicle(){
       const content=document.getElementById('content');
       let host=document.getElementById('vehicle-document-cabinet');
-      if(!host){content.innerHTML='<div id="vehicle-document-cabinet"></div>';host=document.getElementById('vehicle-document-cabinet');}
+      if(!host){content.innerHTML='<div id="vehicle-document-session" class="card p-4 mb-4" role="status"></div><div id="vehicle-document-cabinet"></div>';host=document.getElementById('vehicle-document-cabinet');}
+      updateVehicleDocumentSession();
       AZPVehicleDocs.mount(host,{identity:currentUser.name+'|'+currentUser.role,...vehicleDocumentAccess(),admin:currentUser.role==='Admin Preview',rows:byModule('documents'),legacy:[...byModule('vehicleMaster'),...byModule('documents').filter(r=>!r.record_type)],save:vehicleDocumentStore.save,review:vehicleDocumentStore.review});
     }
     // Fuel settlement uses the same saved ledger as Execution, independent of attendance resets.
