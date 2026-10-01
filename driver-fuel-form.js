@@ -21,6 +21,7 @@
     const prev=summary();
     try{const v=L.calculate(r),projected=L.round(prev.balance+v.difference_amount);$('projection').textContent=`Previous saved balance: ${L.signed(prev.balance)}\nThis entry: ${L.money(v.consumption)} fuel − ${L.money(v.boss_amount)} company paid = ${L.signed(v.difference_amount)}\nAfter saving: ${L.signed(projected)} — ${L.label(projected)}${prev.unknown?'\nOlder incomplete entries are excluded pending office review.':''}`;}
     catch(_){$('projection').textContent='Enter valid meter readings and the company payment (0 if none) to preview the balance.';}
+    $('paymentPreview').textContent=$('projection').textContent;
   }
   function prefillMeter(){
     const rows=records.filter(r=>L.vehicle(r.vehicle_number||r.vehicle)===L.vehicle($('vehicleSel').value));

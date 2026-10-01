@@ -18,3 +18,14 @@ test('photo stamp describes report-generation time and exact fuel values, withou
  const rows=F.stampLines({driver:'Somnath',vehicle:'OD 02 BY 8855',start:1000,end:1400,distance:400,mileage:10,ppl:93,consumption:3720,location:'Cuttack'},Date.parse('2026-09-28T00:00:00Z'));
  assert.ok(rows.some(x=>x.includes('INR 3720.00')));assert.ok(rows.some(x=>x.startsWith('Report generated:')));assert.ok(rows.some(x=>x.includes('Cuttack')));assert.ok(!rows.some(x=>/latitude|longitude|captured at/i.test(x)));
 });
+test('reports use verified company payment and label both settlement directions',()=>{
+ const L=require('../fuel-ledger.js');
+ const r={driver:'Test',consumption:3720,boss_amount:3000};
+ assert.match(F.settlementLines(r,L).join('\n'),/3,000.00/);
+ assert.match(F.settlementLines(r,L).join('\n'),/720.00.*Pay driver/);
+ assert.match(F.settlementLines({...r,boss_amount:4000},L).join('\n'),/280.00.*Return to company/);
+ assert.match(F.settlementLines({...r,boss_amount:0},L).join('\n'),/3,720.00.*Pay driver/);
+ assert.match(F.settlementLines({...r,boss_amount:undefined},L).join('\n'),/Not recorded/);
+ const stamp=F.stampLines({...r,vehicle:'OD 02 BY 8855',ppl:93},Date.now()).join('\n');
+ assert.match(stamp,/Company paid: INR 3000.00/);assert.match(stamp,/Difference.*INR 720.00/);
+});
