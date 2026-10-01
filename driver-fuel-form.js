@@ -45,7 +45,7 @@
       if(context&&context.driver!==d.driver){
         // Never carry another driver's unsaved money/meter draft across account switches.
         inFlight=null;busy=false;restored=false;requestId=crypto.randomUUID();
-        fields.forEach(id=>$(id).value='');$('pricePerLitre').value='93';$('mileage').value='8';
+        fields.forEach(id=>$(id).value='');$('pricePerLitre').value='102';$('mileage').value='8';
         $('srYes').checked=false;$('srNo').checked=true;$('review').hidden=true;$('saveMessage').textContent='';
       }
       context=d;records=d.records;
