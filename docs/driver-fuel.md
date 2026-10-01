@@ -54,3 +54,9 @@ JPEG downloads and a WhatsApp compose link is offered for manual attachment.
 
 Session entries are labelled drafts until the Execution save acknowledgement.
 Restart clears only session drafts; it does not erase saved financial records.
+
+Company payment and note are entered in the main form before Primary WhatsApp.
+Primary and session reports use the same validated payment as the Execution save,
+including the per-entry difference and projected saved balance. Blank payments
+block sharing; explicit zero is accepted. Photo stamps and session PDFs include
+the company payment. Saved session reports use acknowledged Execution amounts.

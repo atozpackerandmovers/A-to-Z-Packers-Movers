@@ -96,6 +96,11 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
       <label><input id="srNo" type="radio" name="sr" value="no" checked> No</label>
     </div>
 
+<div class="review"><h3>Company Payment / कंपनी से मिला पैसा</h3>
+<label for="bossAmount">Company money received for this entry (₹)</label><input id="bossAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter 0 if no new payment">
+<p class="muted">Enter only newly received money. Do not repeat an earlier advance or fuel payment.</p>
+<label for="bossNote">Payment / trip note (optional)</label><input id="bossNote" placeholder="Cash / UPI reference or trip details" maxlength="500">
+<div id="paymentPreview" class="status" aria-live="polite"></div></div>
     <div class="total-box" style="margin-top:14px">
       <div>📏 Distance: <span id="outDistance">0</span> km</div>
       <div>🛞 Mileage: <span id="outMileage">8.0</span>:1</div>
@@ -110,9 +115,6 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <p id="shareStatus" class="muted" role="status"></p><div id="shareLinks" class="controls"></div>
 <div class="review"><h3>Execution Auto-entry</h3><p class="muted">Review the company payment and save this fuel entry in Execution.</p><button type="button" class="btn-blue" id="btnReview" disabled>Review & Save to Execution</button></div>
 <div id="review" class="review" hidden><h3>Company Payment & Review</h3>
-<label for="bossAmount">Company money received for this entry (₹)</label><input id="bossAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter 0 if no new payment">
-<p class="muted">Enter only newly received money. Do not repeat an earlier advance or fuel payment.</p>
-<label for="bossNote">Payment / trip note (optional)</label><input id="bossNote" placeholder="Cash / UPI reference or trip details" maxlength="500">
 <div id="projection" class="status" aria-live="polite"></div>
 <button type="button" class="btn-olive" id="btnSave">Save Entry</button><p id="saveMessage" role="status"></p></div>
 </section>
@@ -125,4 +127,4 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <section class="card"><h2>Stored Records (All Time)</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
 <div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">📄 PDF (All Records)</button><button id="btnWA" class="btn-olive">📤 WhatsApp (to Boss #1 & #2)</button></div>
 <div style="overflow:auto;max-height:520px"><table><thead><tr><th>Date / Vehicle</th><th>Meter / KM</th><th>Fuel Cost</th><th>Company Paid</th><th>Difference</th><th>Note</th></tr></thead><tbody id="history"></tbody></table></div>
-</section></main><script src="driver-fuel-form.js?v=20260928-4"></script><script src="driver-fuel-features.js?v=20260928-4"></script></body></html>
+</section></main><script src="driver-fuel-form.js?v=20261001-1"></script><script src="driver-fuel-features.js?v=20261001-1"></script></body></html>
