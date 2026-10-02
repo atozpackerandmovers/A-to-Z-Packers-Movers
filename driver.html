@@ -115,6 +115,7 @@
 
 </style>
 <link rel="stylesheet" href="vehicle-documents.css?v=20260928-1">
+<script src="attendance-rules.js?v=20261002-1"></script>
 </head>
 <body class="min-h-screen">
   <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white px-4 py-5 sticky top-0 z-40 no-print">
@@ -156,7 +157,7 @@
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
             <div class="rounded-2xl bg-blue-50 p-3"><p class="text-xs text-blue-700 font-black">Jobs</p><p id="statJobs" class="text-xl font-black">0</p></div>
-            <div class="rounded-2xl bg-emerald-50 p-3"><p class="text-xs text-emerald-700 font-black">Present</p><p id="statPresent" class="text-xl font-black">0</p></div>
+            <div class="rounded-2xl bg-emerald-50 p-3"><p id="statPresentLabel" class="text-xs text-emerald-700 font-black">Present this month</p><p id="statPresent" class="text-xl font-black">0</p></div>
             <div class="rounded-2xl bg-orange-50 p-3"><p class="text-xs text-orange-700 font-black">Job Pending ₹</p><p id="statPending" class="text-xl font-black">0</p></div>
             <div class="rounded-2xl bg-purple-50 p-3"><p class="text-xs text-purple-700 font-black">Score</p><p id="statScore" class="text-xl font-black">100%</p></div>
           </div>
@@ -392,27 +393,21 @@
       if(s.includes('absent')) return 'Absent';
       return 'Present';
     }
-    function attendanceRecordEffective(r){
-      const approval=lower(r?.company_approval||r?.approval_status||'');
-      if(approval.includes('reject')) return false;
-      const source=lower(r?.source_app||r?.source||'');
-      if((approval.includes('pending')||approval.includes('discussion'))&&(source.includes('staff')||source.includes('driver')||source.includes('worker'))) return false;
-      return true;
-    }
+    function attendanceRecordEffective(r){return AZPAttendanceRules.effective(r);}
     function staffAttendanceLedger(fromDate,toDate,user=currentUser){
       const master=staffMasterRecord(user);
       const dayMap=new Map();
       if(!master) return {master:null,dayMap,serviceDays:0,presentDays:0,absentDays:0,leaveDays:0,halfDays:0,lateDays:0,earlyExitDays:0,overtimeDays:0,overtimeHours:0,overtimeAmount:0,weeklyOffDays:0,holidayDays:0,paidDays:0,foodingEligibleDays:0,fineAmount:0,attendancePercentage:0};
       eachAttendanceDate(fromDate,toDate,date=>{ if(staffActiveOnDate(master,date)) dayMap.set(date,{date,status:'Present',weight:1,fooding:true,auto:true,updatedAtMs:0}); });
-      const rows=myRecords('attendance').filter(r=>{
-        const from=parseDateForCalc(r.leave_from||r.leave_from_date||r.date||r.attendance_date);
-        const to=parseDateForCalc(r.leave_to||r.leave_to_date||r.date||r.attendance_date)||from;
+      const rows=[...myRecords('attendance'),...byModule('leaveApproval').filter(r=>isMine(r))].filter(r=>{
+        const from=parseDateForCalc(AZPAttendanceRules.start(r));
+        const to=parseDateForCalc(AZPAttendanceRules.end(r))||from;
         return from&&to&&!(to<fromDate||from>toDate)&&attendanceRecordEffective(r);
-      }).sort((a,b)=>(a.updatedAtMs||a.createdAtMs||0)-(b.updatedAtMs||b.createdAtMs||0));
+      }).sort((a,b)=>AZPAttendanceRules.time(a)-AZPAttendanceRules.time(b));
       rows.forEach(r=>{
-        const status=canonicalAttendanceStatus(r.attendance_status||r.status||r.request_type||'Present');
-        const from=parseDateForCalc(r.leave_from||r.leave_from_date||r.date||r.attendance_date);
-        const to=parseDateForCalc(r.leave_to||r.leave_to_date||r.date||r.attendance_date)||from;
+        const status=canonicalAttendanceStatus(AZPAttendanceRules.status(r));
+        const from=parseDateForCalc(AZPAttendanceRules.start(r));
+        const to=parseDateForCalc(AZPAttendanceRules.end(r))||from;
         eachAttendanceDate(from<fromDate?fromDate:from,to>toDate?toDate:to,date=>{
           if(!dayMap.has(date)) return;
           const weight=status==='Half Day'?0.5:(['Absent','Leave'].includes(status)?0:1);
@@ -815,6 +810,7 @@
     function render(){ if(!currentUser)return; if(currentUser.role!=='Admin Preview' && isSuspendedUser(currentUser)){ showSuspendedScreen(currentUser); return; } document.getElementById('staffTitle').textContent=`${currentUser.name} — ${currentUser.role}`; document.getElementById('accessNote').textContent=currentUser.role==='Admin Preview'?'Admin preview can see all staff branch records.':'This device shows only assigned/related records for this staff.'; const jobs=myJobs(), pays=myRecords('payroll'), bl=latestLevelRecord(currentUser); const d=staffMoneySettings(); const sum=staffAttendanceSummary(); const salaryMonthCap=Math.min(30, Number(sum.presentDays||0)); const staffPayable=(salaryMonthCap>=30 && d.salary) ? d.salary : (d.salaryDay||0)*salaryMonthCap;
       // Home Pending ₹ = customer/job pending amount only. Salary amount is shown only in Salary section.
       const jobPendingTotal=totalMyJobPendingAmount();
+      document.getElementById('statPresentLabel').textContent='Present · '+today().slice(0,7);
       const freshStart=hasFreshStartActive(currentUser); document.getElementById('statJobs').textContent=freshStart?0:jobs.length; document.getElementById('statPresent').textContent=freshStart?0:(sum.totalPresentDays||sum.presentDays||0); document.getElementById('statPending').textContent=freshStart?money(0):money(jobPendingTotal); {
       const st=String(bl?.status||bl?.black_white_status||bl?.blacklist_status||'').toLowerCase();
       let scoreText='0%';
