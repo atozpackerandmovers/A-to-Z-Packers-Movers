@@ -116,6 +116,8 @@
 </style>
 <link rel="stylesheet" href="vehicle-documents.css?v=20260928-1">
 <script src="attendance-rules.js?v=20261002-1"></script>
+<link rel="stylesheet" href="salary-overview.css?v=20261002-1">
+<script src="salary-overview.js?v=20261002-1"></script>
 </head>
 <body class="min-h-screen">
   <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white px-4 py-5 sticky top-0 z-40 no-print">
@@ -1958,7 +1960,7 @@
       const pendingSalary=canonical?Number(latestFinal.final_salary_payable||0):Math.max(0, unpaidBaseAmount + unpaidExtraAmount + bonusTotal - advance - otherDeduction);
       const score=Number(attSum.attendancePercentage||0);
       const offerText=latest.company_remark || latestFinal.company_remark || latest.odia_offer || latest.company_offer_odia || latest.offer_text_odia || latest.salary_message_odia || 'ଆପଣଙ୍କ ପରିଶ୍ରମର ସଠିକ୍ ହିସାବ କମ୍ପାନୀ ରଖୁଛି। ନିୟମିତ କାମ କରନ୍ତୁ, ଆଗକୁ ବଢନ୍ତୁ। ଭଲ କାମ ପାଇଁ Bonus ଏବଂ Extra Work payment ସୁଯୋଗ ରହିଛି।';
-      document.getElementById('content').innerHTML=`<div class="space-y-4">
+      document.getElementById('content').innerHTML=`${canonical?AZPSalaryOverview.html(currentUser.name,latestFinal):''}<div class="space-y-4">
         <div class="card p-5 max-w-3xl overflow-hidden">
           <div class="flex items-start justify-between gap-3 flex-wrap">
             <div>
