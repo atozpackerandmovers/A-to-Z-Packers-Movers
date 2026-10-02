@@ -10,7 +10,7 @@ function open(extra){
  const fields={};
  for(const [key,value] of Object.entries({employee_name:'Test Worker',role:'Worker',month:'2026-09',salary_due_date:'2026-09-27',extra_bonus:String(extra),payment_status:'Pending',paid_amount:'',approval_status:'Pending'})) fields['field-'+key]={value,style:{},dataset:{},listeners:{},addEventListener(event,fn){this.listeners[event]=fn;}};
  fields['salary-v2-preview']={innerHTML:''};fields['form-fields']={};
- const context={document:{getElementById:id=>fields[id]},currentModule:'salaryFinalApproval',setTimeout:fn=>fn(),getStaffMasterRecord:()=>({role:'Worker'}),azpMasterRole:m=>m.role,getMonthRange:()=>({ym:'2026-09'}),getStaffJoinDate:()=> '2026-06-27',normName:v=>String(v).toLowerCase(),azpEsc:String,money:v=>String(v??0),buildSalaryFinalData:(name,role,month,vehicle,extra=0)=>({role,extra_bonus:Number(extra),total_salary_earned_before_paid:34000+Number(extra),paid_credit_amount:0,month_breakdown:[]})};
+ const context={AZPSalaryOverview:require('../salary-overview.js'),document:{getElementById:id=>fields[id]},currentModule:'salaryFinalApproval',setTimeout:fn=>fn(),getStaffMasterRecord:()=>({role:'Worker'}),azpMasterRole:m=>m.role,getMonthRange:()=>({ym:'2026-09'}),getStaffJoinDate:()=> '2026-06-27',normName:v=>String(v).toLowerCase(),azpEsc:String,money:v=>String(v??0),buildSalaryFinalData:(name,role,month,vehicle,extra=0)=>({role,extra_bonus:Number(extra),total_salary_earned_before_paid:34000+Number(extra),paid_credit_amount:0,month_breakdown:[]})};
  vm.runInNewContext(formCode,context);return fields;
 }
 test('reopening saved negative/positive/zero adjustment preserves it and renders preview',()=>{
