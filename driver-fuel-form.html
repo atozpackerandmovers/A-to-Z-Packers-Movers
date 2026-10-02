@@ -111,12 +111,13 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 
 
 <p id="meterNote" class="muted"></p>
-<div class="controls"><button id="btnAdd" class="btn-blue">➕ Add to Session</button><button id="btnSend" class="btn-olive">📤 Send (Primary) to WhatsApp</button><button type="button" class="btn-yellow" id="btnReset">Reset Draft</button></div>
-<p id="shareStatus" class="muted" role="status"></p><div id="shareLinks" class="controls"></div>
 <div class="review"><h3>Execution Auto-entry</h3><p class="muted">Review the company payment and save this fuel entry in Execution.</p><button type="button" class="btn-blue" id="btnReview" disabled>Review & Save to Execution</button></div>
 <div id="review" class="review" hidden><h3>Company Payment & Review</h3>
 <div id="projection" class="status" aria-live="polite"></div>
 <button type="button" class="btn-olive" id="btnSave">Save Entry</button><p id="saveMessage" role="status"></p></div>
+<div class="controls"><button id="btnAdd" class="btn-blue">➕ Add to Session</button><button id="btnSend" class="btn-olive">📤 Send (Primary) to WhatsApp</button><button type="button" class="btn-yellow" id="btnReset">Reset Draft</button></div>
+<p id="shareStatus" class="muted" role="status"></p><div id="shareLinks" class="controls"></div>
+
 </section>
 <section class="card"><h2>Added Records (This Session)</h2><p class="muted">Session drafts are separate from saved Execution records. Use Review / Save on each draft to save it.</p>
 <div class="controls"><button id="btnSessionWA" class="btn-olive tiny">📤 WhatsApp (Session → Boss #1)</button><label for="sessionMonth">Report month</label><input id="sessionMonth" type="month" style="max-width:190px"><button id="btnMonthPDF" class="btn-blue tiny">📄 Monthly PDF</button></div>
@@ -127,4 +128,4 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <section class="card"><h2>Stored Records (All Time)</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
 <div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">📄 PDF (All Records)</button><button id="btnWA" class="btn-olive">📤 WhatsApp (to Boss #1 & #2)</button></div>
 <div style="overflow:auto;max-height:520px"><table><thead><tr><th>Date / Vehicle</th><th>Meter / KM</th><th>Fuel Cost</th><th>Company Paid</th><th>Difference</th><th>Note</th></tr></thead><tbody id="history"></tbody></table></div>
-</section></main><script src="driver-fuel-form.js?v=20261001-2"></script><script src="driver-fuel-features.js?v=20261001-2"></script></body></html>
+</section></main><script src="driver-fuel-form.js?v=20261002-1"></script><script src="driver-fuel-features.js?v=20261002-1"></script></body></html>
