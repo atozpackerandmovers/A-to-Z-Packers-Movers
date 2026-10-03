@@ -7052,6 +7052,7 @@ function normalizeQuote(id,d={}){
     customerName: d.customer_name || d.customerName || d.partyName || d.party_name || '',
     customerMobile: d.party_mobile || d.partyMobile || d.customerMobile || d.mobile || d.contactNumber || '',
     customerGstNumber: d.customer_gst_number || d.customerGstNumber || '',
+    serviceType: d.service_type || d.serviceType || '',
     fromLocation: d.from_location || d.fromLocation || d.from || '',
     toLocation: d.to_location || d.toLocation || d.to || '',
     totalAmount: money(d.total_amount ?? d.totalAmount ?? d.manual_amount ?? d.amount ?? d.base_amount),
@@ -7233,10 +7234,26 @@ function dateSummaryHtml(counts,type){
   return `<div class="azp-v9-date-summary"><b style="width:100%;color:#0f766e;font-size:13px;">📅 Date-wise ${label} Count</b>${entries.map(([d,c])=>`<span>${esc(d)} : ${c}</span>`).join('')}</div>`;
 }
 
+function serviceCategoryBadge(r){
+  const service = String(r.serviceType || r.service_type || '').trim();
+  let label = service || 'Not specified';
+  let icon = '📦';
+  let color = '#475569';
+  let background = '#f1f5f9';
+  if (/\b(household|house\s+hold|home\s+shifting|house\s+shifting|domestic)\b|घरेलू|घर का सामान/i.test(service)) {
+    label = 'Household Goods'; icon = '🏠'; color = '#6d28d9'; background = '#ede9fe';
+  } else if (/\b(bikes?|motorcycles?|motor\s+cycles?|scooters?|two[\s-]*wheelers?|2[\s-]*wheelers?)\b|बाइक|मोटरसाइकिल|स्कूटर/i.test(service)) {
+    label = 'Bike'; icon = '🏍️'; color = '#0f766e'; background = '#ccfbf1';
+  } else if (/\b(cars?|four[\s-]*wheelers?|4[\s-]*wheelers?)\b|कार/i.test(service)) {
+    label = 'Car'; icon = '🚗'; color = '#1d4ed8'; background = '#dbeafe';
+  }
+  return `<span class="azp-v9-chip azp-v9-service-category" style="background:${background};color:${color};">${icon} Category: ${esc(label)}</span>`;
+}
 function chips(r){
   const elec = !!r.electrificationRequired;
   const gstPct = Number(r.gstPercentage || r.gst_percentage || 0) || 0;
   return `<div class="azp-v9-chiprow">
+    ${serviceCategoryBadge(r)}
     <span class="azp-v9-chip azp-v9-vehicle">🚚 Vehicle: ${esc(r.vehicleType || 'Not selected')}</span>
     <span class="azp-v9-chip azp-v9-elec">⚡ Electrification: ${elec ? 'Yes' : 'No'}</span>
     ${elec ? `<span class="azp-v9-chip azp-v9-elecamt">💡 Amount: Rs. ${fmt(r.electrificationAmount)}</span>` : ''}
