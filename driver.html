@@ -175,7 +175,7 @@
   <div id="bottomNav" class="bottom-nav no-print"></div>
   <div id="toast" class="fixed top-4 right-4 z-[80] hidden"><div class="toast rounded-xl bg-emerald-600 text-white px-4 py-3 text-sm font-black shadow-xl"></div></div>
 
-  <script src="fuel-ledger.js?v=20260928-1"></script>
+  <script src="fuel-ledger.js?v=20261004-1"></script>
   <script src="repair-entry.js?v=20260928-1"></script>
   <script src="vehicle-documents.js?v=20260928-1"></script>
   <script src="vehicle-documents-store.js?v=20260928-1"></script>
@@ -2399,7 +2399,7 @@
     function sendFuelContext(){
       const frame=document.getElementById('azpFuelFrame');
       if(!frame||!currentUser)return;
-      frame.contentWindow?.postMessage({type:'AZP_FUEL_CONTEXT',driver:currentUser.name,vehicles:fuelVehicleOptions(),records:fuelRowsForMe().map(r=>({id:r.id,date:r.date||'',driver:r.driver||r.driver_name||r.employee_name||'',vehicle_number:r.vehicle_number||r.vehicle||'',meter_start:r.meter_start??r.start??null,meter_end:r.meter_end??r.end??null,meter_reading:r.meter_reading??null,distance:r.distance??r.km??null,fuel_cost:r.fuel_cost??r.consumption??null,boss_amount:r.boss_amount??null,company_returned:r.company_returned??null,remarks:r.remarks||r.location||r.party_location||''}))},location.origin);
+      frame.contentWindow?.postMessage({type:'AZP_FUEL_CONTEXT',driver:currentUser.name,vehicles:fuelVehicleOptions(),meterRecords:byModule('fuel').filter(r=>fuelVehicleOptions().some(v=>AZPFuelLedger.vehicle(v)===AZPFuelLedger.vehicle(r.vehicle_number||r.vehicle))).map(r=>({vehicle_number:r.vehicle_number||r.vehicle,meter_end:r.meter_end??r.end??r.meter_reading,date:r.date||'',updatedAtMs:r.updatedAtMs||r.createdAtMs||0})),records:fuelRowsForMe().map(r=>({id:r.id,date:r.date||'',driver:r.driver||r.driver_name||r.employee_name||'',vehicle_number:r.vehicle_number||r.vehicle||'',meter_start:r.meter_start??r.start??null,meter_end:r.meter_end??r.end??null,meter_reading:r.meter_reading??null,distance:r.distance??r.km??null,fuel_cost:r.fuel_cost??r.consumption??null,boss_amount:r.boss_amount??null,company_returned:r.company_returned??null,remarks:r.remarks||r.location||r.party_location||''}))},location.origin);
     }
     const fuelSaveRequests=new Set();
     window.addEventListener('message',async e=>{
@@ -2446,7 +2446,7 @@
     });
     function fuel(){
       if(document.getElementById('azpFuelFrame')){sendFuelContext();return;}
-      document.getElementById('content').innerHTML='<div class="card p-1 overflow-hidden"><iframe id="azpFuelFrame" title="A TO Z Fuel Consumption Entry and Reporting" src="driver-fuel-form.html?v=20261002-1" style="width:100%;height:2400px;min-height:600px;border:0;display:block" scrolling="no"></iframe></div>';
+      document.getElementById('content').innerHTML='<div class="card p-1 overflow-hidden"><iframe id="azpFuelFrame" title="A TO Z Fuel Consumption Entry and Reporting" src="driver-fuel-form.html?v=20261004-1" style="width:100%;height:2400px;min-height:600px;border:0;display:block" scrolling="no"></iframe></div>';
       requestAnimationFrame(()=>document.getElementById('azpFuelFrame')?.scrollIntoView({behavior:'smooth',block:'start'}));
     }
 

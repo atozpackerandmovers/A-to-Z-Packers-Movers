@@ -42,7 +42,8 @@
     if(!Number.isFinite(consumption)||consumption>10000000)throw Error('Please check the meter readings and fuel amount.');
     return {start,end,mileage,ppl,distance,consumption,boss_amount:round(paid),difference_amount:round(consumption-paid)};
   }
-  const api={present,amount,round,name,vehicle,driver,unique,entry,summary,groups,money,signed,label,calculate};
+  function latestMeter(rows,v){return rows.filter(r=>vehicle(r.vehicle_number||r.vehicle)===vehicle(v)&&amount(r.meter_end??r.end??r.meter_reading)!==null).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(Number(b.updatedAtMs||b.createdAtMs||0)-Number(a.updatedAtMs||a.createdAtMs||0))||(amount(b.meter_end??b.end??b.meter_reading)-amount(a.meter_end??a.end??a.meter_reading)))[0]||null;}
+  const api={present,amount,round,name,vehicle,driver,unique,entry,summary,groups,money,signed,label,calculate,latestMeter};
   root.AZPFuelLedger=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

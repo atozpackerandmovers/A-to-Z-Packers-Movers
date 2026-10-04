@@ -4,13 +4,13 @@
   'use strict';
   const L=window.AZPFuelLedger,$=id=>document.getElementById(id);
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let context=null,records=[],busy=false,requestId=crypto.randomUUID(),inFlight=null,draftKey='',restored=false;
+  let lastSaved=null,context=null,records=[],busy=false,requestId=crypto.randomUUID(),inFlight=null,draftKey='',restored=false;
   const fields=['vehicleSel','meterStart','meterEnd','partyLocation','litres','pricePerLitre','mileage','bossAmount','bossNote'];
   const post=(type,data={})=>parent.postMessage({type,...data},location.origin);
   function raw(){return {vehicle:$('vehicleSel').value,vehicle_manual:!!window.AZPFuelExtras?.isManualVehicle($('vehicleSel').value),start:$('meterStart').value,end:$('meterEnd').value,mileage:$('mileage').value,ppl:$('pricePerLitre').value,boss_amount:$('bossAmount').value,location:$('partyLocation').value.trim(),fuel_filled_litre:$('litres').value,survey:document.querySelector('input[name=sr]:checked')?.value==='yes'?'Yes':'No',note:$('bossNote').value.trim()};}
   function summary(){return L.summary(records);}
-  function persist(){if(!draftKey)return;try{sessionStorage.setItem(draftKey,JSON.stringify({requestId,values:Object.fromEntries(fields.map(id=>[id,$(id).value])),survey:raw().survey,review:!$('review').hidden}));}catch(_){}}
-  function restore(){if(restored||!draftKey)return;restored=true;try{const d=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(!d)return;requestId=/^[a-zA-Z0-9-]{16,80}$/.test(d.requestId)?d.requestId:requestId;fields.forEach(id=>{if(d.values?.[id]!==undefined)$(id).value=d.values[id];});$('srYes').checked=d.survey==='Yes';$('srNo').checked=d.survey!=='Yes';$('review').hidden=!d.review;}catch(_){}}
+  function persist(){if(!draftKey)return;try{sessionStorage.setItem(draftKey,JSON.stringify({requestId,lastSaved,values:Object.fromEntries(fields.map(id=>[id,$(id).value])),survey:raw().survey,review:!$('review').hidden}));}catch(_){}}
+  function restore(){if(restored||!draftKey)return;restored=true;try{const d=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(!d)return;lastSaved=d.lastSaved?.driver===context?.driver?d.lastSaved:null;requestId=/^[a-zA-Z0-9-]{16,80}$/.test(d.requestId)?d.requestId:requestId;fields.forEach(id=>{if(d.values?.[id]!==undefined)$(id).value=d.values[id];});$('srYes').checked=d.survey==='Yes';$('srNo').checked=d.survey!=='Yes';$('review').hidden=!d.review;}catch(_){}}
   function setBusy(value){busy=value;fields.forEach(id=>$(id).disabled=value);$('driverSel').disabled=true;['btnReview','btnReset','btnSave'].forEach(id=>$(id).disabled=value||!context);document.querySelectorAll('input[name=sr]').forEach(el=>el.disabled=value);$('btnSave').textContent=value?'Saving…':'Save Entry';}
   function refreshTotals(){
     const r=raw(),s=L.amount(r.start),e=L.amount(r.end),mil=L.amount(r.mileage),ppl=L.amount(r.ppl);
@@ -24,9 +24,8 @@
     $('paymentPreview').textContent=$('projection').textContent;
   }
   function prefillMeter(){
-    const rows=records.filter(r=>L.vehicle(r.vehicle_number||r.vehicle)===L.vehicle($('vehicleSel').value));
-    const last=rows.find(r=>L.amount(r.meter_end??r.end)!==null);
-    if(last){$('meterStart').value=last.meter_end??last.end;$('meterNote').textContent='Starting meter is suggested from your last saved entry for this vehicle. Check it before saving.';}
+    const last=L.latestMeter([...(context?.meterRecords||[]),...records],$('vehicleSel').value);
+    if(last){$('meterStart').value=last.meter_end??last.end??last.meter_reading;$('meterNote').textContent='Starting meter is suggested from your last saved entry for this vehicle. Check it before saving.';}
     else{$('meterStart').value='';$('meterNote').textContent='Enter the actual starting meter for this trip.';}
   }
   function render(){
@@ -44,7 +43,7 @@
       const first=!context||context.driver!==d.driver;
       if(context&&context.driver!==d.driver){
         // Never carry another driver's unsaved money/meter draft across account switches.
-        inFlight=null;busy=false;restored=false;requestId=crypto.randomUUID();
+        lastSaved=null;inFlight=null;busy=false;restored=false;requestId=crypto.randomUUID();
         fields.forEach(id=>$(id).value='');$('pricePerLitre').value='102';$('mileage').value='8';
         $('srYes').checked=false;$('srNo').checked=true;$('review').hidden=true;$('saveMessage').textContent='';
       }
@@ -54,7 +53,7 @@
       if(d.vehicles.includes(previous))$('vehicleSel').value=previous;
       window.AZPFuelExtras?.syncVehicles(d,previous);
       draftKey='azp_fuel_draft_v1:'+d.driver;restore();
-      if(first&&!$('meterStart').value)prefillMeter();
+      if((first&&!$('meterStart').value)||(!busy&&!$('meterEnd').value))prefillMeter();
       $('connection').textContent=d.vehicles.length?'Connected to Execution · '+d.driver:'No assigned vehicle found. Ask the office to assign your vehicle.';
       if(!busy)setBusy(false);$('btnReview').disabled=busy||!$('vehicleSel').value;render();
       if(document.dispatchEvent)document.dispatchEvent(new CustomEvent('azp-fuel-context',{detail:d}));
@@ -62,6 +61,7 @@
     if(d.type==='AZP_FUEL_SAVE_RESULT'&&d.requestId===inFlight){
       setBusy(false);inFlight=null;
       if(!d.ok){$('saveMessage').textContent='Not saved: '+(d.error||'Please retry. Your draft is retained.');return;}
+      lastSaved={...raw(),...L.calculate(raw()),driver:context.driver,saved:true,id:d.id};
       if(d.record){records=[d.record,...records.filter(r=>r.id!==d.record.id)];}
       $('saveMessage').textContent='Saved to Execution. Entry: '+d.id;
       requestId=crypto.randomUUID();$('meterEnd').value='';$('partyLocation').value='';$('litres').value='';$('bossAmount').value='';$('bossNote').value='';
@@ -78,7 +78,7 @@
     catch(e){$('saveMessage').textContent=e.message;return;}
     persist();inFlight=requestId;setBusy(true);$('saveMessage').textContent='Saving to Execution…';post('AZP_FUEL_SAVE',{requestId,entry:raw()});
   };
-  const resetDraft=(ask=true)=>{if(busy)return;if(ask&&!confirm('Clear this unsaved draft? Saved Execution records will remain.'))return;requestId=crypto.randomUUID();['meterEnd','partyLocation','litres','bossAmount','bossNote'].forEach(id=>$(id).value='');$('review').hidden=true;$('saveMessage').textContent='';prefillMeter();persist();refreshTotals();if(document.dispatchEvent)document.dispatchEvent(new CustomEvent('azp-fuel-reset'));};
+  const resetDraft=(ask=true)=>{if(busy)return;if(ask&&!confirm('Clear this unsaved draft? Saved Execution records will remain.'))return;lastSaved=null;requestId=crypto.randomUUID();['meterEnd','partyLocation','litres','bossAmount','bossNote'].forEach(id=>$(id).value='');$('review').hidden=true;$('saveMessage').textContent='';prefillMeter();persist();refreshTotals();if(document.dispatchEvent)document.dispatchEvent(new CustomEvent('azp-fuel-reset'));};
   $('btnReset').onclick=()=>resetDraft();
   $('btnWA').onclick=()=>{if(!context)return;const s=summary();const msg=['A TO Z — Fuel Summary',context.driver,`Fuel (complete entries): ${L.money(s.expense)}`,`Company payments: ${L.money(s.paid)}`,`Returned to company: ${L.money(s.returned)}`,`Balance: ${L.signed(s.balance)} — ${L.label(s.balance)}`,s.unknown?`${s.unknown} incomplete record(s) excluded; office review required.`:''].filter(Boolean).join('\n');window.open('https://wa.me/919338888550?text='+encodeURIComponent(msg),'_blank','noopener');};
   $('btnPDF').onclick=()=>{
@@ -96,7 +96,7 @@
   };
   window.AZPFuelForm={
     rotateDraftId:()=>{if(!busy){requestId=crypto.randomUUID();persist();}},
-    getContext:()=>context,getRecords:()=>records,isBusy:()=>busy,readEntry:raw,
+    getLastSaved:()=>lastSaved,getContext:()=>context,getRecords:()=>records,isBusy:()=>busy,readEntry:raw,
     getDraft:()=>({requestId,values:Object.fromEntries(fields.map(id=>[id,$(id).value])),survey:raw().survey}),
     loadDraft:d=>{if(busy)return false;requestId=d.requestId;fields.forEach(id=>{if(d.values?.[id]!==undefined)$(id).value=d.values[id]});$('srYes').checked=d.survey==='Yes';$('srNo').checked=d.survey!=='Yes';$('review').hidden=false;$('saveMessage').textContent='';refreshTotals();persist();return true;},
     refresh:()=>{refreshTotals();persist();},
