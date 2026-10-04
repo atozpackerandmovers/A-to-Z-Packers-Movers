@@ -79,3 +79,8 @@ test('explicit personal vehicle addition saves only a fuel record and remains bo
  const b=bridge();await b.send({...b.data,entry:{...b.data.entry,vehicle:'OD 05 AB 1234',vehicle_manual:true}});
  assert.equal(b.messages.at(-1).ok,true);const r=[...b.dbRows.values()][0];assert.equal(r.vehicle_number,'OD 05 AB 1234');assert.equal(r.vehicle_entry_mode,'Driver entered');assert.equal(r.driver,'Somnath');assert.equal(r.module,'fuel');
 });
+
+test('vehicle starting meter comes from latest vehicle entry even across drivers',()=>{
+ const L=require('../fuel-ledger.js');const rows=[{driver:'Ajay',vehicle_number:'OD 05 BD 8855',meter_end:1000,date:'2026-10-03'},{driver:'Other',vehicle_number:'OD-05-BD-8855',meter_end:1200,date:'2026-10-04'},{vehicle_number:'OTHER',meter_end:9000,date:'2026-10-05'}];
+ assert.equal(L.latestMeter(rows,'OD 05 BD 8855').meter_end,1200);assert.equal(L.latestMeter([], 'OTHER'),null);
+});

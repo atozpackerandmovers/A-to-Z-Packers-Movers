@@ -60,3 +60,17 @@ Primary and session reports use the same validated payment as the Execution save
 including the per-entry difference and projected saved balance. Blank payments
 block sharing; explicit zero is accepted. Photo stamps and session PDFs include
 the company payment. Saved session reports use acknowledged Execution amounts.
+
+## Save then share (4 October 2026)
+
+Primary WhatsApp uses the acknowledged saved entry when the form was cleared by
+successful Save Entry. The saved report is retained in the driver session draft,
+labelled Saved, and shows the current saved balance without adding its difference
+a second time. New typed entries are validated as drafts. Reset and account
+switches clear the saved share target. The Boss compose link opens synchronously
+from the click; photo output downloads separately for attachment.
+
+Vehicle meter continuity uses the latest saved ending meter for that vehicle,
+including entries by other drivers of the assigned vehicle. The parent supplies
+only meter/date metadata from those entries; other drivers' payment histories
+remain outside the logged-in driver's balance and reports.
