@@ -46,8 +46,9 @@ driver remains fixed. Vehicle additions are personal form choices, not edits to
 Vehicle Master. New registrations are explicitly marked Driver entered on save.
 
 Photo selection and stamping happen on the device. Save Entry saves the fuel
-ledger, not the photo. Use the explicit Share or Download Stamped Photo action
-for the image. The original image and existing GPS overlay are retained; the
+ledger, not the photo. Primary WhatsApp passes the original selected photo and report text to the
+mobile share sheet. Choose WhatsApp, then the Boss chat and confirm Send.
+Download Stamped Photo provides an image with the report footer. The original image and existing GPS overlay are retained; the
 added footer says report-generation time and never invents capture coordinates.
 Native-share cancellation keeps the draft. On unsupported browsers the stamped
 JPEG downloads and a WhatsApp compose link is offered for manual attachment.
@@ -67,8 +68,11 @@ Primary WhatsApp uses the acknowledged saved entry when the form was cleared by
 successful Save Entry. The saved report is retained in the driver session draft,
 labelled Saved, and shows the current saved balance without adding its difference
 a second time. New typed entries are validated as drafts. Reset and account
-switches clear the saved share target. The Boss compose link opens synchronously
-from the click; photo output downloads separately for attachment.
+switches clear the saved share target. Without a photo, the Boss compose link
+opens synchronously from the click. With a photo, native file sharing starts
+from the click so mobile user activation is retained. Cancellation keeps the
+photo and saved report for retry; unsupported browsers download the stamped
+photo and offer a Boss compose link for manual attachment.
 
 Vehicle meter continuity uses the latest saved ending meter for that vehicle,
 including entries by other drivers of the assigned vehicle. The parent supplies

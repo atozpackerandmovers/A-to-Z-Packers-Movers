@@ -29,3 +29,11 @@ test('reports use verified company payment and label both settlement directions'
  const stamp=F.stampLines({...r,vehicle:'OD 02 BY 8855',ppl:93},Date.now()).join('\n');
  assert.match(stamp,/Company paid: INR 3000.00/);assert.match(stamp,/Difference.*INR 720.00/);
 });
+test('photo share hands captured image and text together to mobile share sheet',async()=>{
+ const file={name:'camera.jpg',type:'image/jpeg'};let payload;
+ assert.equal(await F.sharePhotoReport({canShare:({files})=>files[0]===file,share:async p=>{payload=p;}},file,'Saved fuel report'),'shared');
+ assert.equal(payload.files[0],file);assert.equal(payload.text,'Saved fuel report');
+ assert.equal(await F.sharePhotoReport({},file,'report'),'unsupported');
+ assert.equal(await F.sharePhotoReport({canShare:()=>true,share:async()=>{throw Object.assign(Error(),{name:'AbortError'})}},file,'report'),'cancelled');
+ assert.equal(await F.sharePhotoReport({canShare:()=>true,share:async()=>{throw Error('Permission denied')}},file,'report'),'failed');
+});

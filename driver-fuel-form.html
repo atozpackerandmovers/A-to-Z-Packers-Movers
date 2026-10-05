@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>A TO Z — Driver Fuel</title>
-<script src="fuel-ledger.js?v=20261004-1"></script>
+<script src="fuel-ledger.js?v=20261005-1"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>
   :root{--olive:#556B2F;--blue:#1E88E5;--black:#0f172a;--red:#D32F2F;--yellow:#FBC02D;--green:#2E7D32;
@@ -57,7 +57,7 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <label class="photo-confirm"><input id="gpsApprove" type="checkbox"> I confirm the GPS screenshot is clear</label>
 <p class="muted">Form is usable even without photo. Upload a GPS camera screenshot or take a photo. Existing GPS details on your photo are preserved.</p>
 <div id="photoPanel" hidden><img id="gpsPreview" alt="Selected GPS camera photo preview"><div class="controls"><button id="downloadPhoto" class="btn-blue tiny">Download Stamped Photo</button><button id="removePhoto" class="btn-red tiny">Remove Photo</button></div></div>
-<p id="photoStatus" class="muted" role="status">Photo is shared separately using WhatsApp or downloaded. It is not uploaded by Save Entry.</p>
+<p id="photoStatus" class="muted" role="status">Primary WhatsApp shares the selected photo with the report. Choose WhatsApp and the Boss chat. Save Entry saves fuel data only.</p>
 </div>
     <div class="grid cols-2">
       <div>
@@ -128,4 +128,4 @@ input[type=radio],input[type=checkbox]{width:auto}input:read-only,select:disable
 <section class="card"><h2>Stored Records (All Time)</h2><p class="muted">These entries also appear in the office Fuel section. Older records with missing payment details require office review.</p>
 <div class="controls" style="margin-bottom:16px"><button id="btnPDF" class="btn-blue">📄 PDF (All Records)</button><button id="btnWA" class="btn-olive">📤 WhatsApp (to Boss #1 & #2)</button></div>
 <div style="overflow:auto;max-height:520px"><table><thead><tr><th>Date / Vehicle</th><th>Meter / KM</th><th>Fuel Cost</th><th>Company Paid</th><th>Difference</th><th>Note</th></tr></thead><tbody id="history"></tbody></table></div>
-</section></main><script src="driver-fuel-form.js?v=20261004-1"></script><script src="driver-fuel-features.js?v=20261004-1"></script></body></html>
+</section></main><script src="driver-fuel-form.js?v=20261005-1"></script><script src="driver-fuel-features.js?v=20261005-1"></script></body></html>
