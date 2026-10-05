@@ -737,9 +737,10 @@
             <p class="text-sm text-gray-500 mb-3">Store and manage customer inventory lists received from item-list submissions.</p>
             <textarea id="azp-list-received-raw" rows="12" class="planning-input" placeholder="Paste full customer list here..."></textarea>
             <div class="grid grid-cols-2 gap-3 mt-4">
-              <button type="button" onclick="azpAddReceivedList()" class="azp-inq-action bg-indigo-600 hover:bg-indigo-700">📋 Add List</button>
+              <button id="azp-add-received-list" type="button" onclick="azpAddReceivedList()" class="azp-inq-action bg-indigo-600 hover:bg-indigo-700">📋 Add List</button>
               <button type="button" onclick="azpClearReceivedInput()" class="azp-inq-action bg-slate-600 hover:bg-slate-700">✖ Clear</button>
             </div>
+            <p id="azp-received-save-status" class="text-sm text-gray-700 mt-3" role="status" aria-live="polite"></p>
             <div id="azp-list-received-records" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5"></div>
           </section>
         </div>
@@ -7796,21 +7797,59 @@ setTimeout(bootV9, 1200);
   }
 
   function parseReceivedList(raw){
-    raw = String(raw || "").trim();
-    const lines = raw.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-    const joined = lines.join("\n");
-    const phone = (joined.match(/(?:Contact|Mobile|Phone|📱)[^\d]*(?:\+?91[\s-]?)?([6-9]\d{9})/i) || joined.match(/(?:\+?91[\s-]?)?([6-9]\d{9})/) || [,""])[1];
-    function grab(rx){ const line = lines.find(l => rx.test(l)); return line ? line.replace(/^[^:]*:\s*/,"").replace(/^[👤📱📍🏢🛗📅]+\s*/,"").trim() : ""; }
-    const itemLines = lines.filter(l => /^\d+\./.test(l));
-    const totalQty = (joined.match(/Total\s*Qty\s*:?\s*(\d+)/i) || [,""])[1];
+    raw = String(raw || '').trim();
+    const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+    // Emoji and WhatsApp decoration are optional, never required field markers.
+    const plain = line => line.replace(/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u, '').replace(/\*/g, '').trim();
+    const field = line => plain(line).match(/^(Customer(?:\s+Name)?|Name|Party(?:\s+Name)?|Contact(?:\s+(?:Number|No\.?))?|Mobile(?:\s+(?:Number|No\.?))?|Phone(?:\s+(?:Number|No\.?))?|From|To|Pickup\s+Floor|Delivery\s+Floor|Lift\s*\(Pickup\)|Lift\s*\(Delivery\)|Pickup\s+Lift|Delivery\s+Lift|(?:Shifting\s+)?Date|Item\s+List(?:\s*\([^)]*\))?|Inventory(?:\s+List)?|Total\s+(?:Qty|Quantity|Items))\s*[:：-]\s*(.*)$/i);
+    const fields = {};
+    const itemLines = [];
+    let section = '', inItems = false;
+    for(const line of lines){
+      const metadata = field(line);
+      if(metadata){
+        section = metadata[1].toLowerCase().replace(/\s+/g, ' ');
+        fields[section] = metadata[2].trim();
+        inItems = /^(item list|inventory)/.test(section);
+        continue;
+      }
+      const text = plain(line);
+      if(/^(?:please review|thank|a\s+to\s+z|packers|items?\s*list|inventory\s*list)/i.test(text)){
+        section = ''; if(/^(items?\s*list|inventory\s*list)/i.test(text)) inItems = true; continue;
+      }
+      const numbered = line.match(/^\s*(?:[-•▪]\s*)?\d+\s*[.)-]\s*(.+)$/);
+      if(inItems && itemLines.length && !numbered && (itemLines[itemLines.length - 1].match(/\(/g) || []).length > (itemLines[itemLines.length - 1].match(/\)/g) || []).length){
+        itemLines[itemLines.length - 1] += ' ' + line; continue;
+      }
+      const quantified = line.match(/^(?:[-•▪]\s*)?(.+?)\s*(?:×|[xX*]|qty\s*[:=-]?)\s*(\d+)\s*$/i);
+      if(numbered || quantified || (inItems && /^[-•▪]\s*\S/.test(line))){
+        const item = numbered ? numbered[1] : line.replace(/^[-•▪]\s*/, '');
+        itemLines.push(`${itemLines.length + 1}. ${item}`);
+        section = ''; inItems = true;
+      } else if(section === 'from' || section === 'to'){
+        fields[section] = [fields[section]?.replace(/[,\s]+$/, ''), text].filter(Boolean).join(', ');
+      } else if(inItems){
+        itemLines.push(`${itemLines.length + 1}. ${line.replace(/^[-•▪]\s*/, '')}`);
+      }
+    }
+    const get = (...labels) => labels.map(label => fields[label]).find(Boolean) || '';
+    const phoneText = get('contact','contact number','contact no.','contact no','mobile','mobile number','mobile no.','mobile no','phone','phone number','phone no.','phone no') || raw;
+    const phone = (phoneText.match(/(?:\+?91[\s-]*)?([6-9](?:[\s-]*\d){9})(?!\d)/) || [,''])[1].replace(/\D/g, '');
+    const computedQty = itemLines.reduce((sum,line) => {
+      const match = line.match(/(?:×|[xX*]|qty\s*[:=-]?)\s*(\d+)\s*$/i);
+      return sum + (match ? Number(match[1]) : 1);
+    }, 0);
+    const named = get('customer','customer name','name','party','party name');
+    const firstLine = lines[0] || '';
+    const bareName = !field(firstLine) && !/^\s*(?:[-•▪]\s*)?\d+\s*[.)-]/.test(firstLine) && !/[0-9×]/.test(firstLine) && !/list|inventory|packers|movers|please|thank/i.test(plain(firstLine)) ? firstLine : '';
     return {
-      id: uid(), raw, customer: grab(/customer/i) || "No Name", mobile: phone || "",
-      from: extractSection(raw, /^📍?\s*From\s*:/i, [/^📍?\s*To\s*:/i,/^🏢?\s*Pickup/i,/^🏢?\s*Delivery/i,/^🛗/i,/^📅/i,/^📦/i]),
-      to: extractSection(raw, /^📍?\s*To\s*:/i, [/^🏢?\s*Pickup/i,/^🏢?\s*Delivery/i,/^🛗/i,/^📅/i,/^📦/i]),
-      pickupFloor: grab(/Pickup Floor/i), deliveryFloor: grab(/Delivery Floor/i),
-      pickupLift: grab(/Lift.*Pickup/i), deliveryLift: grab(/Lift.*Delivery/i),
-      date: grab(/^📅?\s*Date/i), itemCount: itemLines.length, totalQty, items: itemLines,
-      status: "Inventory Received", createdDate: today(), type: "list_received"
+      id: uid(), raw, customer: named || (bareName ? plain(bareName) : 'No Name'), mobile: phone,
+      from: get('from'), to: get('to'),
+      pickupFloor: get('pickup floor'), deliveryFloor: get('delivery floor'),
+      pickupLift: get('lift (pickup)','pickup lift'), deliveryLift: get('lift (delivery)','delivery lift'),
+      date: get('date','shifting date'), itemCount: itemLines.length,
+      totalQty: get('total qty','total quantity') || (itemLines.length ? String(computedQty) : ''), items: itemLines,
+      status: 'Inventory Received', createdDate: today(), type: 'list_received'
     };
   }
 
@@ -7906,34 +7945,76 @@ setTimeout(bootV9, 1200);
     azpRenderInquiry();
   };
 
-  window.azpAddReceivedList = function(){
-    const el = document.getElementById("azp-list-received-raw");
-    const raw = el ? el.value.trim() : "";
-    if(!raw){ alert("Please paste received inventory list first."); return; }
-    const received = parseReceivedList(raw);
-    let rows = readRows();
-    const rm = String(received.mobile || "").replace(/\D/g,"");
-    const rn = String(received.customer || "").trim().toLowerCase();
-    const rf = String(received.from || "").trim().toLowerCase();
-    const rt = String(received.to || "").trim().toLowerCase();
-
-    rows = rows.filter(r => {
-      if(r.type !== "link_sent") return true;
-      const lm = String(r.mobile || "").replace(/\D/g,"");
-      const ln = String(r.name || "").trim().toLowerCase();
-      const lf = String(r.from || "").trim().toLowerCase();
-      const lt = String(r.to || "").trim().toLowerCase();
-      if(rm && lm && rm === lm) return false;
-      if(rn && ln && (rn === ln || rn.includes(ln) || ln.includes(rn))) return false;
-      if(rf && rt && lf && lt && (rf.includes(lf) || lf.includes(rf)) && (rt.includes(lt) || lt.includes(rt))) return false;
-      return true;
-    });
-
-    rows.unshift(received);
-    saveRows(rows);
-    el.value = "";
-    azpShowInquiryTab("received");
-    alert("Inventory record saved. Matching Link Dispatch record removed automatically.");
+  let receivedListSaving = false;
+  window.azpAddReceivedList = async function(){
+    if(receivedListSaving) return;
+    const el = document.getElementById('azp-list-received-raw');
+    const button = document.getElementById('azp-add-received-list');
+    const status = document.getElementById('azp-received-save-status');
+    const message = text => { if(status) status.textContent = text; };
+    const raw = el ? el.value.trim() : '';
+    if(!raw){ message('Please paste the customer inventory list first.'); el?.focus(); return; }
+    receivedListSaving = true;
+    if(button){ button.disabled = true; button.textContent = '⏳ Saving...'; }
+    let locallySaved = false;
+    try {
+      const received = parseReceivedList(raw);
+      let rows = readRows();
+      if(!Array.isArray(rows)) rows = [];
+      const rm = String(received.mobile || '').replace(/\D/g, '');
+      const rn = received.customer === 'No Name' ? '' : String(received.customer || '').trim().toLowerCase();
+      const rf = String(received.from || '').trim().toLowerCase();
+      const rt = String(received.to || '').trim().toLowerCase();
+      rows = rows.filter(r => {
+        if(r.type !== 'link_sent') return true;
+        const lm = String(r.mobile || '').replace(/\D/g, '');
+        const ln = String(r.name || '').trim().toLowerCase();
+        const lf = String(r.from || '').trim().toLowerCase();
+        const lt = String(r.to || '').trim().toLowerCase();
+        if(rm && lm && rm === lm) return false;
+        if(rn && ln && (rn === ln || rn.includes(ln) || ln.includes(rn))) return false;
+        if(rf && rt && lf && lt && (rf.includes(lf) || lf.includes(rf)) && (rt.includes(lt) || lt.includes(rt))) return false;
+        return true;
+      });
+      // Explicitly adding a NEW inventory must not inherit an old raw tombstone.
+      // Keep deleted IDs intact, so old deleted records cannot be revived.
+      const tombstoneKey = 'azp_deleted_lead_raw_keys_v1';
+      let deletedRaw = [];
+      try { deletedRaw = JSON.parse(localStorage.getItem(tombstoneKey) || '[]'); } catch(e) {}
+      if(Array.isArray(deletedRaw)){
+        const keys = [
+          [received.customer,received.mobile,received.from,received.to,received.createdDate].map(v => String(v || '').trim().toLowerCase()).join('|'),
+          [received.mobile,received.customer,received.from,received.to,received.raw].map(v => String(v || '').trim().toLowerCase()).join('|').slice(0,500)
+        ];
+        if(deletedRaw.some(key => keys.includes(key))) localStorage.setItem(tombstoneKey, JSON.stringify(deletedRaw.filter(key => !keys.includes(key))));
+      }
+      rows.unshift(received);
+      saveRows(rows);
+      if(!readRows().some(r => r.id === received.id)) throw new Error('Inventory could not be saved on this device.');
+      locallySaved = true;
+      if(el.value.trim() === raw) el.value = '';
+      message('Inventory saved on this device. Syncing...');
+      try { window.azpShowInquiryTab('received'); } catch(error){ console.warn('Inventory display refresh failed:', error); }
+      // Save explicitly as well as the existing background storage sync.
+      // This also handles clicks before the Firebase module has finished loading.
+      for(let attempt=0;attempt<3 && typeof window.azpLeadPipelineSaveToFirebase !== 'function';attempt++) await new Promise(resolve => setTimeout(resolve,400));
+      if(typeof window.azpLeadPipelineSaveToFirebase === 'function'){
+        let timer;
+        try {
+          await Promise.race([
+            window.azpLeadPipelineSaveToFirebase(received),
+            new Promise((_,reject) => { timer = setTimeout(() => reject(new Error('Sync is taking longer than expected.')),12000); })
+          ]);
+          message('✅ Inventory list saved successfully.');
+        } finally { clearTimeout(timer); }
+      } else message('Inventory saved on this device. Online sync is pending; please reconnect and refresh when online.');
+    } catch(error){
+      console.error('Inventory Add List failed:', error);
+      message(locallySaved ? 'Inventory saved on this device. Online sync is pending; please reconnect and refresh when online.' : 'Could not save the list. Your pasted text is still here. ' + String(error?.message || error));
+    } finally {
+      receivedListSaving = false;
+      if(button){ button.disabled = false; button.textContent = '📋 Add List'; }
+    }
   };
 
   window.azpClearReceivedInput = function(){
