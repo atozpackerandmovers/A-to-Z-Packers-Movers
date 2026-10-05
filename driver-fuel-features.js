@@ -12,7 +12,12 @@
     if(!e.known)return ['Company paid: Not recorded','Settlement: Needs office review'];
     return [`Company paid: ${ledger.money(e.paid)}`,`Difference (Fuel − Company paid + Returned): ${ledger.signed(e.delta)} — ${ledger.label(e.delta)}`];
   }
-  const api={phone,indiaDate,monthRows,stampLines,validatePhoto,settlementLines};
+  async function sharePhotoReport(nav,file,text){
+    if(!nav.share||!nav.canShare?.({files:[file]}))return 'unsupported';
+    try{await nav.share({files:[file],text,title:'A TO Z Fuel Report'});return 'shared';}
+    catch(e){if(e.name==='AbortError')return 'cancelled';return 'failed';}
+  }
+  const api={phone,indiaDate,monthRows,stampLines,validatePhoto,settlementLines,sharePhotoReport};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   if(!root.document)return;
   const L=root.AZPFuelLedger,F=root.AZPFuelForm,$=id=>document.getElementById(id);
@@ -36,6 +41,11 @@
   function entry(){
     const c=F.getContext();if(!c)throw Error('Wait for your Driver login to connect.');const r=F.readEntry();if(!r.vehicle)throw Error('Select or add a vehicle.');
     const calc=L.calculate(r);return {...r,...calc,start:calc.start,end:calc.end,mileage:calc.mileage,ppl:calc.ppl,consumption:calc.consumption,distance:calc.distance,driver:c.driver};
+  }
+  function reportEntry(){
+    const raw=F.readEntry(),saved=F.getLastSaved();
+    const clean=!raw.end&&!raw.boss_amount&&!raw.location&&!raw.fuel_filled_litre&&!raw.note;
+    return clean&&saved&&L.vehicle(saved.vehicle)===L.vehicle(raw.vehicle)?saved:entry();
   }
   function renderSession(){
     $('sessionRows').innerHTML=queue.length?queue.map((q,i)=>`<tr><td>${i+1}</td><td>${esc(q.entry.driver)}</td><td>${esc(q.entry.vehicle)}</td><td>${q.entry.start}</td><td>${q.entry.end}</td><td>${q.entry.distance}</td><td>${q.entry.mileage}</td><td>${L.money(q.entry.consumption)}<br>${esc(settlementLines(q.entry,L).join(' | '))}</td><td>${q.savedId?'Saved to Execution':`<button class="btn-blue tiny" data-load="${i}">Review / Save</button>`}<button class="btn-red tiny" data-remove="${i}">Remove from Session</button></td></tr>`).join(''):'<tr><td colspan="9">No session entries yet.</td></tr>';
@@ -66,7 +76,7 @@
   $('setInitMeterBtn').onclick=()=>{if(F.isBusy())return;const v=L.vehicle($('vehicleSel').value),n=L.amount($('initMeterInput').value);if(!v||n===null||n<0)return alert('Select a vehicle and enter a valid initial meter.');if(initialMeters[v]!==undefined)return;initialMeters[v]=n;$('meterStart').value=n;$('initMeterInput').value='';persist();F.refresh();updateInitial();};
   $('vehicleSel').addEventListener('change',updateInitial);
   $('btnRestartSession').onclick=()=>{if(F.isBusy())return;if(!confirm('Start a new session? Session drafts will be cleared. Saved Execution entries remain.'))return;queue=[];persist();renderSession();F.reset();};
-  function clearPhoto(keepInputs=false){photoVersion++;photo=null;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl='';$('gpsPreview').removeAttribute('src');$('photoPanel').hidden=true;if(keepInputs!==true){$('gpsSnap').value='';$('gpsCamera').value='';}$('gpsApprove').checked=false;$('photoStatus').textContent='Photo is shared separately using WhatsApp or downloaded. It is not uploaded by Save Entry.';}
+  function clearPhoto(keepInputs=false){photoVersion++;photo=null;if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl='';$('gpsPreview').removeAttribute('src');$('photoPanel').hidden=true;if(keepInputs!==true){$('gpsSnap').value='';$('gpsCamera').value='';}$('gpsApprove').checked=false;$('photoStatus').textContent='Primary WhatsApp shares the selected photo with the report. Choose WhatsApp and the Boss chat. Save Entry saves fuel data only.';}
   async function selectPhoto(file){
     clearPhoto(true);if(!file)return;const version=photoVersion;let pendingUrl='';
     try{
@@ -89,7 +99,7 @@
     return new File([blob],'Fuel_'+indiaDate(Date.now())+'_'+Date.now()+'.jpg',{type:'image/jpeg'});
   }
   function download(file){const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
-  $('downloadPhoto').onclick=async()=>{try{download(await stampedFile(entry()));$('photoStatus').textContent='Stamped photo downloaded. Attach it to your WhatsApp report.';}catch(e){$('photoStatus').textContent=e.message;}};
+  $('downloadPhoto').onclick=async()=>{try{download(await stampedFile(reportEntry()));$('photoStatus').textContent='Stamped photo downloaded. Attach it to your WhatsApp report.';}catch(e){$('photoStatus').textContent=e.message;}};
   function primaryText(r){
     const previous=L.summary(F.getRecords()),projected=r.saved?previous.balance:L.round(previous.balance+r.difference_amount);
     return ['A TO Z — Fuel Report',`Driver: ${r.driver}`,`Vehicle: ${r.vehicle}`,`Location: ${r.location||'—'}`,`Meter: ${r.start} → ${r.end}`,`Distance: ${r.distance} KM | Mileage: ${r.mileage}:1`,`Price/litre: ${L.money(r.ppl)}`,`Fuel consumption: ${L.money(r.consumption)}`,...settlementLines(r,L),r.saved?'':`Previous saved balance: ${L.signed(previous.balance)}`,`${r.saved?'Saved balance':'After saving this draft'}: ${L.signed(projected)} — ${L.label(projected)}`,previous.unknown?'Older incomplete entries excluded; balance is partial.':'',`Survey & Material Report: ${r.survey}`,r.note?`Payment / trip note: ${r.note}`:'',r.saved?'Saved in Execution — Entry '+r.id:'Draft report — use Save Entry to save this payment in Execution.'].filter(Boolean).join('\n');
@@ -103,13 +113,17 @@
   $('btnSend').onclick=async()=>{
     try{
       if(F.isBusy())throw Error('Wait for Save Entry to finish.');
-      const raw=F.readEntry(),saved=F.getLastSaved();
-      const clean=!raw.end&&!raw.boss_amount&&!raw.location&&!raw.fuel_filled_litre&&!raw.note;
-      const r=clean&&saved&&L.vehicle(saved.vehicle)===L.vehicle(raw.vehicle)?saved:entry(),text=primaryText(r);
+      const r=reportEntry(),text=primaryText(r);
       phone($('boss1').value);
       if(photo&&!$('gpsApprove').checked)throw Error('Please confirm the GPS screenshot is clear.');
-      openText(text);
-      if(photo){download(await stampedFile(r));$('shareStatus').textContent='Boss WhatsApp opened. Stamped photo downloaded; attach it to this report.';}
+      if(!photo){openText(text);return;}
+      // Pass the captured original directly while this click has user activation.
+      // A wa.me compose URL cannot carry a local image attachment.
+      const result=await sharePhotoReport(navigator,photo.file,text);
+      if(result==='shared'){$('shareStatus').textContent='Share completed. Check the photo and report in the Boss WhatsApp chat and confirm Send.';return;}
+      if(result==='cancelled'){$('shareStatus').textContent='Sharing cancelled. Photo and saved entry are retained; tap Primary WhatsApp to retry.';return;}
+      download(await stampedFile(r));shareLinks(text);
+      $('shareStatus').textContent='Photo sharing is unavailable in this browser. Photo downloaded. Open the Boss WhatsApp link below and attach the downloaded image before Send.';
     }catch(e){$('shareStatus').textContent=e.message;}
   };
   $('btnSessionWA').onclick=()=>{try{if(!queue.length)throw Error('No session entries yet.');openText(['A TO Z — Session Fuel Report',...queue.map((q,i)=>`${i+1}. ${q.entry.driver} | ${q.entry.vehicle} | ${q.entry.distance} KM | ${L.money(q.entry.consumption)} | ${settlementLines(q.entry,L).join(' | ')} | ${q.savedId?'Saved':'Draft — not saved'}`)].join('\n'));}catch(e){alert(e.message);}};
