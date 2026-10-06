@@ -40,7 +40,7 @@ office_presence, server timestamp audit fields and staffPortalPunch source.
 
 Execution → Attendance → staff name → Daily Attendance displays In Office / Left
 Office and both times. Expand that day to review/edit attendance, fines or approved
-overtime. Selected Month Attendance counts Punch In/Out days and working hours.
+overtime. Selected Month Attendance counts each saved Punch In/Out and working hours.
 Staff punches do not overwrite company Half Day, Absent or effective Leave records.
 
 Firestore transactions re-read the master and relevant known day records, prevent
@@ -69,3 +69,13 @@ In Execution, split-shift aggregate punch times are read-only; changing a fine,
 status or approved overtime preserves the separate punch pairs and summed hours.
 The browser fixture verifies 10:00/14:30 and 18:00/22:00, a second same-day Punch In,
 510 total minutes, save retry and both staff identities without production writes.
+
+## Saved punch visibility
+
+Daily Attendance now displays the two shift pairs directly, without expanding
+the day. A morning Out remains visible during the evening open shift. Monthly
+Punch In/Out tiles count individual saved events: a complete split-shift day
+adds 2 In and 2 Out, while adding only 1 Present/salary day. Legacy single-pair
+records add 1 event each. First/last daily aggregate fields are labelled explicitly.
+Read-only production inspection confirmed the four punches were saved for both
+staff on 6 October; this change fixes report presentation, not a missing database write.
