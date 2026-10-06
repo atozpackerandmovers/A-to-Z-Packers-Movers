@@ -11,13 +11,21 @@ identity authentication system.
 - Punch In: Present, 1 salary day, In Office. Save India date/time.
 - Punch Out: Left Office, keep Present and 1 salary day. It is departure, not an
   absence. Working minutes = floor((out timestamp − in timestamp) / 60,000).
-- Late: Punch In later than Company Rules → Office Start (default 09:00).
-- Early Exit: same-day Punch Out before Office End (default 18:00).
+- Fixed schedule for both staff: Morning 10:00–14:30 and Evening 18:00–22:00,
+  India time. Scheduled total: 510 minutes (8h 30m). Global Office Start/End
+  settings remain for other staff.
+- Late per shift = max(0, punch-in clock minutes − scheduled start minutes).
+- Early Exit per shift = max(0, scheduled end minutes − punch-out clock minutes)
+  for same-date departures. Each shift has its own flags and minute counts.
+- Daily working minutes sum completed shift durations, excluding the gap between
+  morning Punch Out and evening Punch In. Day flags are Yes if either shift qualifies.
 - Fine, paid overtime, Half Day and Absent remain company decisions. No automatic
   salary deduction or overtime payment is introduced. Existing no-record
   auto-present behavior is retained; a missed punch is not automatically absent.
 - Overnight Punch Out closes the original shift on its starting date; the next
-  day's Punch In then becomes available. One completed shift per India date.
+  day's Punch In then becomes available. One punch pair per shift per India date.
+  Choose Morning/Evening in the app. An open shift must be closed first.
+  Morning completion permits Evening Punch In on the same day.
 
 Suggested later policy if the company wants hour-based salary: full day at the
 configured standard hours; half day at half that duration; shorter shifts reviewed
@@ -47,3 +55,17 @@ Node tests cover alias matching, ambiguous master/mobile mismatch, India midnigh
 overnight shifts. A browser test uses the real Staff App with mocked Firebase for
 both logins, save failure/retry, in/out button states and account-switch isolation.
 No production attendance records are created by validation.
+
+## Split-shift rollout (6 October 2026)
+
+Store both pairs in punch_sessions within the same attendance record/master ID.
+Keep first punch-in, last punch-out and summed working_minutes for existing daily
+and monthly summaries. The expanded Execution day shows each shift's scheduled
+times, actual times and late/early minutes. Existing legacy punches are retained
+as one inferred shift when adding another punch. No old records are rewritten
+by deployment and no automatic fine/absence deduction is added.
+
+In Execution, split-shift aggregate punch times are read-only; changing a fine,
+status or approved overtime preserves the separate punch pairs and summed hours.
+The browser fixture verifies 10:00/14:30 and 18:00/22:00, a second same-day Punch In,
+510 total minutes, save retry and both staff identities without production writes.
