@@ -3923,9 +3923,11 @@ function formatCurrency(amount) {
     function mergePlanningSheets(remoteData = []) {
       const map = new Map();
       [...getLocalPlanningSheetsFallback(), ...(Array.isArray(remoteData) ? remoteData : [])].forEach(p => {
-        if (!p) return;
-        const key = p.__backendId || p.planning_no || String(Math.random());
-        map.set(key, p);
+        if (!p || p.__backendId === '_setup') return;
+        // A device fallback and its Firebase document represent one business sheet.
+        const key = p.planning_no || p.__backendId || p.local_id;
+        if (!key) return;
+        map.set(key, { ...(map.get(key) || {}), ...p });
       });
       return Array.from(map.values()).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
     }
@@ -4150,7 +4152,7 @@ function formatCurrency(amount) {
 
     function getPlanningSheetData() {
       return {
-        planning_no: (findPlanningSheetById(editingPlanningSheetId || document.getElementById('plan_backend_id')?.value || '')?.planning_no) || `PLN${new Date().getFullYear().toString().slice(-2)}${String(new Date().getMonth()+1).padStart(2,'0')}${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`,
+        planning_no: (findPlanningSheetById(editingPlanningSheetId || document.getElementById('plan_backend_id')?.value || '')?.planning_no) || document.getElementById('plan_backend_id')?.value || `PLN${new Date().getFullYear().toString().slice(-2)}${String(new Date().getMonth()+1).padStart(2,'0')}${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`,
         local_id: document.getElementById('plan_backend_id')?.value || '',
         linked_quotation_no: document.getElementById('plan_linked_quotation_no').value,
         linked_backend_id: document.getElementById('plan_linked_backend_id').value,
@@ -4412,7 +4414,10 @@ function formatCurrency(amount) {
         return;
       }
       const existingId = editingPlanningSheetId || document.getElementById('plan_backend_id')?.value || '';
-      if (existingId) data.local_id = existingId;
+      // Reserve the identity before any asynchronous save. Retries update the same sheet.
+      const planningId = existingId || data.planning_no;
+      data.local_id = planningId;
+      document.getElementById('plan_backend_id').value = planningId;
       let savedPlanningId = '';
       if (window.savePlanningSheetToFirebase) {
         try {
@@ -5836,10 +5841,7 @@ function formatCurrency(amount) {
   document.addEventListener('submit', async (ev) => {
     const id = ev.target?.id || '';
     try {
-      if (id === 'planning-sheet-form') {
-        await savePlanningRecord('planning_form_submit');
-        window.showToast?.('Planning Sheet saved in Firebase.', 'success');
-      }
+      // Planning is saved by its validated form handler; a second writer creates duplicates.
       // quotation-form is intentionally NOT saved here.
       // The main quotation submit flow saves Item List once after the core quotation write,
       // preventing duplicate Firestore writes and unnecessary read/write traffic.
@@ -10800,7 +10802,7 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
     }
 
     function getCurrentPlanningPayload() {
-      const planNo = val('plan_backend_id') || val('plan_linked_quotation_no') || val('plan_linked_backend_id') || `PLN_${Date.now()}`;
+      const planNo = val('plan_backend_id');
       const pickupFloor = floorLift('pickup');
       const deliveryFloor = floorLift('delivery');
       return clean({
@@ -10907,10 +10909,10 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
 
     async function syncPlanningToAgreementAndExecution(reason='planning_submit') {
       const plan = getCurrentPlanningPayload();
-      if (!plan.customer_name || !plan.party_mobile) return null;
-      const planningId = safeId(plan.planning_no || plan.local_id, 'PLN');
+      if (!plan.customer_name || !plan.party_mobile || !plan.local_id) return null;
+      const planningId = safeId(plan.local_id, 'PLN');
       plan.local_id = planningId;
-      await setDoc(doc(db, 'planningSheets', planningId), { ...plan, save_reason: reason }, { merge: true });
+      // The primary save owns planningSheets. This hook only synchronizes Execution.
       await setDoc(doc(db, 'azpExecutionRecords', safeId('PLAN_' + planningId, 'EXE')), executionJobPayload(plan), { merge: true });
       if ($('plan_backend_id')) $('plan_backend_id').value = planningId;
       console.log('AZP synced Planning → Agreement source + Execution job:', planningId);
