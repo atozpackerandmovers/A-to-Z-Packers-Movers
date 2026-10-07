@@ -139,8 +139,8 @@ input:focus,select:focus,textarea:focus{
 <link rel="stylesheet" href="staff-punch.css?v=20261006-3">
 <script src="attendance-rules.js?v=20261005-1"></script>
 <script src="staff-punch.js?v=20261006-4"></script>
-<link rel="stylesheet" href="staff-attendance-history.css?v=20261007-1">
-<script src="staff-attendance-history.js?v=20261007-1"></script>
+<link rel="stylesheet" href="staff-attendance-history.css?v=20261007-2">
+<script src="staff-attendance-history.js?v=20261007-2"></script>
 </head>
 <body>
 <div class="app">
@@ -179,7 +179,7 @@ function extractMs(v){const m=s(v).match(/(\d{11,})/);return m?Number(m[1]):0}fu
 function dtMs(t){const ms=new Date(t.due_date+'T'+t.due_time+':00').getTime();return isNaN(ms)?0:ms}function isToday(t){return t.due_date===today()}function isScheduledHold(t){return (t.scheduled_hold===true||t.status==='Scheduled')&&dtMs(t)>Date.now()+60000}
 function taskKey(t){return s(t.leadId||t.id||t._docId)}function sortTasks(a,b){const bm=dtMs(b),am=dtMs(a);if(bm!==am)return bm-am;return Number(b.updatedAtMs||0)-Number(a.updatedAtMs||0)}
 function startSync(){if(!db||!me)return;if(unsubscribe){try{unsubscribe()}catch(e){}}setFb('Firebase Syncing...',true);unsubscribe=db.collection('azpExecutionRecords').onSnapshot(snap=>{AZPAttendanceHistory.sync(snap.docs.map(doc=>({...doc.data(),id:doc.id})),me);AZPStaffPunch.sync(snap.docs.map(doc=>({...doc.data(),id:doc.id})),me,db);const map=new Map();snap.forEach(doc=>{const t=normalizeTask(doc.data(),doc.id);if(!t||!matches(t))return;const key=taskKey(t);const old=map.get(key);if(!old||Number(t.updatedAtMs)>=Number(old.updatedAtMs))map.set(key,t)});allTasks=[...map.values()].sort(sortTasks);setFb('Firebase Connected',true);render()},err=>{console.error(err);AZPAttendanceHistory.fail();AZPStaffPunch.fail();setFb('Firebase Read Blocked',false);showDiag(err.message||String(err));toast('Firebase task sync issue')})}
-function renderFilters(){const arr=['All','Pending','In Progress','Today','Scheduled'];$('filters').innerHTML=arr.map(f=>`<button class="filter ${currentFilter===f?'active':''}" type="button" onclick="currentFilter='${f}';render()">${f}</button>`).join('')}
+function renderFilters(){const arr=['All','Pending','In Progress','Today','Scheduled'];$('filters').innerHTML=arr.map(f=>`<button class="filter ${currentFilter===f?'active':''}" type="button" onclick="currentFilter='${f}';render()">${f}</button>`).join('')+'<button id="attendance-history-open" class="filter" type="button" aria-haspopup="dialog" onclick="AZPAttendanceHistory.open()">📋 Attendance History</button>'}
 function filterTask(t){const st=cleanStatus(t.status);if(isScheduledHold(t))return currentFilter==='Scheduled';if(currentFilter==='All')return true;if(currentFilter==='Today')return isToday(t);if(currentFilter==='Scheduled')return false;return st===currentFilter}
 function guide(stage){const m={'New Lead':'Call the customer and understand the shifting requirement clearly.','Item List':'Call the customer and collect the complete household item list.','Quotation':'Prepare and send the quotation after checking the item list.','Advance':'Collect the advance or token payment before planning.','Planning':'Finalize vehicle, driver, workers and work schedule.','Execution':'Monitor the shifting work from loading to delivery.','Feedback':'Collect customer feedback.','Review':'Request customer online review.'};return m[stage]||'Complete this task and update the latest status.'}
 function isNewLeadOnline(t,stage){const st=low(stage).replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();const title=low(t?.task_title||t?.title).replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();return st==='new lead'||st==='new lead online'||title.includes('new lead online')}

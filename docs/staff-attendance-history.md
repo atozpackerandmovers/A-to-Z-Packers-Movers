@@ -1,7 +1,9 @@
 # Staff attendance and punch history
 
 Staff App staff.html now has Attendance & Punch History (हाज़िरी और पंच रिकॉर्ड)
-between the task dashboard profile and task list, for every logged-in staff member.
+opened by Attendance History next to Scheduled in the task filter row, for every
+logged-in staff member. It opens a separate dialog; no history cards occupy the
+task dashboard. Close, Escape or clicking the backdrop returns to tasks.
 The existing azpExecutionRecords realtime snapshot powers this read-only report.
 There is no second attendance database or client-only saved history.
 
