@@ -79,3 +79,12 @@ adds 2 In and 2 Out, while adding only 1 Present/salary day. Legacy single-pair
 records add 1 event each. First/last daily aggregate fields are labelled explicitly.
 Read-only production inspection confirmed the four punches were saved for both
 staff on 6 October; this change fixes report presentation, not a missing database write.
+
+## Compact punch card
+
+The dashboard punch card contains only shift selection, selected shift times and
+action buttons. Duplicate per-shift/day history and explanatory paragraphs live
+in Attendance History. Connection errors and save feedback remain visible.
+Owner-requested correction on 7 October reopened Swagatika's incorrect 13:51
+morning Out while retaining the original session in attendance_corrections.
+The stored 10:24 In remains; Out must be explicitly pressed to close the session.
