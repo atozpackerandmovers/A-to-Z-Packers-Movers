@@ -117,7 +117,8 @@
 <link rel="stylesheet" href="vehicle-documents.css?v=20260928-1">
 <script src="attendance-rules.js?v=20261002-1"></script>
 <link rel="stylesheet" href="salary-overview.css?v=20261002-2">
-<script src="salary-overview.js?v=20261002-1"></script>
+<script src="salary-advance-ledger.js?v=20261008-1"></script>
+<script src="salary-overview.js?v=20261008-1"></script>
 </head>
 <body class="min-h-screen">
   <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-emerald-900 text-white px-4 py-5 sticky top-0 z-40 no-print">
@@ -1902,7 +1903,7 @@
     function bill(){ const jobs=myJobs(); const pays=myRecords('payments'); document.getElementById('content').innerHTML=`<div class="card p-5"><h3 class="font-black text-xl mb-3">Bill & Customer Payment</h3>${jobs.map(j=>{ const pending=jobPendingAmount(j); const paid=jobPaymentPaid(j); return `<div class="border rounded-2xl p-3 mb-3 ${paid?'bg-emerald-50 border-emerald-200':'bg-white'}"><div class="flex items-start justify-between gap-2"><b>${esc(j.customer_name)}</b>${paid?'<span class="chip bg-emerald-100 text-emerald-800">✅ Payment Paid</span>':'<span class="chip bg-orange-100 text-orange-900">Pending</span>'}</div><p class="text-sm text-slate-500 mt-1">Total ${money(j.total_amount)} | Advance ${money(j.advance_received)} | Loading ${money(j.loading_payment)} | Unloading ${money(j.unloading_payment)}</p><p class="mt-2 chip ${paid?'bg-emerald-100 text-emerald-900':'bg-orange-100 text-orange-900'}">${paid?'Pending ₹0':'Pending '+money(pending)}</p></div>`; }).join('')||'No bill/payment visible.'}</div>`; }
     function advanceRequestHtml(){
       const rows=myRecords('advanceRequest').sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0));
-      return `<details class="card p-5 mb-4"><summary class="font-black text-lg cursor-pointer">Request Salary Advance</summary><p class="text-sm text-slate-500 mt-2">Send your amount, required date and purpose to Office. A request is not a paid advance.</p><form class="grid gap-3 mt-4" onsubmit="event.preventDefault();window.submitAdvanceRequest()"><label class="font-bold">Amount (₹)<input id="advance-request-amount" class="input w-full" type="number" min="1" step="0.01" required></label><label class="font-bold">Required Date<input id="advance-request-date" class="input w-full" type="date" value="${today()}" required></label><label class="font-bold">Purpose / Reason<textarea id="advance-request-reason" class="input w-full" maxlength="2000" placeholder="Why do you need this advance?" required></textarea></label><button id="advance-request-submit" class="btn bg-blue-700 text-white" type="submit">Send Request to Office</button><p id="advance-request-message" role="status" class="text-sm font-bold"></p></form></details><details class="card p-4 mb-4"><summary class="font-bold cursor-pointer">My Advance Requests (${rows.length})</summary>${rows.map(r=>`<article class="border-t mt-3 pt-3"><b>${money(r.amount)}</b> · ${esc(r.date||'')}<span class="chip ml-2">${esc(r.approval_status||'Pending')}</span><p class="text-sm mt-2 whitespace-pre-wrap">${esc(r.reason||'')}</p>${r.company_remark?`<p class="text-sm mt-2">Office: ${esc(r.company_remark)}</p>`:''}</article>`).join('')||'<p class="text-sm mt-3">No advance requests yet.</p>'}</details>`;
+      return `<details class="card p-5 mb-4"><summary class="font-black text-lg cursor-pointer">Request Salary Advance</summary><p class="text-sm text-slate-500 mt-2">Send your amount, required date and purpose to Office. Office-approved advances reduce your remaining salary due automatically.</p><form class="grid gap-3 mt-4" onsubmit="event.preventDefault();window.submitAdvanceRequest()"><label class="font-bold">Amount (₹)<input id="advance-request-amount" class="input w-full" type="number" min="1" step="0.01" required></label><label class="font-bold">Required Date<input id="advance-request-date" class="input w-full" type="date" value="${today()}" required></label><label class="font-bold">Purpose / Reason<textarea id="advance-request-reason" class="input w-full" maxlength="2000" placeholder="Why do you need this advance?" required></textarea></label><button id="advance-request-submit" class="btn bg-blue-700 text-white" type="submit">Send Request to Office</button><p id="advance-request-message" role="status" class="text-sm font-bold"></p></form></details><details class="card p-4 mb-4"><summary class="font-bold cursor-pointer">My Advance Requests (${rows.length})</summary>${rows.map(r=>`<article class="border-t mt-3 pt-3"><b>${money(r.amount)}</b> · ${esc(r.date||'')}<span class="chip ml-2">${esc(r.approval_status||'Pending')}</span><p class="text-sm mt-2 whitespace-pre-wrap">${esc(r.reason||'')}</p>${r.company_remark?`<p class="text-sm mt-2">Office: ${esc(r.company_remark)}</p>`:''}</article>`).join('')||'<p class="text-sm mt-3">No advance requests yet.</p>'}</details>`;
     }
     let advanceRequestBusy=false,advanceRequestPending=null;
     window.submitAdvanceRequest=async()=>{
@@ -1923,7 +1924,13 @@
       const rows=myRecords('payroll').sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
       const latest=rows[0]||{};
       const d=staffMoneySettings();
-      const latestFinal=d.latestFinal||{};
+      const latestFinal={...(d.latestFinal||{})};
+      if(latestFinal.salary_cycle_start){
+        const claimed=myRecords('salaryFinalApproval').filter(r=>r.settlement_locked==='Yes').flatMap(r=>r.included_advance_request_ids||[]);
+        const advances=AZPAdvanceLedger.summarize(myRecords('advanceRequest'),{start:latestFinal.salary_cycle_start,end:today(),claimed});
+        const manual=Number(latestFinal.manual_paid_amount??Math.max(0,Number(latestFinal.paid_credit_amount||0)-Number(latestFinal.approved_advance_amount||0)));
+        latestFinal.approved_advance_amount=advances.amount;latestFinal.paid_credit_amount=manual+advances.amount;latestFinal.final_salary_payable=Math.max(0,Number(latestFinal.total_salary_earned_before_paid||0)-latestFinal.paid_credit_amount);
+      }
       const directBonusRows=myRecords('bonus').filter(r=>!r.date||String(r.date).slice(0,7)===month);
       const referralRows=myReferralRecords();
       const approvedReferralRows=referralRows;
