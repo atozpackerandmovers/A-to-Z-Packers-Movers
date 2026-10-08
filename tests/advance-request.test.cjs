@@ -1,0 +1,8 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict'),{test}=require('node:test');
+const html=fs.readFileSync(require('path').join(__dirname,'../driver.html'),'utf8');
+const code=html.slice(html.indexOf('    let advanceRequestBusy='),html.indexOf('    function salary(){'));
+test('request saves amount, date and reason as pending without recording salary payment; failed saves retry the same ID',async()=>{
+ const fields={'advance-request-amount':{value:'1200'},'advance-request-date':{value:'2026-10-09'},'advance-request-reason':{value:'  Medical expenses  '},'advance-request-submit':{},'advance-request-message':{}};
+ const writes=[];let fail=true;const c=vm.createContext({window:{},document:{getElementById:id=>fields[id]},currentUser:{name:'Deepak',role:'Worker'},staffMasterRecord:()=>({id:'worker1'}),staffKey:()=> 'worker1',sid:s=>s,toast(){},console:{error(){}},Date,JSON,Number,db:{},MAIN:'azpExecutionRecords',doc:(_d,col,id)=>({col,id}),serverTimestamp:()=>1,setDoc:async(ref,data)=>{writes.push({ref,data});if(fail)throw Error('offline');}});
+ vm.runInContext(code,c);await c.window.submitAdvanceRequest();assert.equal(fields['advance-request-amount'].value,'1200');fail=false;await c.window.submitAdvanceRequest();assert.equal(writes[0].ref.id,writes[1].ref.id);assert.equal(writes[1].data.reason,'Medical expenses');assert.equal(writes[1].data.amount,1200);assert.equal(writes[1].data.approval_status,'Pending');assert.equal(writes[1].data.module,'advanceRequest');assert.equal(writes[1].data.paid_amount,undefined);assert.equal(fields['advance-request-amount'].value,'');
+});

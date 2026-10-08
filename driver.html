@@ -1900,6 +1900,24 @@
     function extra(){formBlock('extraWork','Extra Worker / Extra Work',['date','Date','date'],['job_id','Job ID','text'],['extra_type','Extra Type','select',['Extra Worker','Extra Floor','Extra Items','Night Work','Long Carry','Other']],['amount','Claim Amount ₹','number'],['approved_status','Approval Status','select',['Pending','Approved','Rejected']],['remarks','Details','textarea']);}
     function uniform(){formBlock('uniform','Uniform Status',['date','Date','date'],['uniform_status','Uniform','select',['Present With Uniform','Present Without Uniform','Uniform Issued','Uniform Damaged','Need New Uniform']],['remarks','Remarks','textarea']);}
     function bill(){ const jobs=myJobs(); const pays=myRecords('payments'); document.getElementById('content').innerHTML=`<div class="card p-5"><h3 class="font-black text-xl mb-3">Bill & Customer Payment</h3>${jobs.map(j=>{ const pending=jobPendingAmount(j); const paid=jobPaymentPaid(j); return `<div class="border rounded-2xl p-3 mb-3 ${paid?'bg-emerald-50 border-emerald-200':'bg-white'}"><div class="flex items-start justify-between gap-2"><b>${esc(j.customer_name)}</b>${paid?'<span class="chip bg-emerald-100 text-emerald-800">✅ Payment Paid</span>':'<span class="chip bg-orange-100 text-orange-900">Pending</span>'}</div><p class="text-sm text-slate-500 mt-1">Total ${money(j.total_amount)} | Advance ${money(j.advance_received)} | Loading ${money(j.loading_payment)} | Unloading ${money(j.unloading_payment)}</p><p class="mt-2 chip ${paid?'bg-emerald-100 text-emerald-900':'bg-orange-100 text-orange-900'}">${paid?'Pending ₹0':'Pending '+money(pending)}</p></div>`; }).join('')||'No bill/payment visible.'}</div>`; }
+    function advanceRequestHtml(){
+      const rows=myRecords('advanceRequest').sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0));
+      return `<details class="card p-5 mb-4"><summary class="font-black text-lg cursor-pointer">Request Salary Advance</summary><p class="text-sm text-slate-500 mt-2">Send your amount, required date and purpose to Office. A request is not a paid advance.</p><form class="grid gap-3 mt-4" onsubmit="event.preventDefault();window.submitAdvanceRequest()"><label class="font-bold">Amount (₹)<input id="advance-request-amount" class="input w-full" type="number" min="1" step="0.01" required></label><label class="font-bold">Required Date<input id="advance-request-date" class="input w-full" type="date" value="${today()}" required></label><label class="font-bold">Purpose / Reason<textarea id="advance-request-reason" class="input w-full" maxlength="2000" placeholder="Why do you need this advance?" required></textarea></label><button id="advance-request-submit" class="btn bg-blue-700 text-white" type="submit">Send Request to Office</button><p id="advance-request-message" role="status" class="text-sm font-bold"></p></form></details><details class="card p-4 mb-4"><summary class="font-bold cursor-pointer">My Advance Requests (${rows.length})</summary>${rows.map(r=>`<article class="border-t mt-3 pt-3"><b>${money(r.amount)}</b> · ${esc(r.date||'')}<span class="chip ml-2">${esc(r.approval_status||'Pending')}</span><p class="text-sm mt-2 whitespace-pre-wrap">${esc(r.reason||'')}</p>${r.company_remark?`<p class="text-sm mt-2">Office: ${esc(r.company_remark)}</p>`:''}</article>`).join('')||'<p class="text-sm mt-3">No advance requests yet.</p>'}</details>`;
+    }
+    let advanceRequestBusy=false,advanceRequestPending=null;
+    window.submitAdvanceRequest=async()=>{
+      if(advanceRequestBusy||!currentUser||!['Driver','Worker'].includes(currentUser.role))return;
+      const amount=Number(document.getElementById('advance-request-amount')?.value),date=document.getElementById('advance-request-date')?.value||'',reason=(document.getElementById('advance-request-reason')?.value||'').trim();
+      if(!Number.isFinite(amount)||amount<=0||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!reason){toast('Enter a valid amount, date and purpose.',true);return;}
+      const master=staffMasterRecord(currentUser);if(!master){toast('Staff Master is not connected. Please contact Office.',true);return;}
+      const fingerprint=JSON.stringify([currentUser.role,currentUser.name,amount,date,reason]);
+      if(advanceRequestPending?.fingerprint!==fingerprint)advanceRequestPending={fingerprint,id:sid('ADV_REQ_'+currentUser.name+'_'+Date.now())};
+      const id=advanceRequestPending.id,btn=document.getElementById('advance-request-submit'),msg=document.getElementById('advance-request-message');advanceRequestBusy=true;if(btn)btn.disabled=true;
+      try{
+        const data={module:'advanceRequest',collection:'advanceRequest',source_app:'staffPortal',employee_name:currentUser.name,role:currentUser.role,master_id:master.id||'',staff_key:staffKey(master,currentUser),amount,date,reason,approval_status:'Pending',company_remark:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),createdAtMs:Date.now()};
+        await setDoc(doc(db,MAIN,id),data,{merge:true});advanceRequestPending=null;const amountField=document.getElementById('advance-request-amount'),reasonField=document.getElementById('advance-request-reason');if(amountField)amountField.value='';if(reasonField)reasonField.value='';if(msg)msg.textContent='Request saved. Office review pending.';toast('Advance request saved for Office review.');
+      }catch(err){console.error('Advance request failed',err);if(msg)msg.textContent='Request was not confirmed. Please retry when connected.';toast('Could not save request. Please retry.',true);}finally{advanceRequestBusy=false;if(btn)btn.disabled=false;}
+    };
     function salary(){
       const month=today().slice(0,7);
       const rows=myRecords('payroll').sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0));
@@ -1960,7 +1978,7 @@
       const pendingSalary=canonical?Number(latestFinal.final_salary_payable||0):Math.max(0, unpaidBaseAmount + unpaidExtraAmount + bonusTotal - advance - otherDeduction);
       const score=Number(attSum.attendancePercentage||0);
       const offerText=latest.company_remark || latestFinal.company_remark || latest.odia_offer || latest.company_offer_odia || latest.offer_text_odia || latest.salary_message_odia || 'ଆପଣଙ୍କ ପରିଶ୍ରମର ସଠିକ୍ ହିସାବ କମ୍ପାନୀ ରଖୁଛି। ନିୟମିତ କାମ କରନ୍ତୁ, ଆଗକୁ ବଢନ୍ତୁ। ଭଲ କାମ ପାଇଁ Bonus ଏବଂ Extra Work payment ସୁଯୋଗ ରହିଛି।';
-      document.getElementById('content').innerHTML=`${canonical?AZPSalaryOverview.html(currentUser.name,latestFinal):''}<div class="space-y-4">
+      document.getElementById('content').innerHTML=`${advanceRequestHtml()}${canonical?AZPSalaryOverview.html(currentUser.name,latestFinal):''}<div class="space-y-4">
         <div class="card p-5 max-w-3xl overflow-hidden">
           <div class="flex items-start justify-between gap-3 flex-wrap">
             <div>
