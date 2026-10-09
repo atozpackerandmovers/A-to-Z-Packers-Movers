@@ -1,3 +1,17 @@
 #office-punch{border:1px solid #dbeafe;box-shadow:0 12px 30px rgba(30,64,175,.09)}.punch-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.punch-head h2{margin:0;font-size:18px}.punch-head p,.punch-note,#office-punch-message{font-size:12px;line-height:1.6;color:#64748b}.punch-head p{margin:5px 0}.punch-badge{border-radius:99px;background:#e0f2fe;color:#075985;padding:7px 10px;font-size:11px;font-weight:800}.punch-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}.punch-times>div{background:#f8fafc;border-radius:14px;padding:12px 8px}.punch-times span{display:block;font-size:11px;color:#64748b}.punch-times strong{display:block;margin-top:6px;font-size:16px}.punch-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.punch-actions button:disabled{opacity:.45;cursor:default}#office-punch-message{color:#1e40af;margin-bottom:0}
 
 .punch-select{width:100%;border:1px solid #dbeafe;border-radius:12px;padding:10px;background:#f8fafc;font-size:14px;color:#0f172a}.punch-shifts{background:#f8fafc;border-radius:14px;padding:8px 12px;margin-top:12px}.punch-shifts p{font-size:12px;line-height:1.6;color:#475569;margin:8px 0}
+
+/* Compact score card: explicit agent updates only. */
+#office-punch .staff-scoreboard{display:grid;grid-template-columns:1fr auto;gap:12px 16px;margin:16px 0 20px;padding:18px;border:1px solid #dbeafe;border-radius:18px;background:linear-gradient(115deg,#e5f6f0 0%,#f1f4ff 55%,#eee8fc 100%);box-shadow:0 5px 14px rgba(86,92,150,.06)}
+#office-punch .staff-score-label{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#176b60}
+#office-punch .staff-score-copy h3{font-size:17px;line-height:1.4;margin:5px 0;color:#17243d}
+#office-punch .staff-score-copy p{font-size:12px;line-height:1.5;color:#52627a;margin:0}
+#office-punch .staff-score-value{align-self:center;display:flex;align-items:baseline;gap:5px;white-space:nowrap;color:#5144a4;font-variant-numeric:tabular-nums}
+#office-punch .staff-score-value strong{font-size:46px;font-weight:850;line-height:1;letter-spacing:-.04em}
+#office-punch .staff-score-value>span{font-size:13px;font-weight:700;color:#67728a}
+#office-punch .staff-score-track{grid-column:1/-1;height:8px;border-radius:99px;background:#fff;overflow:hidden;box-shadow:inset 0 0 0 1px #dfe7f0}
+#office-punch .staff-score-track>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#67b9a6,#8a9dec 60%,#ae88dc);transition:width .35s ease}
+#office-punch .staff-score-reason{grid-column:1/-1;border-top:1px solid #dae3ef;padding-top:9px;margin:0;font-size:12px;line-height:1.5;color:#52627a;overflow-wrap:anywhere}
+@media(max-width:380px){#office-punch .staff-scoreboard{padding:14px;gap:10px}#office-punch .staff-score-copy h3{font-size:15px}#office-punch .staff-score-value strong{font-size:38px}}
+@media(prefers-reduced-motion:reduce){#office-punch .staff-score-track>span{transition:none}}
