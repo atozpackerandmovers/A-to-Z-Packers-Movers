@@ -45,17 +45,44 @@
     const updated=list.filter(x=>x.shift_id!==shift.id).concat(item).sort((a,b)=>a.punch_in_at_ms-b.punch_in_at_ms),first=updated[0],last=updated.at(-1),isOpen=updated.some(x=>x.punch_in&&!x.punch_out),late=updated.reduce((n,x)=>n+Number(x.late_minutes||0),0),early=updated.reduce((n,x)=>n+Number(x.early_exit_minutes||0),0);
     return {module:'attendance',collection:'attendance',employee_name:nameOf(m),staff_name:nameOf(m),role:'Indoor Staff',master_id:m.id,master_module:'indoorStaffMaster',date,leave_from_date:date,leave_to_date:date,attendance_status:'Present',status:'Present',approval_status:'Approved',company_approval:'Approved',salary_day_value:1,source_app:'staffPortalPunch',record_type:'officePunch',updatedAtMs:now,punch_schedule:'office-split-v1',scheduled_working_minutes:510,punch_sessions:updated,punch_in:first.punch_in,check_in:first.punch_in,punch_in_date:first.punch_in_date,punch_in_at_ms:first.punch_in_at_ms,punch_out:isOpen?'':last.punch_out,check_out:isOpen?'':last.punch_out,punch_out_date:isOpen?'':last.punch_out_date,punch_out_at_ms:isOpen?0:last.punch_out_at_ms,working_minutes:updated.reduce((n,x)=>n+Number(x.working_minutes||0),0),office_presence:isOpen?'In Office':'Left Office',late:late?'Yes':'No',early_exit:early?'Yes':'No',late_minutes:late,early_exit_minutes:early};
   }
-  const api={alias,india,resolveMaster,eligible,dayRows,target,patch,SHIFTS,sessions,shiftState};root.AZPStaffPunch=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  // Scores are explicit agent reports, independent of attendance and shift dates.
+  function scoreState(records,master){
+    if(!master)return {score:null,reported:false};
+    const reports=(Array.isArray(records)?records:[]).filter(r=>moduleOf(r)==='staffScore'&&(r.master_id?String(r.master_id)===String(master.id):r.staff_key===alias(nameOf(master)))&&r.source_app==='agentScoreUpdate').sort((a,b)=>R.time(b)-R.time(a));
+    if(!reports.length)return {score:100,reported:false};
+    if(reports.some(r=>typeof r.report_id!=='string'||!r.report_id.trim()))return {score:null,reported:true,invalid:true};
+    const distinct=new Set(reports.map(r=>r.report_id.trim()));
+    return {score:Math.max(0,100-2*distinct.size),reported:true,reason:String(reports[0].reason||'')};
+  }
+  const api={alias,india,resolveMaster,eligible,dayRows,target,patch,SHIFTS,sessions,shiftState,scoreState};root.AZPStaffPunch=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
   if(!root.document)return;
   let rows=[],user=null,db=null,busy=false,synced=false,message='',selectedShift='';
+  let scoreReports=[],scoreLoaded=false,scoreError='',scoreLoading=false;
+  async function loadScores(){
+    if(scoreLoading)return;scoreLoading=true;
+    try{
+      const response=await fetch(new URL('staff-score-updates.json',document.baseURI),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+      if(!response.ok)throw Error('Score reports unavailable');
+      const payload=await response.json();
+      if(!payload||!Array.isArray(payload.updates))throw Error('Score reports invalid');
+      scoreReports=payload.updates;scoreLoaded=true;scoreError='';
+    }catch(error){scoreError='Score connection unavailable';scoreLoaded=false;}
+    finally{scoreLoading=false;render();}
+  }
   const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function scoreboard(master){
+    const current=synced&&scoreLoaded?scoreState(scoreReports,master):{score:null,reported:false};
+    const available=current.score!==null;
+    const note=scoreError?scoreError:!synced||!scoreLoaded?'Connecting…':!master?'Staff record unavailable':current.invalid?'Score update needs review':current.reported?'Updated by agent':'Starting score · Awaiting agent update';
+    return `<div class="staff-scoreboard" aria-label="Staff scoreboard"><div class="staff-score-copy"><span class="staff-score-label">STAFF SCORE</span><h3>Performance Score</h3><p>${esc(note)}</p></div><div class="staff-score-value"><strong>${available?current.score:'—'}</strong><span>/ 100</span></div><div class="staff-score-track" ${available?`role="meter" aria-label="Performance score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${current.score}"`:''}><span style="width:${available?current.score:0}%"></span></div>${current.reported&&current.reason?`<p class="staff-score-reason">${esc(current.reason)}</p>`:''}</div>`;
+  }
   function render(){
     const dash=document.getElementById('dash');let box=document.getElementById('office-punch');
     if(!dash||!user||!['swagatika','sanju'].includes(alias(user.name))){box?.remove();return;}
     if(!box){box=document.createElement('section');box.id='office-punch';box.className='panel';dash.prepend(box);}
     let m,r,error='';try{if(synced){m=resolveMaster(rows,user);eligible(m,india().date);r=target(rows,m,Date.now());}}catch(e){error=e.message;}
     const state=shiftState(r||{},Date.now(),selectedShift),pin=state.session.punch_in,pout=state.session.punch_out,disabled=busy||!synced||!!error;
-    box.innerHTML=`<div class="punch-head"><div><h2>Office Attendance</h2><p>${esc(india().date)} · India time</p></div><span class="punch-badge">${esc(r?.office_presence||(pin?(pout?'Left Office':'In Office'):'Not punched in'))}</span></div><label class="punch-note" for="office-punch-shift">Select shift</label><select id="office-punch-shift" class="punch-select" ${busy||state.open?'disabled':''}>${SHIFTS.map(x=>`<option value="${x.id}" ${x.id===state.shift.id?'selected':''}>${x.label} · ${x.start}–${x.end}</option>`).join('')}</select><div class="punch-times"><div><span>${state.shift.label} In</span><strong>${esc(pin||'—')}</strong></div><div><span>${state.shift.label} Out</span><strong>${esc(pout||'—')}</strong></div><div><span>Shift Hours</span><strong>${pout?`${Math.floor((state.session.working_minutes||0)/60)}h ${(state.session.working_minutes||0)%60}m`:pin?'In progress':'—'}</strong></div></div>${r?.date&&r.date!==india().date?`<p class="punch-note">Open shift from ${esc(r.date)}. Punch Out closes that shift first.</p>`:''}<div class="punch-actions"><button id="office-punch-in" class="btn green" ${disabled||pin?'disabled':''}>Punch In</button><button id="office-punch-out" class="btn" ${disabled||!pin||pout?'disabled':''}>Punch Out</button></div><p id="office-punch-message" role="status" ${error||message||!synced?'':'hidden'}>${esc(error||message||(!synced?'Connecting to Execution attendance…':''))}</p>`;
+    box.innerHTML=`<div class="punch-head"><div><h2>Office Attendance</h2><p>${esc(india().date)} · India time</p></div><span class="punch-badge">${esc(r?.office_presence||(pin?(pout?'Left Office':'In Office'):'Not punched in'))}</span></div>${scoreboard(m)}<label class="punch-note" for="office-punch-shift">Select shift</label><select id="office-punch-shift" class="punch-select" ${busy||state.open?'disabled':''}>${SHIFTS.map(x=>`<option value="${x.id}" ${x.id===state.shift.id?'selected':''}>${x.label} · ${x.start}–${x.end}</option>`).join('')}</select><div class="punch-times"><div><span>${state.shift.label} In</span><strong>${esc(pin||'—')}</strong></div><div><span>${state.shift.label} Out</span><strong>${esc(pout||'—')}</strong></div><div><span>Shift Hours</span><strong>${pout?`${Math.floor((state.session.working_minutes||0)/60)}h ${(state.session.working_minutes||0)%60}m`:pin?'In progress':'—'}</strong></div></div>${r?.date&&r.date!==india().date?`<p class="punch-note">Open shift from ${esc(r.date)}. Punch Out closes that shift first.</p>`:''}<div class="punch-actions"><button id="office-punch-in" class="btn green" ${disabled||pin?'disabled':''}>Punch In</button><button id="office-punch-out" class="btn" ${disabled||!pin||pout?'disabled':''}>Punch Out</button></div><p id="office-punch-message" role="status" ${error||message||!synced?'':'hidden'}>${esc(error||message||(!synced?'Connecting to Execution attendance…':''))}</p>`;
     box.querySelector('#office-punch-shift').onchange=e=>{selectedShift=e.target.value;render();};box.querySelector('#office-punch-in').onclick=()=>save('in');box.querySelector('#office-punch-out').onclick=()=>save('out');
   }
   async function save(action){
@@ -80,8 +107,8 @@
     }catch(e){message='Not saved: '+(e.message||'Please retry.');}finally{busy=false;render();}
   }
   api.sync=(data,person,database)=>{rows=data;user=person;db=database;synced=true;render();};
-  api.connect=person=>{user=person;synced=false;message='';selectedShift='';render();};
+  api.connect=person=>{user=person;synced=false;message='';selectedShift='';render();loadScores();};
   api.reset=()=>{user=null;rows=[];synced=false;message='';selectedShift='';render();};
   api.fail=()=>{synced=false;message='Attendance connection failed. Reconnect before punching.';render();};
-  setInterval(()=>{if(user&&!busy)render();},60000);
+  setInterval(()=>{if(user&&!busy){render();loadScores();}},60000);
 })(globalThis);
