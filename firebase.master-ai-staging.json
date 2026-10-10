@@ -1,0 +1,17 @@
+{
+  "functions": [
+    {
+      "source": "report-api",
+      "codebase": "master-ai-staging",
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"]
+    }
+  ],
+  "firestore": {
+    "indexes": "firestore.master-ai.indexes.json"
+  },
+  "emulators": {
+    "functions": {"port": 5001},
+    "firestore": {"port": 8080},
+    "ui": {"enabled": true}
+  }
+}
