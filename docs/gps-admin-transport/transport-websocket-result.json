@@ -1,0 +1,38 @@
+{
+  "requests": [
+    {
+      "url": "https://az-packers-quotation.web.app/",
+      "type": "document"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/styles.v9.0.0.css",
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/app.v9.0.0.js",
+      "type": "script"
+    }
+  ],
+  "failures": [],
+  "csp": [],
+  "result": {
+    "policy": [],
+    "connections": [
+      false,
+      true
+    ],
+    "auth": "unauthenticated"
+  }
+}

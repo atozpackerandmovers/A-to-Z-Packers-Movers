@@ -1,0 +1,156 @@
+{
+  "requests": [
+    {
+      "url": "https://az-packers-quotation.web.app/",
+      "type": "document"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/styles.v9.0.0.css",
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/app.v9.0.0.js",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "type": "script"
+    }
+  ],
+  "failures": [
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    },
+    {
+      "url": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp",
+      "error": "csp"
+    }
+  ],
+  "csp": [
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Framing 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/' violates the following Content Security Policy directive: \"frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". The request has been blocked.\n",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Framing 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/' violates the following Content Security Policy directive: \"frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". The request has been blocked.\n",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Framing 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/' violates the following Content Security Policy directive: \"frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". The request has been blocked.\n",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+    "Framing 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/' violates the following Content Security Policy directive: \"frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". The request has been blocked.\n",
+    "Loading the script 'https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.lp?REDACTED' violates the following Content Security Policy directive: \"script-src 'self' https://www.gstatic.com https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked."
+  ],
+  "result": {
+    "policy": [
+      {
+        "directive": "frame-src",
+        "blocked": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app"
+      },
+      {
+        "directive": "frame-src",
+        "blocked": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app"
+      },
+      {
+        "directive": "frame-src",
+        "blocked": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app"
+      },
+      {
+        "directive": "frame-src",
+        "blocked": "https://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app"
+      }
+    ],
+    "connections": [
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ],
+    "auth": "unauthenticated"
+  }
+}
