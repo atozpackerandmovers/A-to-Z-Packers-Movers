@@ -3,7 +3,12 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../quotation-notes.js'), 'utf8');
-const context = vm.createContext({window:{},document:{readyState:'loading',addEventListener(){}}});
+let clock=0, timerId=0, paints=0;
+const timers=new Map();
+const context = vm.createContext({window:{},
+ setTimeout(fn,delay){const id=++timerId;timers.set(id,{fn,at:clock+delay});return id;},
+ clearTimeout(id){timers.delete(id);},
+ document:{readyState:'loading',addEventListener(){},querySelectorAll(){paints++;return [];},getElementById(){return null;}}});
 vm.runInContext(source.replace("  if(document.readyState==='loading')", `
   window.seedNotes = (quotes, planning) => { rows = quotes; plans = planning; ready = true; };
   if(document.readyState==='loading')`), context);
@@ -20,4 +25,10 @@ assert.equal(w.azpGetQuotationNotes({linked_quotation_no:'Q1',quotation_notes:'O
 assert.equal(w.azpGetQuotationNotes({quotation_notes:'Offline snapshot'}),'Offline snapshot');
 assert.equal(w.azpQuotationNoteHTML({linked_backend_id:'unique'}),'After 10 AM<br>&lt;script&gt;alert(1)&lt;/script&gt;','Printed planning HTML escapes note content and preserves line breaks');
 assert(!w.azpQuotationNotesMount({linked_backend_id:'"><script>'}).includes('<script>'));
-console.log('PASS: customer note identity, legacy execution linkage, latest-note precedence and HTML escaping.');
+// Continuous live-widget changes must not postpone the notes render indefinitely.
+for(let i=0;i<20;i++){
+ w.azpRefreshQuotationNotes();clock+=10;
+ for(const [id,timer]of timers)if(timer.at<=clock){timers.delete(id);timer.fn();}
+}
+assert(paints>=1,'Customer note rendering must run while other widgets continuously update');
+console.log('PASS: live-widget refresh scheduling, customer note identity, legacy execution linkage, latest-note precedence and HTML escaping.');
