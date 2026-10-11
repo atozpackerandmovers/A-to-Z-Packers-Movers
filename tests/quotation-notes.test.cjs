@@ -4,12 +4,14 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../quotation-notes.js'), 'utf8');
 let clock=0, timerId=0, paints=0;
-const timers=new Map();
+const timers=new Map(), elements=new Map(), drafts=new Map();
 const context = vm.createContext({window:{},
  setTimeout(fn,delay){const id=++timerId;timers.set(id,{fn,at:clock+delay});return id;},
  clearTimeout(id){timers.delete(id);},
- document:{readyState:'loading',addEventListener(){},querySelectorAll(){paints++;return [];},getElementById(){return null;}}});
+ localStorage:{setItem(k,v){drafts.set(k,v);},getItem(k){return drafts.get(k)||null;}},
+ document:{readyState:'loading',addEventListener(){},querySelectorAll(){paints++;return [];},getElementById(id){return elements.get(id)||null;}}});
 vm.runInContext(source.replace("  if(document.readyState==='loading')", `
+  window.closeNotesEditor = closeEditor;
   window.seedNotes = (quotes, planning) => { rows = quotes; plans = planning; ready = true; };
   if(document.readyState==='loading')`), context);
 const w=context.window;
@@ -31,4 +33,13 @@ for(let i=0;i<20;i++){
  for(const [id,timer]of timers)if(timer.at<=clock){timers.delete(id);timer.fn();}
 }
 assert(paints>=1,'Customer note rendering must run while other widgets continuously update');
-console.log('PASS: live-widget refresh scheduling, customer note identity, legacy execution linkage, latest-note precedence and HTML escaping.');
+let closed=false;
+elements.set('azp-note-dialog',{
+ dataset:{saving:'yes',dirty:'yes',quoteId:'first'},
+ querySelector(selector){return {value:selector==='textarea'?'My unsaved condition':'Staff'};},
+ close(){closed=true;},remove(){elements.delete('azp-note-dialog');}
+});
+w.closeNotesEditor();
+assert(closed,'Cancel / Close must work while a cloud save is pending');
+assert.equal(JSON.parse(drafts.get('azp_customer_note_draft_v1_first')).text,'My unsaved condition','Closing preserves the customer instruction draft');
+console.log('PASS: pending-save close and draft retention, live-widget refresh scheduling, customer note identity, legacy execution linkage, latest-note precedence and HTML escaping.');
