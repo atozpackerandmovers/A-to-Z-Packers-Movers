@@ -36,15 +36,19 @@
     const board = document.getElementById('azp-notes-records');
     if (board) {
       const term = String(document.getElementById('azp-notes-search')?.value || '').trim().toLowerCase();
-      const list = rows.filter(r => term ? [r.customer_name,r.party_mobile,r.quotation_number,r.customer_notes].join(' ').toLowerCase().includes(term) : !!r.customer_notes)
+      const list = rows.filter(r => term ? [r.customer_name,r.customerName,r.party_mobile,r.partyMobile,r.customerMobile,r.quotation_number,r.quotationNo,r.quotationId,r.customer_notes].join(' ').toLowerCase().includes(term) : true)
         .sort((a,b) => String(b.customer_notes_updated_at || b.created_at || '').localeCompare(String(a.customer_notes_updated_at || a.created_at || '')));
-      const html = list.slice(0,80).map(q => `<article class="azp-note-register-card"><strong>${esc(q.customer_name || 'Customer')} · ${esc(q.quotation_number)}</strong><div>${esc(q.party_mobile)} · ${esc(q.from_location)} → ${esc(q.to_location)}</div>${mountContent(reference(q))}</article>`).join('') || `<p>${esc(failure || (!ready ? 'Loading notes…' : term ? 'No matching quotations.' : 'No notes yet. Search a customer or quotation to add a note.'))}</p>`;
+      const html = list.slice(0,80).map(q => `<article class="azp-note-register-card"><strong>${esc(q.customer_name || q.customerName || 'Customer')} · ${esc(q.quotation_number || q.quotationNo || q.quotationId)}</strong><div>${esc(q.party_mobile || q.partyMobile || q.customerMobile)} · ${esc(q.from_location)} → ${esc(q.to_location)}</div>${mountContent(reference(q))}</article>`).join('') || `<p>${esc(failure || (!ready ? 'Loading notes…' : term ? 'No matching quotations.' : 'No notes yet. Search a customer or quotation to add a note.'))}</p>`;
       if (board.innerHTML !== html) board.innerHTML = html;
       const count = document.getElementById('azp-notes-count'), value = String(rows.filter(q=>q.customer_notes).length);
       if (count.textContent !== value) count.textContent = value;
     }
   }
-  window.azpRefreshQuotationNotes = () => { clearTimeout(timer); timer = setTimeout(paint, 30); };
+  // Throttle rather than debounce: other live widgets continuously mutate the page.
+  window.azpRefreshQuotationNotes = () => {
+    if (timer) return;
+    timer = setTimeout(() => { timer = null; paint(); }, 100);
+  };
   function closeEditor() {
     const dialog = document.getElementById('azp-note-dialog');
     if (dialog?.dataset.saving === 'yes') return;
@@ -56,7 +60,7 @@
     if (document.getElementById('azp-note-dialog')) return;
     const previous = String(q.customer_notes || ''), revision = Number(q.customer_notes_revision || 0);
     const dialog = document.createElement('dialog'); dialog.id = 'azp-note-dialog'; dialog._returnTo = document.activeElement;
-    dialog.innerHTML = `<form><div class="azp-note-head"><h2>Customer Notes & Conditions</h2><button type="button" data-note-close aria-label="Close">×</button></div><p>${esc(q.customer_name)} · ${esc(q.quotation_number)}</p><p>Record agreed charges, timings, packing requirements, promises and customer conversations. Review these before planning and starting work.</p><label for="azp-note-text">Note</label><textarea id="azp-note-text" rows="9" maxlength="12000" placeholder="Write customer instructions and agreed conditions…"></textarea><label for="azp-note-author">Updated by (name)</label><input id="azp-note-author" maxlength="100" placeholder="Your name"><p id="azp-note-status" role="status"></p><div class="azp-note-head"><button type="button" data-note-close>Cancel</button><button type="submit">Save Note</button></div></form>`;
+    dialog.innerHTML = `<form><div class="azp-note-head"><h2>Customer Notes & Conditions</h2><button type="button" data-note-close aria-label="Close">×</button></div><p>${esc(q.customer_name || q.customerName)} · ${esc(q.quotation_number || q.quotationNo || q.quotationId)}</p><p>Record agreed charges, timings, packing requirements, promises and customer conversations. Review these before planning and starting work.</p><label for="azp-note-text">Note</label><textarea id="azp-note-text" rows="9" maxlength="12000" placeholder="Write customer instructions and agreed conditions…"></textarea><label for="azp-note-author">Updated by (name)</label><input id="azp-note-author" maxlength="100" placeholder="Your name"><p id="azp-note-status" role="status"></p><div class="azp-note-head"><button type="button" data-note-close>Cancel</button><button type="submit">Save Note</button></div></form>`;
     document.body.appendChild(dialog); dialog.querySelector('textarea').value = previous;
     dialog.querySelector('input').value = q.customer_notes_by || '';
     dialog.addEventListener('input',()=>{dialog.dataset.dirty='yes';});
@@ -91,7 +95,7 @@
     if (root) {
       const board = document.createElement('details');board.id='azp-notes-register';board.className='azp-note-register';
       board.innerHTML='<summary>📝 Customer Notes <span id="azp-notes-count">0</span></summary><p>Party conversations and agreed conditions for Planning & Execution.</p><input id="azp-notes-search" type="search" placeholder="Search customer, phone, quotation or note to add / edit"><div id="azp-notes-records"></div>';
-      root.prepend(board);board.querySelector('input').addEventListener('input',window.azpRefreshQuotationNotes);
+      root.prepend(board);board.querySelector('input').addEventListener('input',paint);
     }
     document.addEventListener('click',e=>{const b=e.target.closest('[data-note-edit]');if(b)openEditor(b.dataset.noteEdit);});
     const observer=new MutationObserver(window.azpRefreshQuotationNotes);
