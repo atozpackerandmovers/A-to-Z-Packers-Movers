@@ -5,6 +5,7 @@
 <!doctype html>
 <html lang="en" class="h-full">
  <head>
+  <script src="/quotation-notes.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A to Z Packers &amp; Movers - Quotation Generator</title>
@@ -974,6 +975,7 @@
             </div>
 
             <form id="planning-sheet-form" class="space-y-7">
+              <div id="azp-planning-notes" class="azp-note-mount"></div>
               <input type="hidden" id="plan_linked_quotation_no">
               <input type="hidden" id="plan_linked_backend_id">
               <input type="hidden" id="plan_backend_id">
@@ -2727,6 +2729,7 @@ function formatCurrency(amount) {
               <p class="text-sm font-medium text-amber-600 mt-1">${typeof q.total_amount === 'number' ? formatCurrency(q.total_amount) : (q.total_amount || '')}</p>
             </div>
             <div class="azp-history-action-row">
+              ${window.azpQuotationNotesMount?.(q) || ''}
               <button onclick="viewQuotation('${quoteId}')" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-all">View</button>
               <button onclick="editQuotation('${quoteId}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-all">Revise</button>
               <button onclick="convertQuotationToSale('${quoteId}')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm hover:bg-emerald-100 transition-all">Convert<br>to Sale</button>
@@ -3993,6 +3996,7 @@ function formatCurrency(amount) {
             <h3 class="font-extrabold text-gray-800">${q.customer_name || ''}</h3>
             <p class="text-sm text-gray-600 mt-1">${q.from_location || ''} → ${q.to_location || ''}</p>
             <p class="text-sm font-bold text-emerald-700 mt-1">${formatCurrency(q.total_amount || q.totalAmount || 0)}</p>
+            ${window.azpQuotationNotesMount?.(q) || ''}
             ${buttons}
           </div>
         `;
@@ -4041,6 +4045,7 @@ function formatCurrency(amount) {
       set('plan_backend_id', d.__backendId || d.local_id || '');
       set('plan_linked_quotation_no', d.linked_quotation_no || '');
       set('plan_linked_backend_id', d.linked_backend_id || '');
+      window.azpRefreshQuotationNotes?.();
       set('plan_customer_name', d.customer_name || '');
       set('plan_party_mobile', d.party_mobile || '');
       set('plan_from_location', d.from_location || '');
@@ -4136,6 +4141,7 @@ function formatCurrency(amount) {
       document.getElementById('plan_advance_price').value = Number(q.booking_advance || 0) || '';
       document.getElementById('plan_electrification_service').value = q.electrification_required ? 'Yes' : 'No';
       document.getElementById('plan_item_list').value = extractQuotationItemsText(q);
+      window.azpRefreshQuotationNotes?.();
       const badge = document.getElementById('planning-linked-badge');
       if (badge) { badge.textContent = `Linked: ${q.quotation_number || 'Quotation'}`; badge.classList.remove('hidden'); }
       updatePlanningBalance();
@@ -4184,6 +4190,7 @@ function formatCurrency(amount) {
         vendor_1: document.getElementById('plan_vendor_1').value.trim(),
         vendor_2: document.getElementById('plan_vendor_2').value.trim(),
         vendor_3: document.getElementById('plan_vendor_3').value.trim(),
+        quotation_notes: window.azpGetQuotationNotes({linked_backend_id:document.getElementById('plan_linked_backend_id').value,linked_quotation_no:document.getElementById('plan_linked_quotation_no').value}),
         special_requirement: document.getElementById('plan_special_requirement').value.trim(),
         bill_type: document.getElementById('plan_bill_type').value,
         payment_mode: document.getElementById('plan_payment_mode').value,
@@ -4221,7 +4228,7 @@ function formatCurrency(amount) {
               ${row('Planning No.', d.planning_no)}${row('Linked Quotation No.', d.linked_quotation_no)}${row('Customer Name', d.customer_name)}${row('Contact Number', d.party_mobile)}${row('Route', `${d.from_location || '-'} → ${d.to_location || '-'}`)}${row('Pickup Floor / Lift', d.pickup_floor)}${row('Delivery Floor / Lift', d.delivery_floor)}${row('Shifting Date', d.shifting_date ? formatDate(d.shifting_date) : '')}${row('Confirmation SMS', d.confirmation_sms)}
             </table>
             <table style="width:100%;border-collapse:collapse;background:white;margin-bottom:18px;box-shadow:0 6px 18px rgba(5,150,105,.12);">
-              ${row('Work Time', `${d.work_start_time || '-'} to ${d.work_end_time || '-'}`)}${row('Workers', d.workers)}${row('Drivers', d.drivers)}${row('Driver Name', d.driver_name)}${row('Team Leader', d.team_leader_name || d.team_leader)}${row('Team Leader Contact', d.team_leader_contact)}${row('Assessment Manager', d.assessment_manager)}${row('Planning Done By', d.done_by)}${row('Vehicle', `${d.vehicle_number || '-'} / ${d.vehicle_size || '-'}`)}${row('Vendor Contacts', [d.vendor_1,d.vendor_2,d.vendor_3].filter(Boolean).join(' / '))}${row('Special Requirement', d.special_requirement)}
+              ${row('Work Time', `${d.work_start_time || '-'} to ${d.work_end_time || '-'}`)}${row('Workers', d.workers)}${row('Drivers', d.drivers)}${row('Driver Name', d.driver_name)}${row('Team Leader', d.team_leader_name || d.team_leader)}${row('Team Leader Contact', d.team_leader_contact)}${row('Assessment Manager', d.assessment_manager)}${row('Planning Done By', d.done_by)}${row('Vehicle', `${d.vehicle_number || '-'} / ${d.vehicle_size || '-'}`)}${row('Vendor Contacts', [d.vendor_1,d.vendor_2,d.vendor_3].filter(Boolean).join(' / '))}${row('Special Requirement', d.special_requirement)}${row('Customer Notes & Conditions', window.azpQuotationNoteHTML(d))}
             </table>
             <table style="width:100%;border-collapse:collapse;background:white;margin-bottom:18px;box-shadow:0 6px 18px rgba(5,150,105,.12);">
               ${row('Bill Type', d.bill_type)}${row('Payment Mode', d.payment_mode)}${row('Electrification / Dismantling / Fitting', d.electrification_service)}${row('Fitter Name & Contact', `${d.fitter_name || '-'} / ${d.fitter_contact || '-'}`)}${row('Total Price', formatCurrency(d.total_price))}${row('Advance Price', formatCurrency(d.advance_price))}${row('Balance Price', formatCurrency(d.balance_price))}
@@ -4382,6 +4389,8 @@ function formatCurrency(amount) {
 
       y += 4; section('ITEM LIST');
       row('Items / Notes', d.item_list);
+      const noteLines = doc.splitTextToSize(safe(window.azpGetQuotationNotes(d)), contentWidth - 60);
+      for (let offset = 0; offset < noteLines.length; offset += 24) row(offset ? 'Customer Notes (continued)' : 'Customer Notes & Conditions', noteLines.slice(offset, offset + 24).join('\n'));
 
       const fileName = `Planning_Sheet_${(d.customer_name || 'Customer').replace(/[^a-zA-Z0-9_-]+/g, '_')}_${d.planning_no || 'PLN'}.pdf`;
       if (prepareOnly) return { doc, fileName };
@@ -5157,6 +5166,7 @@ function formatCurrency(amount) {
       vendor_1: planData.vendor_1 || '',
       vendor_2: planData.vendor_2 || '',
       vendor_3: planData.vendor_3 || '',
+      quotation_notes: planData.quotation_notes || '',
       special_requirement: planData.special_requirement || '',
       bill_type: planData.bill_type || 'Non GST',
       payment_mode: planData.payment_mode || 'Online',
@@ -7290,6 +7300,7 @@ function card(r,type,meta={}){
     <p class="azp-v9-amount">💰 Rs. ${fmt(r.totalAmount)}</p>
     <p class="azp-v9-sent">${dateLine}</p>
     ${r.cancelReason ? `<p style="color:#dc2626;font-size:14px;font-weight:700;">Reason: ${esc(r.cancelReason)}</p>` : ''}
+    ${window.azpQuotationNotesMount?.({docId:r.docId,quotationId:r.quotationId}) || ''}
     ${actions}
     ${type === 'followup' || type === 'priority' ? `<div class="azp-revise-tools"><button type="button" onclick="azpV9OpenQuote('${id}',true)">📝 Create Revision</button><button type="button" onclick="azpV9LinkRevision('${id}')">Move existing to Revise</button></div>` : ''}
   </div>`;
@@ -10061,7 +10072,7 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
     if(azpNormalizeSearchText(q)){rows=rows.filter(r=>azpSearchMatch([r.quotationId,r.customerName,r.customerMobile,r.vehicleType,r.totalAmount,r.confirmedDate,r.quotationDate], r.fromLocation, r.toLocation, q));}
     if(count) count.textContent=`${rows.length} Confirmed`;
     if(!rows.length){list.innerHTML=`<p class="text-gray-500 text-center py-5">No confirmed records found for planning.</p>`;return;}
-    list.innerHTML=rows.slice(0,60).map((r,i)=>`<div class="azp-cp-card" data-cpid="${esc(safeId(r.quotationId||r.docId))}" onclick="azpFillPlanningFromConfirmed('${esc(safeId(r.quotationId||r.docId))}')"><div class="azp-cp-top"><span class="azp-cp-badge">✅ Confirmed #${i+1}</span><span class="azp-cp-date">${esc(r.confirmedDate||r.quotationDate||'')}</span></div><div class="azp-cp-id">${esc(r.quotationId||'-')}</div><div class="azp-cp-name">${esc(r.customerName||'No Name')}</div><p class="azp-cp-line">📱 ${esc(r.customerMobile||'-')}</p><p class="azp-cp-line">🚚 ${esc(r.vehicleType||'Vehicle not selected')} ${r.electrificationRequired?' | ⚡ Electrification: Yes':''}</p><div class="azp-cp-route"><div><b>From:</b><br>${esc(r.fromLocation||'-')}</div><div><b>To:</b><br>${esc(r.toLocation||'-')}</div></div><p class="azp-cp-amount">💰 Rs. ${fmt(r.totalAmount)}</p><button type="button" class="azp-cp-fill-btn" onclick="event.stopPropagation();azpFillPlanningFromConfirmed('${esc(safeId(r.quotationId||r.docId))}')">✍️ Fill Planning Sheet</button></div>`).join('');
+    list.innerHTML=rows.slice(0,60).map((r,i)=>`<div class="azp-cp-card" data-cpid="${esc(safeId(r.quotationId||r.docId))}" onclick="azpFillPlanningFromConfirmed('${esc(safeId(r.quotationId||r.docId))}')"><div class="azp-cp-top"><span class="azp-cp-badge">✅ Confirmed #${i+1}</span><span class="azp-cp-date">${esc(r.confirmedDate||r.quotationDate||'')}</span></div><div class="azp-cp-id">${esc(r.quotationId||'-')}</div><div class="azp-cp-name">${esc(r.customerName||'No Name')}</div><p class="azp-cp-line">📱 ${esc(r.customerMobile||'-')}</p><p class="azp-cp-line">🚚 ${esc(r.vehicleType||'Vehicle not selected')} ${r.electrificationRequired?' | ⚡ Electrification: Yes':''}</p><div class="azp-cp-route"><div><b>From:</b><br>${esc(r.fromLocation||'-')}</div><div><b>To:</b><br>${esc(r.toLocation||'-')}</div></div><p class="azp-cp-amount">💰 Rs. ${fmt(r.totalAmount)}</p>${window.azpQuotationNotesMount?.({quotationDocId:r.quotationDocId,quotationId:r.quotationId}) || ''}<button type="button" class="azp-cp-fill-btn" onclick="event.stopPropagation();azpFillPlanningFromConfirmed('${esc(safeId(r.quotationId||r.docId))}')">✍️ Fill Planning Sheet</button></div>`).join('');
   }
 
   function setVal(id,val){const el=document.getElementById(id); if(!el) return; el.value=val??''; try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}catch(e){}}
@@ -10841,6 +10852,7 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
         vendor_1: val('plan_vendor_1'),
         vendor_2: val('plan_vendor_2'),
         vendor_3: val('plan_vendor_3'),
+        quotation_notes: window.azpGetQuotationNotes({linked_backend_id:val('plan_linked_backend_id'),linked_quotation_no:val('plan_linked_quotation_no')}),
         special_requirement: val('plan_special_requirement'),
         bill_type: val('plan_bill_type'),
         payment_mode: val('plan_payment_mode'),
@@ -10876,6 +10888,8 @@ import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstat
         module: 'jobs',
         collection: 'jobs',
         record_type: 'execution_job_from_planning',
+        linked_backend_id: plan.linked_backend_id || '',
+        quotation_notes: window.azpGetQuotationNotes(plan),
         job_id: plan.planning_no,
         planning_no: plan.planning_no,
         linked_quotation_no: plan.linked_quotation_no || '',
@@ -13458,7 +13472,7 @@ import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/fi
   function cardHtml(plan){
     const quote=findQuote(plan);const agreement=findAgreement(plan);const planId=plan.id||plan.planningNo;const quoteId=(quote&&quote.id)||plan.linkedBackendId||plan.linkedQuotationNo;const agreementId=agreement&&(agreement.id||agreement.agreementId||agreement.linkedPlanningNo);const amount=plan.totalPrice||(quote&&quote.totalAmount)||0;
     const s90=smsState(plan,'payment90'),s10=smsState(plan,'payment10'),srv=smsState(plan,'onlineReview'),spd=smsState(plan,'pickupDelay');
-    return `<article class="azp-tw-card"><div class="azp-tw-card-head"><span class="azp-tw-plan-no">${esc(plan.planningNo||'Planning Sheet')}</span><span class="azp-tw-time">${esc(plan.workStartTime||'Time Pending')}${plan.workEndTime?' – '+esc(plan.workEndTime):''}</span></div><h3 class="azp-tw-name">${esc(plan.customerName||'Customer')}</h3><p class="azp-tw-mobile">📱 ${esc(plan.partyMobile||'-')}</p><div class="azp-tw-route"><div><b>🚚 From</b>${esc(plan.fromLocation||'-')}</div><div><b>📍 To</b>${esc(plan.toLocation||'-')}</div></div><div class="azp-tw-meta">${plan.vehicleNumber?`<span>🚛 ${esc(plan.vehicleNumber)}</span>`:''}${plan.vehicleSize?`<span>${esc(plan.vehicleSize)}</span>`:''}${plan.teamLeader?`<span>👤 ${esc(plan.teamLeader)}</span>`:''}${plan.workers?`<span>👷 ${esc(plan.workers)}</span>`:''}</div><div class="azp-tw-amount">${formatMoney(amount)}</div><div class="azp-tw-docs"><button type="button" class="azp-tw-planning" data-doc="planning" data-id="${esc(planId)}">📋<br>Planning Sheet</button><button type="button" class="azp-tw-quotation" data-doc="quotation" data-id="${esc(quoteId)}" ${quoteId?'':'disabled'}>📄<br>Quotation</button><button type="button" class="azp-tw-agreement ${agreement?'':'missing'}" data-doc="agreement" data-id="${esc(agreementId||planId)}" data-existing="${agreement?'yes':'no'}">🤝<br>${agreement?'Agreement Copy':'Create Agreement'}</button></div><div class="azp-tw-divider">Customer SMS Actions</div><div class="azp-tw-sms"><button type="button" class="azp-tw-pay90" data-sms="payment90" data-plan="${esc(planId)}" data-state="${esc(s90.state)}">💳 90% Payment<small>${esc(s90.text)}</small></button><button type="button" class="azp-tw-pay10" data-sms="payment10" data-plan="${esc(planId)}" data-state="${esc(s10.state)}">💰 10% Payment<small>${esc(s10.text)}</small></button><button type="button" class="azp-tw-review" data-sms="onlineReview" data-plan="${esc(planId)}" data-state="${esc(srv.state)}">⭐ Online Review<small>${esc(srv.text)}</small></button><button type="button" class="azp-tw-pickup-delay" data-sms="pickupDelay" data-plan="${esc(planId)}" data-state="${esc(spd.state)}">🚚 Pickup Delay<small>${esc(spd.text)}</small></button>${smsStatusHtml(plan)}</div></article>`;
+    return `<article class="azp-tw-card"><div class="azp-tw-card-head"><span class="azp-tw-plan-no">${esc(plan.planningNo||'Planning Sheet')}</span><span class="azp-tw-time">${esc(plan.workStartTime||'Time Pending')}${plan.workEndTime?' – '+esc(plan.workEndTime):''}</span></div><h3 class="azp-tw-name">${esc(plan.customerName||'Customer')}</h3><p class="azp-tw-mobile">📱 ${esc(plan.partyMobile||'-')}</p><div class="azp-tw-route"><div><b>🚚 From</b>${esc(plan.fromLocation||'-')}</div><div><b>📍 To</b>${esc(plan.toLocation||'-')}</div></div><div class="azp-tw-meta">${plan.vehicleNumber?`<span>🚛 ${esc(plan.vehicleNumber)}</span>`:''}${plan.vehicleSize?`<span>${esc(plan.vehicleSize)}</span>`:''}${plan.teamLeader?`<span>👤 ${esc(plan.teamLeader)}</span>`:''}${plan.workers?`<span>👷 ${esc(plan.workers)}</span>`:''}</div><div class="azp-tw-amount">${formatMoney(amount)}</div><div class="azp-tw-docs"><button type="button" class="azp-tw-planning" data-doc="planning" data-id="${esc(planId)}">📋<br>Planning Sheet</button><button type="button" class="azp-tw-quotation" data-doc="quotation" data-id="${esc(quoteId)}" ${quoteId?'':'disabled'}>📄<br>Quotation</button><button type="button" class="azp-tw-agreement ${agreement?'':'missing'}" data-doc="agreement" data-id="${esc(agreementId||planId)}" data-existing="${agreement?'yes':'no'}">🤝<br>${agreement?'Agreement Copy':'Create Agreement'}</button></div>${window.azpQuotationNotesMount?.(plan.raw) || ''}<div class="azp-tw-divider">Customer SMS Actions</div><div class="azp-tw-sms"><button type="button" class="azp-tw-pay90" data-sms="payment90" data-plan="${esc(planId)}" data-state="${esc(s90.state)}">💳 90% Payment<small>${esc(s90.text)}</small></button><button type="button" class="azp-tw-pay10" data-sms="payment10" data-plan="${esc(planId)}" data-state="${esc(s10.state)}">💰 10% Payment<small>${esc(s10.text)}</small></button><button type="button" class="azp-tw-review" data-sms="onlineReview" data-plan="${esc(planId)}" data-state="${esc(srv.state)}">⭐ Online Review<small>${esc(srv.text)}</small></button><button type="button" class="azp-tw-pickup-delay" data-sms="pickupDelay" data-plan="${esc(planId)}" data-state="${esc(spd.state)}">🚚 Pickup Delay<small>${esc(spd.text)}</small></button>${smsStatusHtml(plan)}</div></article>`;
   }
   function render(){
     const list=document.getElementById('azp-tw-list');if(!list)return;const selected=document.getElementById('azp-tw-date')?.value||todayIST();const search=document.getElementById('azp-tw-search')?.value||'';const rows=plans.filter(plan=>plan.workDate===selected&&matchesSearch(plan,search)).sort((a,b)=>String(a.workStartTime).localeCompare(String(b.workStartTime)));planIndex.clear();rows.forEach(plan=>planIndex.set(String(plan.id||plan.planningNo),plan));
