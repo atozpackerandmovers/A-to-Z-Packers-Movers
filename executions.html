@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script src="/quotation-notes.js?v=1"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A TO Z Execution Management - Salary V2</title>
@@ -1024,6 +1025,7 @@
       const mod=modules[currentModule]; if(!mod.fields)return;
       document.getElementById('form-title').textContent=(record?'Edit ':'Add ')+mod.label;
       const c=document.getElementById('form-fields'); c.innerHTML='';
+      if(currentModule==='jobs' && record) c.insertAdjacentHTML('beforeend', window.azpQuotationNotesMount?.(record) || '');
       mod.fields.forEach(([key,label,type,opts])=>{
         const wrap=document.createElement('div');
         if(currentModule==='repairing'&&AZPRepair.required.includes(key))label+=' *';
@@ -3017,7 +3019,7 @@
       return tokens.every(token=>text.includes(token));
     }
     function azpPlanningResultsHtml(rows,mod,totalRows){
-      return rows.length?rows.map(r=>{const eta=azpExecutionEtaHtml(r);return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${eta}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''):`<div class="bg-white border rounded-2xl p-8 text-center text-slate-500 font-bold">${totalRows?'No Planning Sheet found for this Driver, Party Mobile or District.':'No Planning Sheet record loaded yet.'}</div>`;
+      return rows.length?rows.map(r=>{const eta=azpExecutionEtaHtml(r);return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${eta}${window.azpQuotationNotesMount?.(r) || ''}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''):`<div class="bg-white border rounded-2xl p-8 text-center text-slate-500 font-bold">${totalRows?'No Planning Sheet found for this Driver, Party Mobile or District.':'No Planning Sheet record loaded yet.'}</div>`;
     }
     window.azpPlanningApplySearch=value=>{
       window.azpPlanningSearchText=String(value||'');
@@ -3550,7 +3552,7 @@
       }
       const rows=allData.filter(r=>r.module===key || r.collection===mod.collection);
       if(!rows.length){list.innerHTML=key==='fuel'?fuelOfficeSummary():'';empty?.classList.remove('hidden');return;} empty?.classList.add('hidden');
-      list.innerHTML=(key==='fuel'?fuelOfficeSummary():'')+rows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)).map(r=>{ const extra = key==='fuel'?fuelRecordSummary(r):key==='profit'?`<div class="mt-2 chip ${(+r.net_profit||0)>=0?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">Net: ${money(r.net_profit)}</div>`: key==='payments'?`<div class="mt-2 chip ${(+r.pending_amount||0)<=0?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">Pending: ${money(r.pending_amount)}</div>`:''; const eta=key==='jobs'?azpExecutionEtaHtml(r):''; return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${extra}${eta}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''); }
+      list.innerHTML=(key==='fuel'?fuelOfficeSummary():'')+rows.sort((a,b)=>(b.updatedAtMs||0)-(a.updatedAtMs||0)).map(r=>{ const extra = key==='fuel'?fuelRecordSummary(r):key==='profit'?`<div class="mt-2 chip ${(+r.net_profit||0)>=0?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">Net: ${money(r.net_profit)}</div>`: key==='payments'?`<div class="mt-2 chip ${(+r.pending_amount||0)<=0?'bg-emerald-100 text-emerald-700':'bg-orange-100 text-orange-700'}">Pending: ${money(r.pending_amount)}</div>`:''; const eta=key==='jobs'?azpExecutionEtaHtml(r):''; return `<div class="record-card bg-white rounded-lg border p-3 flex items-center justify-between gap-3"><div class="min-w-0"><div>${recordLine(r,mod.fields.slice(0,4))}</div>${extra}${eta}${key==='jobs'?(window.azpQuotationNotesMount?.(r) || ''):''}</div><div class="record-actions flex gap-1"><button onclick="window._edit('${r.id}')" class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">Edit</button><button onclick="window._del('${r.id}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-bold text-xs">Delete</button></div></div>`}).join(''); }
 
 
     let azpAutoSalarySyncBusy=false,azpAutoSalarySyncRequested=false;
@@ -3829,6 +3831,9 @@
             const itemList=first(p,['item_list','items','inventory_text','inventory','quotation_item_list','plan_item_list'],'');
             await setDoc(doc(db,MAIN_COLLECTION,id),{
               module:'jobs',collection:'jobs',
+              linked_backend_id:p.linked_backend_id || p.linkedBackendId || '',
+              linked_quotation_no:p.linked_quotation_no || p.linkedQuotationNo || p.quotation_number || '',
+              quotation_notes:p.quotation_notes || '',
               job_id:first(p,['planningId','planning_id','planning_no','plan_no','job_id','quote_id','quotation_id','quotationNo','quotation_no'],d.id),
               customer_name:first(p,['customerName','customer_name','plan_customer_name','partyName','party_name','name','customer'],''),
               mobile:first(p,['mobile','party_mobile','contact','contact_number','customer_mobile','phone','phone_number','mobile_number'],''),party_mobile:first(p,['mobile','party_mobile','contact','contact_number','customer_mobile','phone','phone_number','mobile_number'],''),
