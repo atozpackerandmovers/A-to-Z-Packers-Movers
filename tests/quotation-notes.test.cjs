@@ -5,13 +5,15 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../quotation-notes.js'), 'utf8');
 let clock=0, timerId=0, paints=0;
 const timers=new Map(), elements=new Map(), drafts=new Map();
-const context = vm.createContext({window:{},
+let cloudFetch;
+const context = vm.createContext({window:{},AbortController,URLSearchParams,fetch:(...args)=>cloudFetch(...args),
  setTimeout(fn,delay){const id=++timerId;timers.set(id,{fn,at:clock+delay});return id;},
  clearTimeout(id){timers.delete(id);},
  localStorage:{setItem(k,v){drafts.set(k,v);},getItem(k){return drafts.get(k)||null;}},
  document:{readyState:'loading',addEventListener(){},querySelectorAll(){paints++;return [];},getElementById(id){return elements.get(id)||null;}}});
 vm.runInContext(source.replace("  if(document.readyState==='loading')", `
   window.closeNotesEditor = closeEditor;
+  window.saveTestNote = saveNote; documentRoot='https://example.test/documents';
   window.seedNotes = (quotes, planning) => { rows = quotes; plans = planning; ready = true; };
   if(document.readyState==='loading')`), context);
 const w=context.window;
@@ -43,3 +45,27 @@ w.closeNotesEditor();
 assert(closed,'Cancel / Close must work while a cloud save is pending');
 assert.equal(JSON.parse(drafts.get('azp_customer_note_draft_v1_first')).text,'My unsaved condition','Closing preserves the customer instruction draft');
 console.log('PASS: pending-save close and draft retention, live-widget refresh scheduling, customer note identity, legacy execution linkage, latest-note precedence and HTML escaping.');
+
+(async()=>{
+ let writes=0,current={fields:{customer_notes:{stringValue:'Old'},customer_notes_revision:{integerValue:'3'}},updateTime:'2026-10-11T00:00:00.000000Z'};
+ cloudFetch=async(url,options)=>{
+  if(options.method==='PATCH'){
+   const params=new URLSearchParams(url.split('?')[1]);
+   assert.equal(params.get('currentDocument.updateTime'),current.updateTime,'Server precondition prevents another staff update from being overwritten');
+   assert.deepEqual(params.getAll('updateMask.fieldPaths').sort(),['customer_notes','customer_notes_by','customer_notes_revision','customer_notes_updated_at']);
+   writes++;return {ok:true,json:async()=>({})};
+  }
+  return {ok:true,json:async()=>current};
+ };
+ const saved=await w.saveTestNote('exact-id','New','Staff',{text:'Old',revision:3});
+ assert.equal(saved.customer_notes_revision,4);assert.equal(writes,1);
+ current.fields.customer_notes_revision.integerValue='5';
+ await assert.rejects(w.saveTestNote('exact-id','Other','Staff',{text:'Old',revision:3}),/Another person/);assert.equal(writes,1);
+ current.fields.customer_notes={stringValue:'New'};current.fields.customer_notes_by={stringValue:'Staff'};
+ await w.saveTestNote('exact-id','New','Staff',{text:'Old',revision:3});assert.equal(writes,1,'Retry confirms an acknowledged-on-server note without writing it twice');
+ cloudFetch=(_url,options)=>new Promise((_resolve,reject)=>options.signal.addEventListener('abort',()=>{const error=Error('Aborted');error.name='AbortError';reject(error);}));
+ const timed=w.saveTestNote('exact-id','New','Staff',{text:'Old',revision:3});
+ for(const [id,timer]of timers)if(timer.at>=clock+12000){timers.delete(id);timer.fn();}
+ await assert.rejects(timed,/Connection timed out/);
+ console.log('PASS: field-only server save, conditional concurrency guard, lost-response retry and bounded network timeout.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

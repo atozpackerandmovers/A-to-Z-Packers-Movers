@@ -3,7 +3,7 @@
   'use strict';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pendingSaves = new Map();
-  let rows = [], plans = [], ready = false, db, fs, failure = '', timer;
+  let rows = [], plans = [], ready = false, db, fs, documentRoot, failure = '', timer;
   function reference(r = {}) {
     return { id: r.linked_backend_id || r.linkedBackendId || r.quotationBackendId || r.quotationDocId || r.docId || r.__backendId || '', plan: r.module === 'jobs' ? String(r.id || r.job_id || '') : '', job: r.module === 'jobs' ? String(r.job_id || '') : '', no: r.linked_quotation_no || r.linkedQuotationNo || r.quotation_number || r.quotationNo || r.quotationId || r.quotation_id || r.quotation_no || '' };
   }
@@ -51,6 +51,31 @@
     if (timer) return;
     timer = setTimeout(() => { timer = null; paint(); }, 100);
   };
+  async function saveNote(id, text, author, base) {
+    const url=documentRoot+'/quotations/'+encodeURIComponent(id);
+    async function request(target, options={}) {
+      const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),12000);
+      try {
+        const response=await fetch(target,{...options,signal:controller.signal});
+        const result=await response.json();
+        if(!response.ok)throw Error(result.error?.status==='FAILED_PRECONDITION' ? 'This quotation changed during saving. Your draft is retained. Reopen the note and try again.' : result.error?.message || 'Note save failed. Please try again.');
+        return result;
+      } catch(error) {
+        if(error.name==='AbortError')throw Error('Connection timed out. Your draft is retained. Please try Save Note again.');
+        throw error;
+      } finally { clearTimeout(timeout); }
+    }
+    const current=await request(url+'?mask.fieldPaths=customer_notes&mask.fieldPaths=customer_notes_revision&mask.fieldPaths=customer_notes_by&mask.fieldPaths=customer_notes_updated_at');
+    const fields=current.fields||{}, previous=fields.customer_notes?.stringValue||'', revision=Number(fields.customer_notes_revision?.integerValue||0);
+    // If an earlier response was lost, a retry confirms the already-saved note.
+    if(previous===text && (fields.customer_notes_by?.stringValue||'')===author && revision>base.revision)return {customer_notes:text,customer_notes_by:author,customer_notes_revision:revision,customer_notes_updated_at:fields.customer_notes_updated_at?.stringValue||''};
+    if(revision!==base.revision || previous!==base.text)throw Error('Another person updated this note. Your draft is retained. Reopen and review the latest note before saving.');
+    if(!current.updateTime)throw Error('Unable to verify this quotation. Your draft is retained.');
+    const data={customer_notes:text,customer_notes_by:author,customer_notes_updated_at:new Date().toISOString(),customer_notes_revision:revision+1};
+    const parameters=new URLSearchParams();Object.keys(data).forEach(k=>parameters.append('updateMask.fieldPaths',k));parameters.set('currentDocument.updateTime',current.updateTime);
+    await request(url+'?'+parameters,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==='number'?{integerValue:String(v)}:{stringValue:v}]))})});
+    return data;
+  }
   function draftKey(id) { return 'azp_customer_note_draft_v1_' + id; }
   function persistDraft(dialog) {
     if (!dialog || dialog.dataset.dirty !== 'yes') return;
@@ -85,14 +110,7 @@
       const base={...dialog._base};const operation={};pendingSaves.set(id,operation);
       const slowTimer=setTimeout(()=>{if(dialog.isConnected)status.textContent='Server confirmation is taking longer. Your draft is kept on this device. Cancel / Close still works; do not submit again while this save is pending.';},12000);
       try {
-        const saved = await fs.runTransaction(db, async tx => {
-          const ref = fs.doc(db,'quotations',id), snap = await tx.get(ref);
-          if (!snap.exists()) throw Error('This quotation no longer exists.');
-          const current = snap.data();
-          if (Number(current.customer_notes_revision || 0) !== base.revision || String(current.customer_notes || '') !== base.text) throw Error('Another person updated this note. Your draft is retained. Reopen and review the latest note before saving.');
-          const data = {customer_notes:text,customer_notes_by:author,customer_notes_updated_at:new Date().toISOString(),customer_notes_revision:base.revision+1};
-          tx.update(ref,data); return data;
-        }, {maxAttempts:1});
+        const saved = await saveNote(id,text,author,base);
         rows = rows.map(r=>r.__backendId===id?{...r,...saved}:r);
         try { const draft=JSON.parse(localStorage.getItem(draftKey(id))||'null');if(!draft || (draft.text.trim()===text && draft.author.trim()===author))localStorage.removeItem(draftKey(id)); } catch (_) {}
         const currentDialog=document.getElementById('azp-note-dialog');
@@ -137,6 +155,7 @@
       const app = await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js');
       fs = await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js');
       db = fs.getFirestore(app.getApp());
+      documentRoot='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(app.getApp().options.projectId)+'/databases/(default)/documents';
       if (document.getElementById('mod-dashboard')) fs.onSnapshot(fs.collection(db,'planningSheets'), snap=>{plans=snap.docs.map(d=>({...d.data(),__backendId:d.id}));paint();},error=>console.warn('Legacy job note linkage unavailable',error));
       fs.onSnapshot(fs.collection(db,'quotations'), snap => { rows=snap.docs.map(d=>({...d.data(),__backendId:d.id}));ready=true;failure='';paint(); }, error=>{ready=false;failure='Unable to load latest notes. Check connection / access before starting work.';console.error('Customer notes listener',error);paint();});
     } catch(error) { failure='Unable to load customer notes. Refresh and check connection / access.';console.error(error);paint(); }
