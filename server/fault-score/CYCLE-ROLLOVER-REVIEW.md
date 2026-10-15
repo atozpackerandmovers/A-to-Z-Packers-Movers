@@ -2,6 +2,16 @@
 
 Review candidate only. No production rollover, migration, scheduler creation, build or deployment has run for this change. Staff self access (PR #66) and the Execution dashboard widget (PR #67) are independent.
 
+## Release hold after expanded October 15 source recheck
+
+Read-only recheck at **2026-10-15 15:34:40 UTC** confirmed the same four joining-date anchors below. It also projected reminder fields that the earlier read omitted. Swagatika's exact current unpaid record `SALARY_LIVE_INDOOR_STAFF_1MJSC46_indoor_staff` has **`salary_due_date: 2026-10-27`**. This is real source evidence for the owner's reported 27th, not merely an unsupported recollection. Current source labels this field **Salary Due Date (Reminder Only)** and uses it in `azpSalaryDueDateForRecord`; `azpSalaryJoiningCycle` still derives a cycle ending October 29 from July 30 joining.
+
+**Do not activate the current hard-coded calendar until the owner resolves one choice:** is the 27th the cycle-end date to use for score reset (reset October 28), or only the salary reminder date while the score cycle ends on the 29th (reset October 30)? This clarification changes score-calendar configuration only; no salary/payment data may be changed. Dates in the table below remain source-derived candidates, not activation approval.
+
+The live core still has no rollover flag. The only listed Mumbai Scheduler job remains the existing SMS delivery-receipt poll every two minutes. Reusing it would require changing an unrelated SMS function and deploying code; it is not an existing score-reset route or a verified zero-cost option. Current PR68 can catch up inside an incoming Fault transaction without a new job, but cannot reset an inactive employee at midnight on its own. Owner score GETs remain read-only; do not silently turn them into reset writes.
+
+There is no verified no-additional-cost route meeting independent scheduled resets. A dedicated job can reuse the existing Scheduler service-agent Pub/Sub permission without new IAM, but shared free-tier availability has not been established. The proposed one core build plus one daily job still needs explicit release/cost approval. PR69's persistent login code is present on main and untouched by this branch.
+
 The approved rule resets each of the four existing staff scores to 100 at the start of the calendar day following that employee's monthly salary cycle, in Asia/Kolkata, whether salary is paid or unpaid. Prior Fault receipts and audits remain intact. No salary or payment records are written.
 
 ## Verified calendar source

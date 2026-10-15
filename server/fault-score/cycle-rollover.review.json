@@ -1,5 +1,6 @@
 {
  "reviewOnly": true,
+ "activationBlockedUntil": ["Owner confirms whether Swagatika's October 27 salary reminder is a score-cycle end (reset October 28) or the joining-cycle end October 29 remains authoritative (reset October 30)", "Explicit approval for the final core release, build and daily scheduler costs"],
  "newIamGrants": [],
  "newCredentials": [],
  "buildAndDeployOnly": ["staffScore"],
