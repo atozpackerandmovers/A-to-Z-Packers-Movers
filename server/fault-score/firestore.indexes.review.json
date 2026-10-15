@@ -1,0 +1,11 @@
+{
+  "indexes": [{
+    "collectionGroup": "private_score_audit",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {"fieldPath": "value.staffId", "order": "ASCENDING"},
+      {"fieldPath": "recordedAt", "order": "DESCENDING"}
+    ]
+  }],
+  "fieldOverrides": []
+}
