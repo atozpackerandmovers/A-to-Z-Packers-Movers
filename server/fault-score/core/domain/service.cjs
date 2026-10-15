@@ -1,6 +1,7 @@
 'use strict';
 const {createHmac,createHash,timingSafeEqual}=require('node:crypto');
 const {validateActivation,allowedEvent}=require('../activation.cjs');
+const {ensureCycle,cycleAt}=require('../cycles.cjs');
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status});};
 const id=v=>typeof v==='string'&&v.length>0;
 // This module is inert until private configuration AND trusted adapters are supplied.
@@ -46,6 +47,12 @@ function createService(config,adapters){
     try{return JSON.parse(raw.toString('utf8'));}catch{fail('Invalid JSON');}
   }
   function apply(tx,receipt,staffId,actor){
+    if(c.cycleRolloverEnabled===true){
+      const cycle=ensureCycle(tx,staffId,now()),eventCycle=cycleAt(staffId,Math.floor(Number(receipt.ts)*1000));
+      if(eventCycle.start>cycle.start)fail('Future-cycle event; retry after boundary',503);
+      if(eventCycle.start<cycle.start){const held={...receipt,status:'pending',holdReason:'previous-cycle-delivery',eventCycleStart:eventCycle.start};tx.setReceipt(receipt.key,held);tx.appendAudit({...held,action:'pending'});return {status:'pending'};}
+      receipt={...receipt,scoreCycleStart:cycle.start};
+    }
     const before=tx.getScore(staffId);
     if(before==null)fail('Authoritative balance unavailable',409);
     if(!Number.isInteger(before)||before<0||before>100)fail('Invalid stored score',503);

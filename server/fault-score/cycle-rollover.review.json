@@ -1,0 +1,19 @@
+{
+ "reviewOnly": true,
+ "newIamGrants": [],
+ "newCredentials": [],
+ "buildAndDeployOnly": ["staffScore"],
+ "enableFlag": "AZP_SCORE_CYCLE_ROLLOVER_ENABLED",
+ "requiresAdoptionAndArmingBeforeFirstBoundary": true,
+ "scheduler": {
+   "name": "fault-score-cycle-rollover",
+   "region": "asia-south1",
+   "schedule": "0 0 * * *",
+   "timeZone": "Asia/Kolkata",
+   "topicName": "projects/az-packers-quotation/topics/fault-score-events",
+   "message": {"kind": "cycle-rollover", "version": 1},
+   "creationRequiresApproval": true
+ },
+ "unchanged": ["faultIngress", "faultOwnerGateway", "salary records", "payment behavior", "Fault cutoff", "existing receipts and audit"],
+ "newPrivateCollections": ["private_score_cycles", "private_score_cycle_archives"]
+}

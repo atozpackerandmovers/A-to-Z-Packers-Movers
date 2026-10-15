@@ -10,7 +10,7 @@ function createProductionStore({db,projectId,env=process.env,now=Date.now}={}){
  assertBinding();
  const namespace='score';
  const root='private_'+namespace+'_';
- const tables=namespace==='score'?{Score:'balances',Receipt:'receipts'}:{Task:'tasks',Work:'work',Publication:'publications',Operation:'operations'};
+ const tables=namespace==='score'?{Score:'balances',Receipt:'receipts',Cycle:'cycles',CycleArchive:'cycle_archives'}:{Task:'tasks',Work:'work',Publication:'publications',Operation:'operations'};
  const audits=db.collection(root+'audit');
  return {transaction:fn=>{
   assertBinding();

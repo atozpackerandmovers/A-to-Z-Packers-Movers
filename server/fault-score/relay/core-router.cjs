@@ -1,6 +1,6 @@
 'use strict';
 const C=require('./constants.cjs'),S=require('./security.cjs'),{createHash}=require('node:crypto');
-function createCoreRouter({ownerRuntime,runQueued,verifyGoogle,secret,enabled=false,now=Date.now,log=()=>{}}){
+function createCoreRouter({ownerRuntime,runQueued,runCycleRollover,verifyGoogle,secret,enabled=false,now=Date.now,log=()=>{}}){
  return async req=>{
   if(req.path===C.WORKER_PATH&&req.method==='POST'){
    try{await S.requireServiceIdentity(S.bearer(req.headers?.authorization),C.PUSH_SA,verifyGoogle,now);}catch{return S.response(403,{error:'Forbidden'});}
@@ -16,6 +16,10 @@ function createCoreRouter({ownerRuntime,runQueued,verifyGoogle,secret,enabled=fa
      log({event:'fault_transport_probe',nonce:envelope.nonce});return S.response(204,null);
     }
     if(!enabled)return S.response(503,{error:'Processing paused'});
+    if(envelope.kind==='cycle-rollover'){
+     if(envelope.version!==1||Object.keys(envelope).sort().join(',')!=='kind,version'||!Number.isFinite(published)||published>now()+5000||now()-published>C.MAX_QUEUE_AGE_MS||typeof runCycleRollover!=='function')S.fail(400);
+     await runCycleRollover();log({event:'score_cycle_check_completed'});return S.response(204,null);
+    }
     if(envelope.version!==1||!Number.isSafeInteger(envelope.admittedAt)||!Number.isFinite(published)||envelope.admittedAt>now()+5000||published>now()+5000||published-envelope.admittedAt>60000||envelope.admittedAt-published>5000||now()-envelope.admittedAt>C.MAX_QUEUE_AGE_MS)S.fail(400);
     const raw=S.base64(envelope.raw,C.MAX_RAW),headers={'x-slack-request-timestamp':envelope.slackTimestamp,'x-slack-signature':envelope.slackSignature};
     const body=S.verifySlack(raw,headers,secret,envelope.admittedAt);key=createHash('sha256').update(JSON.stringify([body.team_id,body.event?.channel,body.event?.ts])).digest('hex');

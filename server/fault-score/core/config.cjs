@@ -9,6 +9,6 @@ const STAFF=Object.freeze([
 function config(env=process.env,signingSecret){
  const activation=validateActivation({enabled:env.AZP_FAULT_ENABLED==='true',notBefore:env.AZP_FAULT_NOT_BEFORE});
  if(typeof signingSecret!=='string'||!signingSecret||!/^https:\/\/[a-z0-9-]+\.slack\.com$/.test(env.AZP_SLACK_WORKSPACE_URL||''))throw Error('Reviewed Slack runtime configuration required');
- return {enabled:true,ownerOnlyRead:true,ownerSubject:'88IIhxscilQqcT0XsHqRpE0JC0V2',adminSubjects:['88IIhxscilQqcT0XsHqRpE0JC0V2'],workspaceId:'T0BQ4DD754J',workspaceUrl:env.AZP_SLACK_WORKSPACE_URL,ownerUserId:'U0BQYQEMYNL',slackAppId:'A0C8HU05JCD',signingSecret,ingress:{mode:'owner-user-events',authorizedUserId:'U0BQYQEMYNL'},activation,staff:STAFF.map(({id,slackUserId,names})=>({id,slackUserId,names:[...names]})),dmMappings:STAFF.map(({id,channelId})=>({staffId:id,channelId}))};
+ return {enabled:true,cycleRolloverEnabled:env.AZP_SCORE_CYCLE_ROLLOVER_ENABLED==='true',ownerOnlyRead:true,ownerSubject:'88IIhxscilQqcT0XsHqRpE0JC0V2',adminSubjects:['88IIhxscilQqcT0XsHqRpE0JC0V2'],workspaceId:'T0BQ4DD754J',workspaceUrl:env.AZP_SLACK_WORKSPACE_URL,ownerUserId:'U0BQYQEMYNL',slackAppId:'A0C8HU05JCD',signingSecret,ingress:{mode:'owner-user-events',authorizedUserId:'U0BQYQEMYNL'},activation,staff:STAFF.map(({id,slackUserId,names})=>({id,slackUserId,names:[...names]})),dmMappings:STAFF.map(({id,channelId})=>({staffId:id,channelId}))};
 }
 module.exports={config,STAFF};
