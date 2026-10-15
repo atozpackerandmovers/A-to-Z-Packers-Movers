@@ -57,24 +57,9 @@
   const api={alias,india,resolveMaster,eligible,dayRows,target,patch,SHIFTS,sessions,shiftState,scoreState};root.AZPStaffPunch=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
   if(!root.document)return;
   let rows=[],user=null,db=null,busy=false,synced=false,message='',selectedShift='';
-  let scoreReports=[],scoreLoaded=false,scoreError='',scoreLoading=false;
-  async function loadScores(){
-    if(scoreLoading)return;scoreLoading=true;
-    try{
-      const response=await fetch(new URL('staff-score-updates.json',document.baseURI),{cache:'no-store',signal:AbortSignal.timeout(10000)});
-      if(!response.ok)throw Error('Score reports unavailable');
-      const payload=await response.json();
-      if(!payload||!Array.isArray(payload.updates))throw Error('Score reports invalid');
-      scoreReports=payload.updates;scoreLoaded=true;scoreError='';
-    }catch(error){scoreError='Score connection unavailable';scoreLoaded=false;}
-    finally{scoreLoading=false;render();}
-  }
   const esc=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function scoreboard(master){
-    const current=synced&&scoreLoaded?scoreState(scoreReports,master):{score:null,reported:false};
-    const available=current.score!==null;
-    const note=scoreError?scoreError:!synced||!scoreLoaded?'Connecting…':!master?'Staff record unavailable':current.invalid?'Score update needs review':current.reported?'Updated by agent':'Starting score · Awaiting agent update';
-    return `<div class="staff-scoreboard" aria-label="Staff scoreboard"><div class="staff-score-copy"><span class="staff-score-label">STAFF SCORE</span><h3>Performance Score</h3><p>${esc(note)}</p></div><div class="staff-score-value"><strong>${available?current.score:'—'}</strong><span>/ 100</span></div><div class="staff-score-track" ${available?`role="meter" aria-label="Performance score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${current.score}"`:''}><span style="width:${available?current.score:0}%"></span></div>${current.reported&&current.reason?`<p class="staff-score-reason">${esc(current.reason)}</p>`:''}</div>`;
+  function scoreboard(){
+    return '<div class="staff-scoreboard" aria-label="Private Fault score"><div class="staff-score-copy"><span class="staff-score-label">MY FAULT SCORE</span><h3>Your verified score</h3><p>Sign in with your own verified account to see your current score and history.</p><a href="my-score.html">Open my private score</a></div></div>';
   }
   function render(){
     const dash=document.getElementById('dash');let box=document.getElementById('office-punch');
@@ -107,8 +92,8 @@
     }catch(e){message='Not saved: '+(e.message||'Please retry.');}finally{busy=false;render();}
   }
   api.sync=(data,person,database)=>{rows=data;user=person;db=database;synced=true;render();};
-  api.connect=person=>{user=person;synced=false;message='';selectedShift='';render();loadScores();};
+  api.connect=person=>{user=person;synced=false;message='';selectedShift='';render();};
   api.reset=()=>{user=null;rows=[];synced=false;message='';selectedShift='';render();};
   api.fail=()=>{synced=false;message='Attendance connection failed. Reconnect before punching.';render();};
-  setInterval(()=>{if(user&&!busy){render();loadScores();}},60000);
+  setInterval(()=>{if(user&&!busy){render();}},60000);
 })(globalThis);

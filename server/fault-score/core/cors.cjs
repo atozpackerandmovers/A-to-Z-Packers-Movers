@@ -1,6 +1,6 @@
 'use strict';
 const OWNER_ORIGIN='https://atozpackersmovers.in';
-const OWNER_PATHS=new Set(['/api/staff-score','/api/staff-score/audit','/api/staff-score/owner-session','/api/staff-score/readiness']);
+ const OWNER_PATHS=new Set(['/api/staff-score','/api/staff-score/audit','/api/staff-score/owner-session','/api/staff-score/readiness','/api/staff-score/me']);
 function ownerCors({method,path,headers={}}){
  const base={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
  if(!OWNER_PATHS.has(path))return {headers:base};

@@ -1,0 +1,17 @@
+{
+ "reviewOnly": true,
+ "staffAccessEnabledByDefault": false,
+ "newIamGrants": [],
+ "newCredentials": [],
+ "newPublicServices": [],
+ "existingServicesToRebuildAfterApproval": ["staffScore", "faultOwnerGateway"],
+ "unchangedService": "faultIngress",
+ "staffPath": "/api/staff-score/me",
+ "requiredApprovedBindings": 4,
+ "bindingSource": "server environment AZP_STAFF_SCORE_UID_BINDINGS",
+ "enableFlag": "AZP_STAFF_SELF_SCORE_ENABLED",
+ "historyIndexReview": "firestore.indexes.review.json",
+ "database": "fault-score",
+ "preserveCorePrivate": true,
+ "deployRequiresSeparateApproval": true
+}

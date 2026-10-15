@@ -25,7 +25,7 @@ function createCoreRouter({ownerRuntime,runQueued,verifyGoogle,secret,enabled=fa
     log({event:'fault_processed',key,outcome:result.body.status});return S.response(204,null);
    }catch{log({event:'fault_processing_failed',...(key?{key}:{})});return S.response(503,{error:'Retry required'});}
   }
-  if(req.method==='GET'&&C.OWNER_PATHS.includes(req.path)){
+  if(req.method==='GET'&&(C.OWNER_PATHS.includes(req.path)||req.path===C.SELF_PATH)){
    try{await S.requireServiceIdentity(S.bearer(req.headers?.['x-azp-relay-authorization']),C.GATEWAY_SA,verifyGoogle,now);}catch{return S.response(403,{error:'Forbidden'});}
    return ownerRuntime(req);
   }
