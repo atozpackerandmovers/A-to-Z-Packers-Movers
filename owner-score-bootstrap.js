@@ -21,6 +21,6 @@ async function refresh(){
 try{await setPersistence(auth,inMemoryPersistence);controller=AZPOwnerScore.createOwnerScore({auth,apiBase:window.AZP_SCORE_CONFIG?.apiBase,signIn:signInWithEmailAndPassword,signOut,getIdToken,reload});status('Sign in with your verified owner account.');}catch{status('The score service has not been connected yet. Sign-in is disabled.');}
 el('login').addEventListener('submit',event=>{event.preventDefault();action(async()=>{try{await controller.login(el('password').value);}finally{el('password').value='';}await refresh();});});
 el('refresh').addEventListener('click',()=>action(refresh));
-el('check').addEventListener('click',()=>action(async()=>{const r=await controller.readiness();el('readiness-section').hidden=false;el('readiness').textContent=JSON.stringify(r,null,2);status(r.ready?'Read-only readiness checks passed. Live delivery is not verified.':'Some readiness checks failed. No scores were changed.');}));
+el('check').addEventListener('click',()=>action(async()=>{const r=await controller.readiness(),summary=AZPOwnerScore.readinessSummary(r);el('readiness-section').hidden=false;el('readiness').replaceChildren(...summary.lines.map(line=>text('p',line)));status(summary.ready?'Service checks passed.':'Some service checks need attention. No scores were changed.');}));
 el('logout').addEventListener('click',()=>action(async()=>{await controller.logout();clear();status('Signed out.');}));
 sync();
