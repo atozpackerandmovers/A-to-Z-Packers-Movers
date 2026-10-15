@@ -1,0 +1,22 @@
+{
+ "reviewOnly": true,
+ "activationBlockedUntil": ["Explicit approval for the final core release, build and daily scheduler costs; proposed allowances are not enforceable hard spending caps"],
+ "approvedResetDaysIST": {"INDOOR_STAFF_ZD9A1Z":27,"INDOOR_STAFF_10HIAWK":1,"INDOOR_STAFF_1MJSC46":28,"INDOOR_STAFF_9JJREB":1},
+ "pendingCostAllowancesUSD": {"oneBuild":0.10,"monthlyUsage":1,"approved":false,"hardCapEnforced":false},
+ "newIamGrants": [],
+ "newCredentials": [],
+ "buildAndDeployOnly": ["staffScore"],
+ "enableFlag": "AZP_SCORE_CYCLE_ROLLOVER_ENABLED",
+ "requiresAdoptionAndArmingBeforeFirstBoundary": true,
+ "scheduler": {
+   "name": "fault-score-cycle-rollover",
+   "region": "asia-south1",
+   "schedule": "0 0 * * *",
+   "timeZone": "Asia/Kolkata",
+   "topicName": "projects/az-packers-quotation/topics/fault-score-events",
+   "message": {"kind": "cycle-rollover", "version": 1},
+   "creationRequiresApproval": true
+ },
+ "unchanged": ["faultIngress", "faultOwnerGateway", "salary records", "payment behavior", "Fault cutoff", "existing receipts and audit"],
+ "newPrivateCollections": ["private_score_cycles", "private_score_cycle_archives"]
+}
