@@ -1,0 +1,38 @@
+GPS Admin transport investigation — 2026-10-10 19:54–19:56 UTC
+
+Production URL: https://az-packers-quotation.web.app/
+Observed build: app.v9.0.0.js. Function: startAuthenticatedSession.
+Root cause reproduced: forced Firebase long-polling requests /.lp as script;
+production CSP script-src permits self and gstatic only, blocking /.lp with csp.
+Live browser probe: Chromium 151, cloud Linux; no logged-in role.
+Only .info/connected read; no application records read or written.
+Baseline: connection false, repeated csp failures.
+Candidate adding initial database origin to script-src: connection oscillates
+false/true; shard redirect iframe blocked. This header-only candidate is rejected.
+WebSocket probe with unchanged live headers: false then true, no csp or request
+failures in observation window. This is transport evidence, NOT authenticated
+production acceptance or ETA verification, and is NOT physical Firefox testing.
+
+Reviewable patch: websocket-candidate.patch, changing only transport initialization.
+It uses supported compat INTERNAL method in the exact served SDK; unavailable
+method fails explicitly rather than silently returning to blocked long-polling.
+Applied to served source locally; syntax check pending recording below.
+No production headers, Rules, IAM, billing, secrets, commands or data changed.
+No merge or deployment. No Firebase project created.
+
+Repository boundary: the hosted Admin app and hosting config are absent from the
+known business repository main. This directory contains an integration candidate,
+not the authoritative deployment source. Locate existing Hosting owner source
+before applying; do not introduce a new project or broad deploy.
+
+Before release: apply to the actual Admin source, test authorized staging account,
+then controlled Production Admin session on affected Firefox phone. Verify UID,
+RTDB profile/live permissions, refresh/reopen/offline recovery, and fresh telemetry.
+Auth UID/email, RTDB business reads and Storage permission remain UNVERIFIED.
+Login SESSION persistence is a separate known limitation, outside this patch.
+Execution PERMISSION_DENIED is separate; WebSocket does not grant permissions.
+
+Rollback: restore the previous Admin artifact/build using established hosting
+workflow; for this candidate revert only the transport patch. No database rollback.
+Evidence JSON omits query strings; no passwords, tokens, keys or customer records.
+Browser screenshot retained locally: /workspace/scratch/az-evidence/live-login-probe.png.
