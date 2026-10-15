@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A TO Z Execution Management - Salary V2</title>
+  <link rel="stylesheet" href="execution-owner-score.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -283,6 +284,7 @@
 
       <div class="content-pad p-6" id="content-area">
         <section id="mod-dashboard">
+          <section id="execution-owner-score" aria-label="Owner staff scores"><p data-score-status role="status" aria-live="polite">Loading staff scores…</p><div data-score-cards></div></section>
           <div id="fuel-office-dashboard"></div>
           <div id="azp-salary-due-home-box" hidden aria-live="polite"></div>
           <div class="stat-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
@@ -6633,5 +6635,8 @@ window.addEventListener('azp-execution-data',e=>{rows=Array.isArray(e.detail?.ro
 onAuthStateChanged(auth,user=>{signedInUser=user||null;if(user)start()});
 </script>
 <!-- ===== END EXECUTION ETA LIVE GPS SELF-HEALER V2.5 ===== -->
+<script src="owner-score-config.js"></script>
+<script src="execution-owner-score.js"></script>
+<script type="module" src="execution-owner-score-bootstrap.js"></script>
 </body>
 </html>

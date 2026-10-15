@@ -1,0 +1,8 @@
+#execution-owner-score{margin:0 0 20px;padding:20px;background:#fff;border:1px solid #bfdbfe;border-radius:16px;color:#0f172a}
+#execution-owner-score [data-score-cards]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#execution-owner-score .execution-score-card{padding:15px 12px;border:1px solid #dbe7e3;border-radius:12px;background:#f7fbf9;text-align:center}
+#execution-owner-score .execution-score-card span{display:block;font-size:14px;font-weight:700;overflow-wrap:anywhere}
+#execution-owner-score .execution-score-card strong{display:block;margin-top:7px;font-size:36px;line-height:1.15;font-weight:800;color:#17614f;font-variant-numeric:tabular-nums}
+#execution-owner-score [data-score-status]{margin:0;font-size:14px;color:#64748b}
+#execution-owner-score [hidden]{display:none!important}
+@media(max-width:640px){#execution-owner-score{padding:16px}#execution-owner-score [data-score-cards]{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
