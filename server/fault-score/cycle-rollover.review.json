@@ -1,6 +1,8 @@
 {
  "reviewOnly": true,
- "activationBlockedUntil": ["Owner confirms whether Swagatika's October 27 salary reminder is a score-cycle end (reset October 28) or the joining-cycle end October 29 remains authoritative (reset October 30)", "Explicit approval for the final core release, build and daily scheduler costs"],
+ "activationBlockedUntil": ["Explicit approval for the final core release, build and daily scheduler costs; proposed allowances are not enforceable hard spending caps"],
+ "approvedResetDaysIST": {"INDOOR_STAFF_ZD9A1Z":27,"INDOOR_STAFF_10HIAWK":1,"INDOOR_STAFF_1MJSC46":28,"INDOOR_STAFF_9JJREB":1},
+ "pendingCostAllowancesUSD": {"oneBuild":0.10,"monthlyUsage":1,"approved":false,"hardCapEnforced":false},
  "newIamGrants": [],
  "newCredentials": [],
  "buildAndDeployOnly": ["staffScore"],

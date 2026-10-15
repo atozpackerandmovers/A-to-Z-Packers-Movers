@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),{createHash}=require('node:crypto');
-const {CALENDARS,cycleAt,adoptCycles,ensureCycle,rolloverAll}=require('../core/cycles.cjs');
+const {POLICY,CALENDARS,RESET_DAYS,cycleAt,adoptCycles,ensureCycle,rolloverAll}=require('../core/cycles.cjs');
 const {createProductionStore}=require('../core/firestore.cjs'),{createRuntime}=require('../core/runtime.cjs');
 const {fixture}=require('./fixture.cjs'),{config}=require('../core/config.cjs');
 const {createCoreRouter}=require('../relay/core-router.cjs'),C=require('../relay/constants.cjs');
@@ -11,14 +11,38 @@ function setup(){const f=fixture(),store=createProductionStore({db:f.db,projectI
 const archives=f=>[...f.records].filter(([p])=>p.startsWith('private_score_cycle_archives/')).map(([,v])=>v.value);
 async function arm(f){await f.store.transaction(tx=>adoptCycles(tx,ADOPT));await rolloverAll({...f.store,now:()=>ADOPT});}
 function runFault(f,now,ts=now,i=0){const request=f.request(i,(ts/1000).toFixed(6));return createRuntime({db:f.db,auth:f.auth,fetchImpl:f.fetchImpl,signingSecret:'synthetic-signing-secret',ownerToken:'synthetic-user-token',env:{...f.env,AZP_FAULT_NOT_BEFORE:'1792063487.000000',AZP_SCORE_CYCLE_ROLLOVER_ENABLED:'true'},now:()=>now,signatureNow:()=>1800000000000})(request);}
-test('verified four monthly boundaries use IST midnight and clamp short months',()=>{
- assert.deepEqual(IDs.map(id=>cycleAt(id,ADOPT).next),['2026-10-27','2026-11-01','2026-10-30','2026-11-01']);
+test('approved monthly boundaries use IST midnight, including February and leap years',()=>{
+ assert.deepEqual(IDs.map(id=>cycleAt(id,ADOPT).next),['2026-10-27','2026-11-01','2026-10-28','2026-11-01']);
  assert.equal(cycleAt(IDs[0],date('2026-10-27')-1).start,'2026-09-27');
  assert.equal(cycleAt(IDs[0],date('2026-10-27')).start,'2026-10-27');
- assert.equal(cycleAt(IDs[2],date('2027-02-28')).next,'2027-03-30');
- assert.equal(cycleAt(IDs[2],date('2028-02-28')).next,'2028-02-29');
- assert.equal(cycleAt(IDs[2],date('2028-02-29')).end,'2028-03-29');
+ assert.equal(cycleAt(IDs[2],date('2026-10-28')-1).start,'2026-09-28');
+ assert.equal(cycleAt(IDs[2],date('2026-10-28')).start,'2026-10-28');
+ assert.equal(cycleAt(IDs[2],date('2027-02-28')).next,'2027-03-28');
+ assert.equal(cycleAt(IDs[2],date('2028-02-28')).next,'2028-03-28');
+ assert.equal(cycleAt(IDs[2],date('2028-02-29')).end,'2028-03-27');
+ assert.equal(CALENDARS[IDs[2]],'2026-07-30');assert.equal(RESET_DAYS[IDs[2]],28);
+ assert.equal(cycleAt(IDs[2],date('2026-07-30')).start,'2026-07-30');
  assert.throws(()=>cycleAt('OTHER',ADOPT));assert.throws(()=>cycleAt(IDs[0],date('2026-08-26')));
+});
+
+test('Swagatika resets only on the 28th; concurrent Fault and retries preserve salary and prior audit history',async()=>{
+ const f=setup(),id=IDs[2];f.records.set(path('balances',id),{value:82});
+ const preserved=[['private_score_audit/original-swag',{value:{action:'deduct',before:84,after:82}}],['azpExecutionRecords/'+id,{joining_date:'2026-07-30'}],['azpExecutionRecords/SALARY_LIVE_'+id+'_indoor_staff',{salary_due_date:'2026-10-27',paid:false}]];
+ for(const [p,v]of preserved)f.records.set(p,structuredClone(v));await arm(f);
+ assert.equal(f.records.get(path('cycles',id)).value.joiningDate,'2026-07-30');
+ await rolloverAll({...f.store,now:()=>date('2026-10-28')-1});assert.equal(f.score(2),82);
+ const now=date('2026-10-28');await Promise.all(Array.from({length:12},(_,i)=>i%2?runFault(f,now,now,2):rolloverAll({...f.store,now:()=>now})));
+ assert.equal(f.score(2),98);const own=archives(f).filter(a=>a.staffId===id);assert.equal(own.length,1);assert.equal(own[0].before,82);assert.equal(own[0].effectiveAt,now);assert.equal(own[0].cycleEnd,'2026-10-27');
+ await rolloverAll({...f.store,now:()=>date('2026-10-30')});assert.equal(f.score(2),98);assert.deepEqual(archives(f).filter(a=>a.staffId===id),own);
+ for(const [p,v]of preserved)assert.deepEqual(f.records.get(p),v);
+});
+
+test('old policy or changed reset day requires review without rewriting metadata or history',async()=>{
+ for(const patch of [{policy:'joining-anniversary-ist-v1'},{policy:POLICY,resetDay:30}]){
+  const f=setup();await arm(f);const key=path('cycles',IDs[2]);f.records.set(key,{value:{...f.records.get(key).value,...patch}});const before=structuredClone([...f.records]);
+  await assert.rejects(f.store.transaction(tx=>adoptCycles(tx,ADOPT)),/metadata unavailable or changed/);
+  await assert.rejects(rolloverAll({...f.store,now:()=>date('2026-10-28')}),/metadata unavailable or changed/);assert.deepEqual([...f.records],before);
+ }
 });
 test('feature defaults disabled; adoption and arming preserve all current deductions and prior history',async()=>{
  assert.equal(config({AZP_SLACK_WORKSPACE_URL:'https://synthetic.slack.com'},'secret').cycleRolloverEnabled,false);
