@@ -20,5 +20,15 @@
   async function logout(){generation++;await signOut(auth);}
   return {login,logout,scores:()=>request('/api/staff-score'),audit:()=>request('/api/staff-score/audit'),readiness:()=>request('/api/staff-score/readiness')};
  }
- const api={createOwnerScore};if(typeof module==='object'&&module.exports)module.exports=api;else root.AZPOwnerScore=api;
+ function readinessSummary(r){
+  const checks=r?.checks||{},balances=r?.balances||{};
+  return {ready:r?.ready===true,lines:[
+   checks.slack===true?'Slack connection: ready.':'Slack connection: needs attention.',
+   checks.namedDatabaseRead===true&&balances.valid===4&&balances.missing===0&&balances.invalid===0?'Staff balances: all four available.':'Staff balances: check incomplete or needs attention.',
+   checks.defaultDatabaseDenied===true?'Privacy check: passed.':'Privacy check: needs attention.',
+   r?.scoringEnabled===true?'Fault scoring: enabled.':r?.scoringEnabled===false?'Fault scoring: paused.':'Fault scoring: status unavailable.',
+   'This check does not confirm that a new Fault message has been received or deducted.'
+  ]};
+ }
+ const api={createOwnerScore,readinessSummary};if(typeof module==='object'&&module.exports)module.exports=api;else root.AZPOwnerScore=api;
 })(typeof globalThis==='object'?globalThis:this);
