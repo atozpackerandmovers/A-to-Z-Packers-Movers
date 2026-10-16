@@ -1,0 +1,24 @@
+--- a/app.v9.0.0.js
++++ b/app.v9.0.0.js
+@@ -549,15 +549,13 @@
+     if (firebaseApp.options.projectId !== CONFIG.firebase.projectId) throw new Error("Runtime Firebase projectId mismatch.");
+     if (firebaseApp.options.databaseURL !== CONFIG.firebase.databaseURL) throw new Error("Runtime Firebase databaseURL mismatch.");
+     if (!transportConfigured) {
+-      if (typeof db.INTERNAL?.forceLongPolling === "function") {
+-        // Must run before the first RTDB ref/listener. The Hosting CSP permits
+-        // this exact RTDB iframe origin, making this stable in Chrome and
+-        // Firefox profiles where WebSocket initialization has been unreliable.
+-        db.INTERNAL.forceLongPolling();
+-        transportMode = "LONG_POLLING";
+-      } else {
+-        transportMode = "DEFAULT_FALLBACK";
++      if (typeof db.INTERNAL?.forceWebSockets !== "function") {
++        throw new Error("RTDB WebSocket transport is unavailable in this Firebase SDK.");
+       }
++      // The deployed CSP permits RTDB WebSockets but blocks long-poll scripts.
++      // Configure transport before the first RTDB reference/listener.
++      db.INTERNAL.forceWebSockets();
++      transportMode = "WEBSOCKET";
+       transportConfigured = true;
+     }
+     db.goOnline();
