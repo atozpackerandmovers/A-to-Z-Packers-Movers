@@ -1,0 +1,62 @@
+{
+  "commands": {
+    ".read": "auth != null && auth.uid === 'WoVSnY7tchXAVWFeP7UgJEuwlHu2'",
+    "$commandId": {
+      ".write": "auth != null && auth.uid === '88IIhxscilQqcT0XsHqRpE0JC0V2'",
+      ".validate": "newData.hasChildren(['commandId','type','driverId','vehicleId']) && newData.child('commandId').val() === $commandId && (newData.child('type').val() === 'START' || newData.child('type').val() === 'STOP') && newData.child('driverId').val() === 'DRIVER_MAHESH_001' && newData.child('vehicleId').val() === 'VEHICLE_OD33AR8855'",
+      "status": {
+        ".write": "auth != null && auth.uid === 'WoVSnY7tchXAVWFeP7UgJEuwlHu2' && data.parent().exists() && newData.exists()",
+        ".validate": "((!data.exists() || data.val() === 'PENDING') && newData.val() === 'RECEIVED') || (data.val() === 'RECEIVED' && (newData.val() === 'EXECUTED' || newData.val() === 'FAILED'))"
+      }
+    }
+  },
+  "acknowledgements": {
+    ".read": "auth != null && auth.uid === '88IIhxscilQqcT0XsHqRpE0JC0V2'",
+    "$commandId": {
+      ".write": "auth != null && auth.uid === 'WoVSnY7tchXAVWFeP7UgJEuwlHu2' && newData.exists()",
+      ".validate": "newData.hasChildren(['commandId','commandType','status','receivedAt','driverId','driverUid','vehicleId','errorCode','errorMessage']) && newData.child('commandId').val() === $commandId && newData.child('driverId').val() === 'DRIVER_MAHESH_001' && newData.child('driverUid').val() === auth.uid && newData.child('vehicleId').val() === 'VEHICLE_OD33AR8855' && (newData.child('commandType').val() === 'START' || newData.child('commandType').val() === 'STOP') && root.child('gpsProduction/v1/drivers/DRIVER_MAHESH_001/commands').child($commandId).child('commandId').val() === $commandId && root.child('gpsProduction/v1/drivers/DRIVER_MAHESH_001/commands').child($commandId).child('type').val() === newData.child('commandType').val() && ((!data.exists() && newData.child('status').val() === 'RECEIVED' && !newData.child('executedAt').exists() && !newData.child('failedAt').exists() && !newData.child('tripId').exists() && !newData.child('stoppedTripId').exists()) || (data.exists() && data.child('status').val() === 'RECEIVED' && newData.child('status').val() === 'EXECUTED' && newData.child('executedAt').isNumber() && !newData.child('failedAt').exists() && newData.child('errorCode').val() === '' && newData.child('errorMessage').val() === '' && ((newData.child('commandType').val() === 'START' && newData.child('tripId').isString() && newData.child('tripId').val() !== '' && !newData.child('stoppedTripId').exists()) || (newData.child('commandType').val() === 'STOP' && newData.child('stoppedTripId').isString() && newData.child('stoppedTripId').val() !== '' && !newData.child('tripId').exists()))) || (data.exists() && data.child('status').val() === 'RECEIVED' && newData.child('status').val() === 'FAILED' && newData.child('failedAt').isNumber() && !newData.child('executedAt').exists() && !newData.child('tripId').exists() && !newData.child('stoppedTripId').exists() && newData.child('errorCode').isString() && newData.child('errorCode').val() !== '' && newData.child('errorMessage').isString() && newData.child('errorMessage').val() !== '')) && (!data.exists() || (newData.child('commandId').val() === data.child('commandId').val() && newData.child('commandType').val() === data.child('commandType').val() && newData.child('receivedAt').val() === data.child('receivedAt').val() && newData.child('driverId').val() === data.child('driverId').val() && newData.child('driverUid').val() === data.child('driverUid').val() && newData.child('vehicleId').val() === data.child('vehicleId').val()))",
+      "commandId": {
+        ".validate": "newData.isString() && newData.val() === $commandId"
+      },
+      "commandType": {
+        ".validate": "newData.val() === 'START' || newData.val() === 'STOP'"
+      },
+      "status": {
+        ".validate": "newData.val() === 'RECEIVED' || newData.val() === 'EXECUTED' || newData.val() === 'FAILED'"
+      },
+      "receivedAt": {
+        ".validate": "newData.isNumber()"
+      },
+      "executedAt": {
+        ".validate": "!newData.exists() || (newData.isNumber() && newData.parent().child('status').val() === 'EXECUTED')"
+      },
+      "failedAt": {
+        ".validate": "!newData.exists() || (newData.isNumber() && newData.parent().child('status').val() === 'FAILED')"
+      },
+      "driverId": {
+        ".validate": "newData.val() === 'DRIVER_MAHESH_001'"
+      },
+      "driverUid": {
+        ".validate": "newData.val() === auth.uid"
+      },
+      "vehicleId": {
+        ".validate": "newData.val() === 'VEHICLE_OD33AR8855'"
+      },
+      "tripId": {
+        ".validate": "!newData.exists() || (newData.isString() && newData.val() !== '' && newData.parent().child('commandType').val() === 'START' && newData.parent().child('status').val() === 'EXECUTED')"
+      },
+      "stoppedTripId": {
+        ".validate": "!newData.exists() || (newData.isString() && newData.val() !== '' && newData.parent().child('commandType').val() === 'STOP' && newData.parent().child('status').val() === 'EXECUTED')"
+      },
+      "errorCode": {
+        ".validate": "newData.isString()"
+      },
+      "errorMessage": {
+        ".validate": "newData.isString()"
+      },
+      "$other": {
+        ".validate": false
+      }
+    }
+  }
+}

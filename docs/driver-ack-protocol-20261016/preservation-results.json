@@ -1,0 +1,80 @@
+{
+  "at": "2026-10-16T14:31:16.608Z",
+  "baseline": "d2387601ae9d1bcc1050d0094706590c9fbe710c",
+  "mode": "SOURCE_AND_GENERATED_ROOM_SCHEMA_COMPARISON_NOT_DEVICE_UPGRADE_TEST",
+  "entityUnchanged": true,
+  "identityAndPermissionConfigurationUnchanged": true,
+  "tripAndLiveUploadCodeUnchanged": true,
+  "files": [
+    {
+      "file": "integrations/driver-android-ack/app/src/main/AndroidManifest.xml",
+      "unchanged": true,
+      "sha256": "d7ab14a9b302f063f641cd9cf4aa5b5ea02d87329e9af70419df8257e77d266c"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/schemas/com.atozpackersmovers.drivertrackerv5.offline.TrackerDatabase/2.json",
+      "unchanged": true,
+      "sha256": "0687f908920d720fa8e8a4c389ec92b6f30ee51ff743351b707a632b2eccdeed"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/TrackerDatabase.kt",
+      "unchanged": true,
+      "sha256": "d6c573131e381ac0ac69ebcc02b29473687b087b6047c156342013acff6f031e"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/OfflinePointEntity.kt",
+      "unchanged": true,
+      "sha256": "2cc4a634a623ee2dd6cb1b05926299553b96df7f27b2253a2bc088908ed9928e"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/trip/TripModels.kt",
+      "unchanged": true,
+      "sha256": "2154b80e6221ffb4a2891a18742463fbf9fdcb177e033d3a294b64d1af0636cd"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/trip/TripStateMachine.kt",
+      "unchanged": true,
+      "sha256": "3334170aef2c659470e1bce901dbffe46b6f0623e5836322bdee713ceb5bf909"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/security/AuthSessionProvider.kt",
+      "unchanged": true,
+      "sha256": "3f0948b53a93c539e07123e691e6adbc89252d4e344e525dde10c2f4d5a6dabf"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/security/DeviceIdentityProvider.kt",
+      "unchanged": true,
+      "sha256": "6dc4ecca621530f74a51ef66cb2aee7edb8789d61628f829b03990b4386f8142"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/security/ProductionApprovalGate.kt",
+      "unchanged": true,
+      "sha256": "d8f1b278da57de0a84e7de7f7b94a60115ad559dfbf2c1fcf4368a6e712128b0"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/FirebaseGpsUploader.kt",
+      "unchanged": true,
+      "sha256": "4274eb0338ffb7ecad6899696c4115e3618bcc7bd37c3530f6e6c46f84ef8656"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/location/TrackingService.kt",
+      "unchanged": true,
+      "sha256": "105b2a6f97b9f9f84977b35bbd7c5e6f61d1a7258e12327a9aeb0a7f747ad8af"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/location/LocationProcessor.kt",
+      "unchanged": true,
+      "sha256": "bb751757d4423ec1b9d9b97a3397db7e33155732bfe7f14893f039a86a6b2a4c"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/UploadWorker.kt",
+      "unchanged": true,
+      "sha256": "1a8f1959a6d4d1c0ff5fa405fac30ebd2785a5c6c117b27bad56cfb4d040bbbe"
+    },
+    {
+      "file": "integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/CommandAcknowledgementCodec.kt",
+      "unchanged": true,
+      "sha256": "e8cf07cd179e3f94c16005e7e2c667dcde85a6c155358c64c3a2aa65fab83bb2"
+    }
+  ]
+}
