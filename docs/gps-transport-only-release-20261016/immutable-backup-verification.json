@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-16T12:35:38.637Z",
+  "sourceVersion": "projects/az-packers-quotation/sites/az-packers-quotation/versions/31f2a8d04f60d777",
+  "backupVersion": "sites/az-packers-quotation/versions/4d17866f1dd7501f",
+  "complete": true,
+  "fileCount": 7,
+  "allFileHashesMatch": true,
+  "configMatches": true,
+  "liveUnchanged": true,
+  "published": false,
+  "authDomainsChanged": false,
+  "rollbackCommand": "firebase hosting:clone az-packers-quotation@4d17866f1dd7501f az-packers-quotation:live --project az-packers-quotation --non-interactive"
+}

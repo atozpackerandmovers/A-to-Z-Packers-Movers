@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-16T12:44:20.445Z",
+  "checks": [
+    {
+      "path": "index.html",
+      "status": 200,
+      "sha256": "477f90be2fb485aaf5cbf3a15697687e02bf0917fd799fcca89aaf9ed9414436",
+      "matches": true,
+      "cacheControl": "no-cache, no-store, must-revalidate, max-age=0"
+    },
+    {
+      "path": "app.v9.0.1-transport.js",
+      "status": 200,
+      "sha256": "4284bb290911c25eec9f6dc2002ca5ef647c126782543290e4522be78c8bb2fd",
+      "matches": true,
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+    {
+      "path": "app.v9.0.0.js",
+      "status": 200,
+      "sha256": "edb7268eb9e000636bc64eee76d05e3bf5fbc777f67c33b09cb59da595e3da17",
+      "matches": true,
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+    {
+      "path": "app.js",
+      "status": 200,
+      "sha256": "0df81d64ecbfbbc58aae80577c2cc1bfb6cf114a5edba04a40b4c628dbd2e552",
+      "matches": true,
+      "cacheControl": "no-cache, no-store, must-revalidate, max-age=0"
+    },
+    {
+      "path": "styles.css",
+      "status": 200,
+      "sha256": "d3714b98a91ada88c2fc76b6b473c01c9c613864064ac29ff21cdd049bff2374",
+      "matches": true,
+      "cacheControl": "no-cache, no-store, must-revalidate, max-age=0"
+    },
+    {
+      "path": "styles.v9.0.0.css",
+      "status": 200,
+      "sha256": "d3714b98a91ada88c2fc76b6b473c01c9c613864064ac29ff21cdd049bff2374",
+      "matches": true,
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+    {
+      "host": "az-packers-quotation.web.app",
+      "path": "/",
+      "status": 200,
+      "indexMatches": true
+    },
+    {
+      "host": "az-packers-quotation.firebaseapp.com",
+      "path": "/",
+      "status": 200,
+      "indexMatches": true
+    }
+  ],
+  "businessDataReads": 0,
+  "applicationWrites": 0,
+  "result": "PASS public deployed assets, build pointers, unchanged CSP and both Hosting hostnames",
+  "finishedAt": "2026-10-16T12:44:24.094Z"
+}

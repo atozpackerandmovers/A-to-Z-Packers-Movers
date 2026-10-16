@@ -1,0 +1,65 @@
+{
+  "startedAt": "2026-10-16T12:44:18.704Z",
+  "mode": "production-signed-out",
+  "engine": "WebKit",
+  "auth": "Clean signed-out context; no credentials or token capture",
+  "console": [
+    {
+      "type": "error",
+      "text": "Refused to load https://apis.google.com/js/api.js because it does not appear in the script-src directive of the Content Security Policy."
+    },
+    {
+      "type": "info",
+      "text": "[2026-10-16-production-websocket-only-v9.0.1] onAuthStateChanged {uid: null, email: null}"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "url": "https://az-packers-quotation.web.app/",
+      "method": "GET",
+      "type": "document"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/styles.v9.0.0.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://az-packers-quotation.web.app/app.v9.0.1-transport.js",
+      "method": "GET",
+      "type": "script"
+    }
+  ],
+  "websockets": [],
+  "browserVersion": "26.5",
+  "url": "https://az-packers-quotation.web.app/",
+  "httpStatus": 200,
+  "csp": "default-src 'self'; script-src 'self' https://www.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app; img-src 'self' data: https://staticmap.openstreetmap.de; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+  "ui": {
+    "loginVisible": true,
+    "appHidden": true,
+    "sdkStatus": "Firebase Auth session persistence ready",
+    "build": "2026-10-16-production-websocket-only-v9.0.1"
+  },
+  "consoleErrors": [
+    "Refused to load https://apis.google.com/js/api.js because it does not appear in the script-src directive of the Content Security Policy."
+  ],
+  "result": "PASS signed-out UI/Auth gate; 1 existing CSP console error(s); authenticated acceptance NOT VERIFIED",
+  "finishedAt": "2026-10-16T12:44:22.749Z"
+}
