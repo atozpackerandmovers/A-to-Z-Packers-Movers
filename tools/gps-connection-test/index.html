@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PR71 read-only RTDB connection test</title><link rel="stylesheet" href="test.css"></head>
+<body><main><h1>PR71 read-only connection test</h1><p>Real Firebase SDK and network. No login, business-data reads, GPS commands or data writes.</p><p>This tests transport only. It does not verify an Admin session, permissions, a Driver device or GPS coordinates.</p><h2 id="status">Loading SDK…</h2><p id="origin"></p><button id="offline" disabled>Disconnect test socket</button><button id="online" disabled>Reconnect test socket</button><h2>Evidence</h2><pre id="evidence"></pre></main>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="config.js"></script><script src="pr71-transport.js"></script><script src="test.js"></script></body></html>

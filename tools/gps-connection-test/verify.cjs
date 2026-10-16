@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const read=p=>fs.readFileSync(path.join(__dirname,p));const manifest=JSON.parse(read('manifest.json'));
+for(const [file,hash] of Object.entries(manifest.sha256))assert.equal(crypto.createHash('sha256').update(read(file)).digest('hex'),hash,file+' hash mismatch');
+const source=read('reference/pr71-app.v9.0.1-staging.js').toString();
+const block=source.slice(source.indexOf('    if (!transportConfigured) {',source.indexOf('function startAuthenticatedSession')),source.indexOf('    db.goOnline();',source.indexOf('function startAuthenticatedSession')));
+assert.ok(read('pr71-transport.js').toString().includes(block),'Exact pinned transport block differs');
+const original=JSON.parse(read('reference/pr71-firebase.json')).hosting.headers.find(h=>h.source==='**').headers;
+const headers=JSON.parse(read('production-headers.json'));
+for(const entry of original)assert.equal(headers[entry.key],entry.value,'Production header differs');
+const test=read('test.js').toString();assert.deepEqual([...test.matchAll(/db\.ref\(([^)]+)\)/g)].map(m=>m[1]),["'.info/connected'"]);
+assert.doesNotMatch(test,/(?:db|connected)\.(?:set|update|push|remove|transaction)\(|signIn|firebase\.auth/);
+assert.doesNotMatch(read('index.html').toString(),/firebase-auth|<script(?![^>]*src=)/);
+console.log('PASS: pinned transport block, production CSP/headers, file hashes, real SDK imports and connection-only application path. NO BROWSER TEST EXECUTED.');

@@ -1,0 +1,20 @@
+{
+  "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+  "createdAt": "2026-10-16T12:14:48.831Z",
+  "sdkVersion": "10.14.1",
+  "runtimeStatus": "NOT EXECUTED IN BROWSER",
+  "scope": "Unauthenticated .info/connected transport only",
+  "sha256": {
+    "index.html": "d734af17af33e55800761509b4cf0645d8b0539407db91cc08ac6635c9733c7c",
+    "test.css": "4be46737c91ee0f4e0f96bdf8525d89a61339bce88278b04c7a6933084a55901",
+    "test.js": "256222bb9e704a3d3096142ee8b22f4f1614072c42d7ae5552c39d220891ce39",
+    "config.js": "da1b47087a364a70112b2fec9cd6ac157a30a0858d2905d7dee8f2cc84ef65b1",
+    "pr71-transport.js": "26cdc9b8825a6ec22ff604e9302c1d1365edede315130a0ed35e166ba655ea45",
+    "production-headers.json": "0d0ed68dff5ea0ea7012e6e37a9054ec5eda86aa7b2028507773dff8e9a8ac2f",
+    "serve.cjs": "0a9b20d423ca843004581793f63015ddb592e938780f1253d8c3085e8ef9e7c7",
+    "verify.cjs": "a587eecd5733d91d4ba73bb7a1130e29bcfb019e38eb7bea460c21dff090ac44",
+    "README.md": "68b716b8e69e1d75b1541f34efe86b70b84fdb746e3289e79955ce0266e1481a",
+    "reference/pr71-app.v9.0.1-staging.js": "5c97fc130c405b8cde2b54fac7d818d9825c1196d960b5dabb8344783d0c23b3",
+    "reference/pr71-firebase.json": "6097046fe3176cca96ccd5d965809995f6705243bb9885758480821849e5dda2"
+  }
+}
