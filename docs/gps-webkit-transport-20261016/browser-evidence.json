@@ -1,0 +1,317 @@
+{
+  "startedAt": "2026-10-16T12:28:20.521Z",
+  "engine": "Installed Playwright WebKit",
+  "playwright": "1.62.1",
+  "candidate": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+  "packageCommit": "60084e76caa9c9e703e3886e2ab3b590d0867224",
+  "auth": "No Auth module / no credentials / clean isolated context",
+  "requests": [
+    {
+      "at": "2026-10-16T12:28:21.117Z",
+      "url": "http://127.0.0.1:18766/",
+      "method": "GET",
+      "resourceType": "document"
+    },
+    {
+      "at": "2026-10-16T12:28:21.141Z",
+      "url": "http://127.0.0.1:18766/test.css",
+      "method": "GET",
+      "resourceType": "stylesheet"
+    },
+    {
+      "at": "2026-10-16T12:28:21.142Z",
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:21.143Z",
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:21.143Z",
+      "url": "http://127.0.0.1:18766/config.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:21.143Z",
+      "url": "http://127.0.0.1:18766/pr71-transport.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:21.144Z",
+      "url": "http://127.0.0.1:18766/test.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:23.124Z",
+      "url": "http://127.0.0.1:18766/",
+      "method": "GET",
+      "resourceType": "document"
+    },
+    {
+      "at": "2026-10-16T12:28:23.145Z",
+      "url": "http://127.0.0.1:18766/test.css",
+      "method": "GET",
+      "resourceType": "stylesheet"
+    },
+    {
+      "at": "2026-10-16T12:28:23.145Z",
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:23.145Z",
+      "url": "https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:23.148Z",
+      "url": "http://127.0.0.1:18766/config.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:23.148Z",
+      "url": "http://127.0.0.1:18766/pr71-transport.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "at": "2026-10-16T12:28:23.148Z",
+      "url": "http://127.0.0.1:18766/test.js",
+      "method": "GET",
+      "resourceType": "script"
+    }
+  ],
+  "console": [
+    {
+      "at": "2026-10-16T12:28:21.660Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected false"
+    },
+    {
+      "at": "2026-10-16T12:28:22.193Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected true"
+    },
+    {
+      "at": "2026-10-16T12:28:22.408Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected false"
+    },
+    {
+      "at": "2026-10-16T12:28:23.094Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected true"
+    },
+    {
+      "at": "2026-10-16T12:28:23.167Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected false"
+    },
+    {
+      "at": "2026-10-16T12:28:23.623Z",
+      "type": "info",
+      "text": "PR71 transport .info/connected true"
+    }
+  ],
+  "pageErrors": [],
+  "websockets": [
+    {
+      "at": "2026-10-16T12:28:21.963Z",
+      "url": "wss://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app/.ws",
+      "framesSent": 1,
+      "framesReceived": 2,
+      "outgoingActions": [
+        "s"
+      ],
+      "socketErrors": [],
+      "closedAt": "2026-10-16T12:28:22.568Z"
+    },
+    {
+      "at": "2026-10-16T12:28:22.937Z",
+      "url": "wss://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.ws",
+      "framesSent": 0,
+      "framesReceived": 1,
+      "outgoingActions": [],
+      "socketErrors": [],
+      "closedAt": "2026-10-16T12:28:23.131Z"
+    },
+    {
+      "at": "2026-10-16T12:28:23.488Z",
+      "url": "wss://s-gke-apse1-nssi2-10.asia-southeast1.firebasedatabase.app/.ws",
+      "framesSent": 1,
+      "framesReceived": 2,
+      "outgoingActions": [
+        "s"
+      ],
+      "socketErrors": []
+    }
+  ],
+  "phases": [
+    {
+      "label": "initial-connected",
+      "at": "2026-10-16T12:28:22.214Z",
+      "evidence": {
+        "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+        "startedAt": "2026-10-16T12:28:21.649Z",
+        "origin": "http://127.0.0.1:18766",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "auth": "NOT LOADED / NOT AUTHENTICATED",
+        "allowedRead": ".info/connected",
+        "businessReads": 0,
+        "applicationWrites": 0,
+        "transport": "WEBSOCKET",
+        "connectionEvents": [
+          {
+            "at": "2026-10-16T12:28:21.659Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:22.191Z",
+            "connected": true
+          }
+        ],
+        "cspViolations": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "test-socket-disconnected",
+      "at": "2026-10-16T12:28:22.435Z",
+      "evidence": {
+        "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+        "startedAt": "2026-10-16T12:28:21.649Z",
+        "origin": "http://127.0.0.1:18766",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "auth": "NOT LOADED / NOT AUTHENTICATED",
+        "allowedRead": ".info/connected",
+        "businessReads": 0,
+        "applicationWrites": 0,
+        "transport": "WEBSOCKET",
+        "connectionEvents": [
+          {
+            "at": "2026-10-16T12:28:21.659Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:22.191Z",
+            "connected": true
+          },
+          {
+            "at": "2026-10-16T12:28:22.408Z",
+            "connected": false
+          }
+        ],
+        "cspViolations": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "test-socket-reconnected",
+      "at": "2026-10-16T12:28:23.116Z",
+      "evidence": {
+        "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+        "startedAt": "2026-10-16T12:28:21.649Z",
+        "origin": "http://127.0.0.1:18766",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "auth": "NOT LOADED / NOT AUTHENTICATED",
+        "allowedRead": ".info/connected",
+        "businessReads": 0,
+        "applicationWrites": 0,
+        "transport": "WEBSOCKET",
+        "connectionEvents": [
+          {
+            "at": "2026-10-16T12:28:21.659Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:22.191Z",
+            "connected": true
+          },
+          {
+            "at": "2026-10-16T12:28:22.408Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:23.094Z",
+            "connected": true
+          }
+        ],
+        "cspViolations": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "reload-connected",
+      "at": "2026-10-16T12:28:23.644Z",
+      "evidence": {
+        "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+        "startedAt": "2026-10-16T12:28:23.160Z",
+        "origin": "http://127.0.0.1:18766",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "auth": "NOT LOADED / NOT AUTHENTICATED",
+        "allowedRead": ".info/connected",
+        "businessReads": 0,
+        "applicationWrites": 0,
+        "transport": "WEBSOCKET",
+        "connectionEvents": [
+          {
+            "at": "2026-10-16T12:28:23.163Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:23.622Z",
+            "connected": true
+          }
+        ],
+        "cspViolations": [],
+        "errors": []
+      }
+    },
+    {
+      "label": "final-observation",
+      "at": "2026-10-16T12:28:24.655Z",
+      "evidence": {
+        "candidateCommit": "c81ccd15c64c6a328f4996999ca62b23585dfee3",
+        "startedAt": "2026-10-16T12:28:23.160Z",
+        "origin": "http://127.0.0.1:18766",
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "auth": "NOT LOADED / NOT AUTHENTICATED",
+        "allowedRead": ".info/connected",
+        "businessReads": 0,
+        "applicationWrites": 0,
+        "transport": "WEBSOCKET",
+        "connectionEvents": [
+          {
+            "at": "2026-10-16T12:28:23.163Z",
+            "connected": false
+          },
+          {
+            "at": "2026-10-16T12:28:23.622Z",
+            "connected": true
+          }
+        ],
+        "cspViolations": [],
+        "errors": []
+      }
+    }
+  ],
+  "browserVersion": "26.5",
+  "documentStatus": 200,
+  "csp": "default-src 'self'; script-src 'self' https://www.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebasedatabase.app; frame-src https://www.openstreetmap.org https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app; img-src 'self' data: https://staticmap.openstreetmap.de; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+  "screenshot": "Omitted: Playwright WebKit screenshot helper injects an inline style blocked by the unchanged CSP. Earlier diagnostic capture retained separately.",
+  "longPollRequests": [],
+  "cspViolationCount": 0,
+  "databaseMutationActions": [],
+  "result": "PASS real WebKit RTDB transport initial/reconnect/reload",
+  "finishedAt": "2026-10-16T12:28:24.712Z"
+}
