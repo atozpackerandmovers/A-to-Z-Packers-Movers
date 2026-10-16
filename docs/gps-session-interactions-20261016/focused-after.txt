@@ -1,0 +1,26 @@
+Γ£ö whole module: partial snapshots wait; active arrival renders; loss and recovery retain login (35.943ms)
+Γ£ö whole module: saved identity survives new runtime/reload and restart with partial cached master data (7.9689ms)
+Γ£ö whole module: explicit revocation blocks both restore paths {"status":"Inactive"} (3.9349ms)
+Γ£ö whole module: explicit revocation blocks both restore paths {"status":"Active","login_status":"Revoked"} (2.8501ms)
+Γ£ö whole module: explicit revocation blocks both restore paths {"status":"Active","login_disabled":true} (2.6925ms)
+Γ£ö whole module: explicit revocation blocks both restore paths {"status":"Active","enabled":false} (3.1097ms)
+Γ£ö whole module: a linked staff member cannot be replaced by a similar name (2.8641ms)
+Γ£ö whole module: temporary network error retains login and recovers; explicit score suspension still blocks (4.9544ms)
+Γ£ö whole module: Firebase matching UID cannot bypass an inactive cached master (1.3188ms)
+Γ£ö whole module: logout cancel/confirm, late snapshot, and auth callbacks never resurrect login (2.9643ms)
+Γ£ö whole module: GPS disconnect cancel/confirm retains portal, stops only GPS subscription (3.6417ms)
+Γ£ö whole module: legacy Stop GPS cancel has no side effects; confirm writes only to fixture (5.8877ms)
+Γ£ö login-only revocation preserves the pre-existing attendance status policy (1.5005ms)
+Γ£ö Admin full script: WebSocket configured before goOnline/ref; no long-poll fallback; unrelated account denied (5.37ms)
+Γ£ö Admin full script: missing transport support fails closed before any network listener (1.1138ms)
+Γ£ö Admin full script: fixture permission denial blocks command gates after connection (4.3187ms)
+Γ£ö Admin source/Hosting agreement: immutable JS URL bumped, legacy reload shim retained, original CSP unchanged (2.3239ms)
+Γ£ö Admin full script: Logout and STOP cancel/confirm operate only on synthetic session/commands (2.9315ms)
+Γä╣ tests 18
+Γä╣ suites 0
+Γä╣ pass 18
+Γä╣ fail 0
+Γä╣ cancelled 0
+Γä╣ skipped 0
+Γä╣ todo 0
+Γä╣ duration_ms 166.6578

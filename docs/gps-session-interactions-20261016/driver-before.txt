@@ -1,0 +1,273 @@
+Γ£û whole module: partial snapshots wait; active arrival renders; loss and recovery retain login (17.9613ms)
+Γ£û whole module: saved identity survives new runtime/reload and restart with partial cached master data (27.7195ms)
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Inactive"} (2.9633ms)
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","login_status":"Revoked"} (3.8359ms)
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","login_disabled":true} (6.2767ms)
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","enabled":false} (4.0329ms)
+Γ£û whole module: a linked staff member cannot be replaced by a similar name (4.1519ms)
+Γ£û whole module: temporary network error retains login and recovers; explicit score suspension still blocks (4.1792ms)
+Γ£ö whole module: Firebase matching UID cannot bypass an inactive cached master (2.9482ms)
+Γ£û whole module: logout cancel/confirm, late snapshot, and auth callbacks never resurrect login (4.0236ms)
+Γ£ö whole module: GPS disconnect cancel/confirm retains portal, stops only GPS subscription (3.0723ms)
+Γ£ö whole module: legacy Stop GPS cancel has no side effects; confirm writes only to fixture (3.541ms)
+Γ£û login-only revocation preserves the pre-existing attendance status policy (4.89ms)
+Γä╣ tests 13
+Γä╣ suites 0
+Γä╣ pass 3
+Γä╣ fail 10
+Γä╣ cancelled 0
+Γä╣ skipped 0
+Γä╣ todo 0
+Γä╣ duration_ms 186.6939
+
+Γ£û failing tests:
+
+test at tests\driver-session-interactions.test.cjs:31:1
+Γ£û whole module: partial snapshots wait; active arrival renders; loss and recovery retain login (17.9613ms)
+  TypeError: Cannot read properties of undefined (reading 'innerHTML')
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:33:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at tests\driver-session-interactions.test.cjs:41:1
+Γ£û whole module: saved identity survives new runtime/reload and restart with partial cached master data (27.7195ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:43:80)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:45:155
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Inactive"} (2.9633ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:47:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:45:155
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","login_status":"Revoked"} (3.8359ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:47:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:45:155
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","login_disabled":true} (6.2767ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:47:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:45:155
+Γ£û whole module: explicit revocation blocks both restore paths {"status":"Active","enabled":false} (4.0329ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:47:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:51:1
+Γ£û whole module: a linked staff member cannot be replaced by a similar name (4.1519ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajaya',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:52:104)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajaya', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:54:1
+Γ£û whole module: temporary network error retains login and recovers; explicit score suspension still blocks (4.1792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:58:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:64:1
+Γ£û whole module: logout cancel/confirm, late snapshot, and auth callbacks never resurrect login (4.0236ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:66:123)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\driver-session-interactions.test.cjs:76:1
+Γ£û login-only revocation preserves the pre-existing attendance status policy (4.89ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   authOk: true,
+  +   firebaseUid: 'fixture-driver',
+  +   name: 'Ajay',
+  +   role: 'Driver'
+  + }
+  - null
+
+      at TestContext.<anonymous> (C:\Users\manoj\Documents\Codex\2026-10-16\task\staging-repo\tests\driver-session-interactions.test.cjs:78:77)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { role: 'Driver', name: 'Ajay', authOk: true, firebaseUid: 'fixture-driver' },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

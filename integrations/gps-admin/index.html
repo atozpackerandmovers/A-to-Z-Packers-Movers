@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071523">
+  <title>A TO Z GPS — Production Admin</title>
+  <meta name="application-version" content="2026-10-16-websocket-staging-v9.0.1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="stylesheet" href="styles.v9.0.0.css" data-dashboard-build="2026-10-16-websocket-staging-v9.0.1">
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <section class="login-card">
+      <div class="brand"><span>A</span><b> TO </b><span>Z</span></div>
+      <div class="eyebrow">SECURE GPS ADMIN</div>
+      <h1>Production dashboard</h1>
+      <p>Authorized access for the Mahesh and Ajay Production GPS environment.</p>
+      <form id="loginForm">
+        <label>Admin email<input id="email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Sign in securely</button>
+        <p id="loginError" class="error" role="alert"></p>
+      </form>
+      <div class="safety">Controlled two-driver Production GPS · RESET permanently disabled</div>
+    </section>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside>
+      <div class="brand small"><span>A</span><b> TO </b><span>Z</span></div>
+      <div class="admin-title">GPS Admin<small>PRODUCTION CONFIGURED</small></div>
+      <nav>
+        <button data-view="fleet" class="active">Live Fleet</button>
+        <button data-view="overview">Selected Driver</button>
+        <button data-view="route">Route history</button>
+        <button data-view="trips">Trip history</button>
+        <button data-view="acks">Acknowledgements</button>
+      </nav>
+      <div class="lock-card">
+        <strong id="pilotLockTitle">Checking pilot approval…</strong>
+        <span id="productionGate">Production: Checking</span>
+        <span id="pilotGate">Pilot: Checking</span>
+        <span>RESET: Permanently disabled</span>
+      </div>
+      <div class="lock-card">
+        <strong>Authenticated admin</strong>
+        <span>Email: <b id="adminEmail">—</b></span>
+        <span>UID: <b id="adminUid">—</b></span>
+      </div>
+      <div class="lock-card">
+        <strong>Firebase diagnostics</strong>
+        <span>Build: <b id="buildVersion">v9.0.0</b></span>
+        <span>Transport: <b id="transportMode">Initializing</b></span>
+        <span>Project: <b id="projectId">—</b></span>
+        <span>Database: <b id="databaseUrl">—</b></span>
+        <span>Firebase app: <b id="firebaseAppName">—</b></span>
+        <span>Browser online: <b id="browserOnline">—</b></span>
+        <span>RTDB connected: <b id="rtdbConnected">—</b></span>
+        <span>SDK: <b id="sdkStatus">Initializing</b></span>
+        <button id="retryFirebase" class="logout" type="button">Refresh Live Firebase Data</button>
+      </div>
+      <button id="logout" class="logout">Sign out</button>
+    </aside>
+
+    <main>
+      <header>
+        <div><div class="eyebrow">MAHESH + AJAY PRODUCTION ENVIRONMENT</div><h1 id="viewTitle">Live Fleet</h1></div>
+        <div class="connection"><i id="connectionDot"></i><span id="connectionText">Connecting…</span></div>
+      </header>
+
+      <div id="pilotBanner" class="pilot-banner">Checking Production Pilot approval…</div>
+
+      <details class="diagnostic-card" open>
+        <summary>Firebase approval diagnostics</summary>
+        <p>Exact value and read result for every required Production Pilot path. A missing node is shown as <code>null</code>; a blocked read shows the exact Firebase SDK code and message. Reads start only after Firebase Auth and Realtime Database connection are ready. A 30-second delay is displayed only as a secondary diagnostic; connection state remains authoritative.</p>
+        <div class="table-wrap"><table><thead><tr><th>Firebase path</th><th>Exact value</th><th>Read error</th></tr></thead><tbody id="diagnosticRows"></tbody></table></div>
+      </details>
+
+      <section class="command-card" aria-labelledby="commandTitle">
+        <div>
+          <span id="commandOwner">MAHESH REMOTE COMMANDS</span>
+          <strong id="commandTitle">START / STOP control</strong>
+          <small id="commandStatus">Waiting for Production Pilot approval.</small>
+        </div>
+        <label class="driver-control">Control driver
+          <select id="driverSelect" aria-label="Select driver for START or STOP">
+            <option value="DRIVER_MAHESH_001">Mahesh · OD-33-AR-8855</option>
+            <option value="DRIVER_AJAY_001">Ajay · OD-05-BD-8855</option>
+          </select>
+        </label>
+        <div class="command-actions">
+          <button id="startCommand" class="start-command" type="button" disabled>START</button>
+          <button id="stopCommand" class="stop-command" type="button" disabled>STOP</button>
+          <button id="resetCommand" class="reset-command" type="button" disabled title="RESET is permanently disabled">RESET</button>
+        </div>
+      </section>
+
+      <section id="fleetView" class="view">
+        <div class="fleet-heading">
+          <div><span>Production drivers</span><strong>Mahesh and Ajay</strong></div>
+          <small>Select “Manage” on a driver card before sending START or STOP. RESET stays disabled.</small>
+        </div>
+        <div id="fleetCards" class="fleet-grid"></div>
+      </section>
+
+      <section id="overviewView" class="view hidden">
+        <div class="identity-grid">
+          <article><span>Driver</span><strong id="driverName">Mahesh</strong><small id="driverIdLabel">DRIVER_MAHESH_001</small></article>
+          <article><span>Vehicle</span><strong id="vehicleNumber">OD-33-AR-8855</strong><small id="vehicleIdLabel">VEHICLE_OD33AR8855</small></article>
+          <article><span>Trip status</span><strong id="tripStatus">OFFLINE</strong><small id="tripId">No active trip</small></article>
+          <article><span>Current distance</span><strong id="distance">0.00 km</strong><small>Driver-reported distance</small></article>
+        </div>
+
+        <div class="content-grid">
+          <article class="map-card">
+            <div class="card-head"><div><span>Current GPS location</span><strong id="coordinates">No GPS fix</strong></div><a id="openMap" class="map-link disabled" target="_blank" rel="noopener">Open map</a></div>
+            <div id="mapPlaceholder" class="map-placeholder"><div class="pin">●</div><p>Waiting for a valid GPS location</p></div>
+            <iframe id="mapFrame" class="hidden" title="Current GPS map" loading="lazy" referrerpolicy="no-referrer"></iframe>
+            <div class="address"><span>Current address</span><strong id="address">Waiting for location data</strong></div>
+          </article>
+
+          <article class="metrics-card">
+            <div><span>GPS accuracy</span><strong id="accuracy">—</strong></div>
+            <div><span>Speed</span><strong id="speed">—</strong></div>
+            <div><span>Pending queue</span><strong id="queue">0</strong></div>
+            <div><span>Last sync</span><strong id="lastSync">Never</strong></div>
+            <div><span>GPS status</span><strong id="gpsStatus">Offline</strong></div>
+            <div><span>Last update</span><strong id="lastUpdate">Never</strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="routeView" class="view hidden">
+        <article class="table-card">
+          <div class="card-head"><div><span>Route history</span><strong id="routeTripLabel">No trip selected</strong></div><select id="routeTripSelect" aria-label="Select trip"></select></div>
+          <div id="routeMap" class="route-map"></div>
+          <div class="table-wrap"><table><thead><tr><th>Time</th><th>Coordinates</th><th>Accuracy</th><th>Speed</th><th>Distance</th></tr></thead><tbody id="routeRows"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="tripsView" class="view hidden">
+        <article class="table-card"><div class="card-head"><div><span>Trip history</span><strong id="tripHistoryDriver">Mahesh · OD-33-AR-8855</strong></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Trip ID</th><th>Status</th><th>Started</th><th>Stopped</th><th>Distance</th></tr></thead><tbody id="tripRows"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="acksView" class="view hidden">
+        <article class="table-card"><div class="card-head"><div><span>Command acknowledgements</span><strong id="ackDriver">Mahesh command audit trail</strong></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Command ID</th><th>Status</th><th>Type</th><th>Applied</th><th>Result</th></tr></thead><tbody id="ackRows"></tbody></table></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="app.v9.0.1-staging.js" data-dashboard-build="2026-10-16-websocket-staging-v9.0.1"></script>
+</body>
+</html>
