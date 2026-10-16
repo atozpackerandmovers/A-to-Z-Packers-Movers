@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-16T14:31:17.145Z",
+  "mode": "OFFLINE_SAVED_RULE_EXPRESSIONS_NOT_EMULATOR",
+  "realKotlinPayloads": true,
+  "acceptedTransitions": 8,
+  "negativeAssertions": 20,
+  "productionWrites": 0,
+  "results": [
+    {
+      "fixture": 0,
+      "type": "START",
+      "step": 0,
+      "status": "RECEIVED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 0,
+      "type": "START",
+      "step": 1,
+      "status": "EXECUTED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 1,
+      "type": "START",
+      "step": 0,
+      "status": "RECEIVED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 1,
+      "type": "START",
+      "step": 1,
+      "status": "FAILED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 2,
+      "type": "STOP",
+      "step": 0,
+      "status": "RECEIVED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 2,
+      "type": "STOP",
+      "step": 1,
+      "status": "EXECUTED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 3,
+      "type": "STOP",
+      "step": 0,
+      "status": "RECEIVED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    },
+    {
+      "fixture": 3,
+      "type": "STOP",
+      "step": 1,
+      "status": "FAILED",
+      "accepted": true,
+      "wrongIdentityRejected": true,
+      "extraFieldRejected": true
+    }
+  ]
+}

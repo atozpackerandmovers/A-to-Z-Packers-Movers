@@ -1,85 +1,37 @@
 {
-  "at": "2026-10-16T13:38:34.8991546Z",
-  "mode": "ANDROID_COMPILE_AND_JVM_UNIT_TESTS_NO_DEVICE_OR_EMULATOR",
-  "tests": 49.0,
+  "at": "2026-10-16T14:31:15.0763342Z",
+  "mode": "LOCAL_JVM_FIXTURES_NOT_DEVICE_OR_FIREBASE_EMULATOR",
+  "tests": 60.0,
   "failures": 0.0,
   "errors": 0.0,
   "suites": [
     {
       "suite": "com.atozpackersmovers.drivertrackerv5.AcknowledgementProtocolTest",
-      "tests": 16,
+      "tests": 22,
       "failures": 0,
       "errors": 0,
-      "timestamp": "2026-10-16T13:36:52",
-      "cases": [
-        "restart retries durable final result without executing again",
-        "active trip rejection gets RECEIVED then FAILED without local START",
-        "failed receive never executes and later only delivers failure",
-        "emit actual protocol payloads for saved rule expression checks",
-        "remote terminal blocks execution from another local store",
-        "existing legacy completed record is not executed or silently rewritten",
-        "final timeout retains pending result for independent retry",
-        "START receives before execution then sends allowed terminal shape",
-        "concurrent duplicate calls execute only once",
-        "STOP produces stoppedTripId and no tripId",
-        "foreign command identity never gets written or executed",
-        "receive timeout never executes or loses durable failure",
-        "lost final response reconciles status without terminal rewrite",
-        "cancellation leaves final result pending",
-        "interrupted PROCESSING record fails closed without repeating execution",
-        "retry is scoped to assignment"
-      ]
+      "skipped": 0
     },
     {
       "suite": "com.atozpackersmovers.drivertrackerv5.CoreUnitTest",
       "tests": 29,
       "failures": 0,
       "errors": 0,
-      "timestamp": "2026-10-16T13:36:53",
-      "cases": [
-        "accuracy uncertainty cannot increment distance",
-        "stationary thirty minute simulation has exact zero drift",
-        "recovery poor first fix accuracy is retryable",
-        "20 duplicate location and rejected anchor",
-        "16 stationary GPS noise",
-        "speed zero cannot increment distance",
-        "future command timestamp",
-        "duplicate timestamp is rejected",
-        "12 stale command",
-        "same coordinates are rejected",
-        "duplicate point ID is deterministic",
-        "repeated app opening cannot create a different ID for same gap",
-        "07 reset disabled",
-        "29 wrong driver command",
-        "recovery physically impossible jump is retryable",
-        "recovery wrong trip ID is rejected",
-        "01 command parsing",
-        "out of order point is rejected",
-        "17 normal vehicle movement",
-        "recovery same location restart adds no gap",
-        "recovery 2 hour switch off gap is accepted separately",
-        "09 acknowledgement success round trip",
-        "18 impossible jump",
-        "14 duplicate service start",
-        "recovery 2 minute switch off gap accepts zero reported speed",
-        "duplicate boot event produces identical recovery gap ID",
-        "28 wrong vehicle command",
-        "19 poor accuracy",
-        "re-evaluating accepted endpoint cannot add a second estimate"
-      ]
+      "skipped": 0
+    },
+    {
+      "suite": "com.atozpackersmovers.drivertrackerv5.ServerCommandReaderTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
     },
     {
       "suite": "com.atozpackersmovers.drivertrackerv5.ui.TrackingStatusFormatterTest",
       "tests": 4,
       "failures": 0,
       "errors": 0,
-      "timestamp": "2026-10-16T13:36:53",
-      "cases": [
-        "empty queue is shown as synced",
-        "recovery status is clean and contains no internal dump",
-        "queued point is represented without an entity dump",
-        "running GPS status is concise"
-      ]
+      "skipped": 0
     }
   ]
 }

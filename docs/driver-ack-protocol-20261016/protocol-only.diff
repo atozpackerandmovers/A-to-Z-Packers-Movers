@@ -1,3 +1,9 @@
+diff --git a/integrations/driver-android-ack/.gitignore b/integrations/driver-android-ack/.gitignore
+index bc7fce2..b02e5c8 100644
+--- a/integrations/driver-android-ack/.gitignore
++++ b/integrations/driver-android-ack/.gitignore
+@@ -1,0 +2 @@
++.kotlin/
 diff --git a/integrations/driver-android-ack/app/build.gradle.kts b/integrations/driver-android-ack/app/build.gradle.kts
 index 14543ae..e51e426 100644
 --- a/integrations/driver-android-ack/app/build.gradle.kts
@@ -19,18 +25,26 @@ index 14543ae..e51e426 100644
 -        versionName = "5.0.9-production-pilot"
 +        versionCode = 50014
 +        versionName = "5.0.14-staging-ack-protocol"
+diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/application/TrackerApplication.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/application/TrackerApplication.kt
+index 3c67983..c81ff30 100644
+--- a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/application/TrackerApplication.kt
++++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/application/TrackerApplication.kt
+@@ -45 +45 @@ class AppGraph(application: Application) {
+-    val firebaseRepository: FirebaseRepository = ProductionFirebaseRepository()
++    val firebaseRepository: FirebaseRepository = ProductionFirebaseRepository(database.tripSessionDao())
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/AcknowledgementChannel.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/AcknowledgementChannel.kt
 new file mode 100644
-index 0000000..108b581
+index 0000000..3bacffc
 --- /dev/null
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/AcknowledgementChannel.kt
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +package com.atozpackersmovers.drivertrackerv5.command
 +
 +import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
 +
 +interface AcknowledgementChannel {
 +    suspend fun markCommandReceived(assignment: DriverAssignment, command: TripCommand)
++    suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement)
 +    suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement)
 +}
 +
@@ -55,10 +69,10 @@ index 9f76c6c..b9b7423 100644
 +    override suspend fun pending(driverId: String, vehicleId: String): List<CommandRecordEntity> = dao.pendingAcknowledgements(driverId, vehicleId)
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/DurableCommandProcessor.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/DurableCommandProcessor.kt
 new file mode 100644
-index 0000000..de4f67b
+index 0000000..7625a6f
 --- /dev/null
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/DurableCommandProcessor.kt
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,96 @@
 +package com.atozpackersmovers.drivertrackerv5.command
 +
 +import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
@@ -131,7 +145,11 @@ index 0000000..de4f67b
 +
 +    private suspend fun deliver(assignment: DriverAssignment, record: CommandRecordEntity, ack: CommandAcknowledgement) {
 +        try {
-+            withTimeout(30_000) { channel.acknowledge(assignment, ack) }
++            withTimeout(30_000) {
++                // The same durable outbox covers trip completion even with no queued GPS points.
++                channel.deliverTripSummary(assignment, ack)
++                channel.acknowledge(assignment, ack)
++            }
 +            store.finish(record.copy(processingStatus = "ACKED_${ack.tripCommandApplyStatus}"))
 +        } catch (_: TimeoutCancellationException) {
 +            // The write may still commit remotely. Retry reconciles command status first.
@@ -152,23 +170,20 @@ index 0000000..de4f67b
 +    }
 +}
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/TripCommandConsumer.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/TripCommandConsumer.kt
-index 7f68f97..7b0d7e3 100644
+index 7f68f97..45f6927 100644
 --- a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/TripCommandConsumer.kt
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/command/TripCommandConsumer.kt
-@@ -10,2 +10,4 @@ import com.atozpackersmovers.drivertrackerv5.trip.TripTransitionResult
+@@ -10,2 +10 @@ import com.atozpackersmovers.drivertrackerv5.trip.TripTransitionResult
 -import kotlinx.coroutines.sync.Mutex
 -import kotlinx.coroutines.sync.withLock
-+import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
 +import kotlinx.coroutines.CancellationException
-+import kotlinx.coroutines.TimeoutCancellationException
-+import kotlinx.coroutines.withTimeout
-@@ -29 +31 @@ class TripCommandConsumer(
+@@ -29 +28 @@ class TripCommandConsumer(
 -    private val commandMutex = Mutex()
 +    private val processor = DurableCommandProcessor(idempotencyStore, repository)
-@@ -31 +33 @@ class TripCommandConsumer(
+@@ -31 +30 @@ class TripCommandConsumer(
 -    suspend fun consume(command: TripCommand): CommandAcknowledgement = commandMutex.withLock {
 +    suspend fun consume(command: TripCommand): CommandAcknowledgement {
-@@ -36,4 +38,6 @@ class TripCommandConsumer(
+@@ -36,4 +35,6 @@ class TripCommandConsumer(
 -        if (validation != null || assignment == null) {
 -            return@withLock acknowledgement(command, CommandApplyStatus.REJECTED, null, null,
 -                validation?.code ?: "ASSIGNMENT_REQUIRED", validation?.reason ?: "Assignment missing", now)
@@ -179,7 +194,7 @@ index 7f68f97..7b0d7e3 100644
 +            command.type == TripCommandType.RESET || command.commandId.isBlank() || command.commandId.length > 128) {
 +            return acknowledgement(command, CommandApplyStatus.REJECTED, null, null,
 +                validation?.code ?: "COMMAND_NOT_AUTHORIZED", validation?.reason ?: "Command not authorized", now)
-@@ -41,16 +45,6 @@ class TripCommandConsumer(
+@@ -41,16 +42,6 @@ class TripCommandConsumer(
 -
 -        val previous = idempotencyStore.previous(command.commandId)
 -        if (previous != null) {
@@ -202,7 +217,7 @@ index 7f68f97..7b0d7e3 100644
 +            idempotencyStore.previous(command.commandId) == null) {
 +            return acknowledgement(command, CommandApplyStatus.REJECTED, null, null,
 +                validation?.code, validation?.reason, now)
-@@ -58,8 +52,14 @@ class TripCommandConsumer(
+@@ -58,8 +49,13 @@ class TripCommandConsumer(
 -
 -        /*
 -         * Reject duplicate START before reserving a command record, acquiring a
@@ -211,7 +226,6 @@ index 7f68f97..7b0d7e3 100644
 -         */
 -        if (command.type == TripCommandType.START) {
 -            val active = stateMachine.activeTrip()
-+        var completedSession: TripSessionEntity? = null
 +        val result = processor.process(command, assignment, now,
 +            failure = { code, reason -> acknowledgement(command, CommandApplyStatus.FAILED, null, null, code, reason, clock()) },
 +        ) {
@@ -225,7 +239,7 @@ index 7f68f97..7b0d7e3 100644
 +                    "OUT_OF_ORDER_COMMAND", "A newer command was already received", now)
 +            }
 +            val active = if (command.type == TripCommandType.START) stateMachine.activeTrip() else null
-@@ -67,11 +67,2 @@ class TripCommandConsumer(
+@@ -67,11 +63,2 @@ class TripCommandConsumer(
 -                val rejected = acknowledgement(
 -                    command,
 -                    CommandApplyStatus.REJECTED,
@@ -239,7 +253,7 @@ index 7f68f97..7b0d7e3 100644
 -                return@withLock rejected
 +                return@process acknowledgement(command, CommandApplyStatus.REJECTED, active.tripId, active.status,
 +                    "ACTIVE_TRIP_EXISTS", "Trip is already running", now)
-@@ -79,25 +70,16 @@ class TripCommandConsumer(
+@@ -79,25 +66,16 @@ class TripCommandConsumer(
 -        }
 -
 -        if (!idempotencyStore.begin(command, now)) {
@@ -281,9 +295,9 @@ index 7f68f97..7b0d7e3 100644
 +                                } else started
 +                            }
 +                            else -> started
-@@ -105 +86,0 @@ class TripCommandConsumer(
+@@ -105 +82,0 @@ class TripCommandConsumer(
 -                        else -> started
-@@ -106,0 +88,8 @@ class TripCommandConsumer(
+@@ -106,0 +84,8 @@ class TripCommandConsumer(
 +                    TripCommandType.STOP -> when (val stopped = stateMachine.stop(command, assignment, now)) {
 +                        is TripTransitionResult.Applied -> trackingController.stopSafely().fold(
 +                            onSuccess = { stopped },
@@ -292,7 +306,7 @@ index 7f68f97..7b0d7e3 100644
 +                        else -> stopped
 +                    }
 +                    TripCommandType.RESET -> error("RESET_DISABLED")
-@@ -108,13 +97,10 @@ class TripCommandConsumer(
+@@ -108,14 +93,4 @@ class TripCommandConsumer(
 -                TripCommandType.STOP -> when (val stopped = stateMachine.stop(command, assignment, now)) {
 -                    is TripTransitionResult.Applied -> trackingController.stopSafely().fold(
 -                        onSuccess = { stopped },
@@ -306,45 +320,38 @@ index 7f68f97..7b0d7e3 100644
 -                        onFailure = { TripTransitionResult.Failed("SERVICE_STOP_FAILED", it.message ?: "Foreground service did not stop cleanly") },
 -                    )
 -                    else -> reset
+-                }
 +            } catch (cancelled: CancellationException) {
 +                throw cancelled
 +            } catch (error: Exception) {
 +                TripTransitionResult.Failed("UNEXPECTED_ERROR", error.message ?: error::class.java.simpleName)
-+            }
-+            when (transition) {
-+                is TripTransitionResult.Applied -> {
-+                    completedSession = transition.session
-+                    acknowledgement(command, CommandApplyStatus.APPLIED, transition.session.tripId,
-+                        transition.session.status, null, null, clock())
-@@ -121,0 +108,4 @@ class TripCommandConsumer(
-+                is TripTransitionResult.Rejected -> acknowledgement(command, CommandApplyStatus.REJECTED,
-+                    transition.session?.tripId, transition.session?.status, transition.code, transition.reason, clock())
-+                is TripTransitionResult.Failed -> acknowledgement(command, CommandApplyStatus.FAILED,
-+                    null, null, transition.code, transition.reason, clock())
-@@ -123,2 +112,0 @@ class TripCommandConsumer(
+@@ -123,9 +98,9 @@ class TripCommandConsumer(
 -        } catch (error: Throwable) {
 -            TripTransitionResult.Failed("UNEXPECTED_ERROR", error.message ?: error::class.java.simpleName)
-@@ -126,11 +114,6 @@ class TripCommandConsumer(
+-        }
 -
 -        when (transition) {
 -            is TripTransitionResult.Applied -> {
 -                runCatching { repository.uploadTripSummary(assignment, transition.session) }
 -                finish(command, assignment, CommandApplyStatus.APPLIED,
 -                    transition.session.tripId, transition.session.status, null, null, clock())
--            }
++            when (transition) {
++                is TripTransitionResult.Applied -> {
++                    acknowledgement(command, CommandApplyStatus.APPLIED, transition.session.tripId,
++                        transition.session.status, null, null, clock())
++                }
++                is TripTransitionResult.Rejected -> acknowledgement(command, CommandApplyStatus.REJECTED,
++                    transition.session?.tripId, transition.session?.status, transition.code, transition.reason, clock())
++                is TripTransitionResult.Failed -> acknowledgement(command, CommandApplyStatus.FAILED,
++                    null, null, transition.code, transition.reason, clock())
+@@ -133,4 +107,0 @@ class TripCommandConsumer(
 -            is TripTransitionResult.Rejected -> finish(command, assignment, CommandApplyStatus.REJECTED,
 -                transition.session?.tripId, transition.session?.status, transition.code, transition.reason, clock())
 -            is TripTransitionResult.Failed -> finish(command, assignment, CommandApplyStatus.FAILED,
 -                null, null, transition.code, transition.reason, clock())
-+        // The terminal result is already durable. A disconnected summary upload must not delay its persistence.
-+        completedSession?.let { session ->
-+            try { withTimeout(5_000) { repository.uploadTripSummary(assignment, session) } }
-+            catch (_: TimeoutCancellationException) { }
-+            catch (cancelled: CancellationException) { throw cancelled }
-+            catch (_: Exception) { /* Existing uploader retains responsibility for trip data. */ }
-@@ -137,0 +121 @@ class TripCommandConsumer(
+@@ -137,0 +109 @@ class TripCommandConsumer(
 +        return result
-@@ -140,36 +124,4 @@ class TripCommandConsumer(
+@@ -140,36 +112,4 @@ class TripCommandConsumer(
 -    private suspend fun finish(
 -        command: TripCommand,
 -        assignment: com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment,
@@ -385,7 +392,7 @@ index 7f68f97..7b0d7e3 100644
 +        val auth = authSessionProvider.current()
 +        val assignment = auth.assignment ?: return
 +        if (auth.authenticated && auth.role == "Driver") processor.retryPending(assignment)
-@@ -178,20 +130,7 @@ class TripCommandConsumer(
+@@ -178,20 +118,7 @@ class TripCommandConsumer(
 -    private fun acknowledgement(
 -        command: TripCommand,
 -        status: CommandApplyStatus,
@@ -413,12 +420,50 @@ index 7f68f97..7b0d7e3 100644
 +        tripCommandResultTripId = tripId, tripCommandResultStatus = tripStatus,
 +        tripCommandReceiverDeviceId = deviceIdentityProvider.stableId(), tripCommandReceiverBuild = BuildConfig.VERSION_NAME,
 +        tripCommandReceiverSource = command.source.name, tripCommandErrorCode = errorCode, tripCommandErrorReason = errorReason,
+diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/CommandTripSummaryDelivery.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/CommandTripSummaryDelivery.kt
+new file mode 100644
+index 0000000..21d479f
+--- /dev/null
++++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/CommandTripSummaryDelivery.kt
+@@ -0,0 +1,32 @@
++package com.atozpackersmovers.drivertrackerv5.firebase
++
++import com.atozpackersmovers.drivertrackerv5.command.CommandAcknowledgement
++import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
++import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
++
++/** Uses the local trip and existing command outbox; never depends on GPS queue contents. */
++class CommandTripSummaryDelivery(
++    private val findTrip: suspend (String) -> TripSessionEntity?,
++    private val completedByCommand: suspend (String) -> TripSessionEntity?,
++    private val upload: suspend (TripSessionEntity) -> Unit,
++) {
++    suspend fun deliver(assignment: DriverAssignment, ack: CommandAcknowledgement) {
++        val session = if (ack.tripCommandApplyStatus == "APPLIED") {
++            val id = checkNotNull(ack.tripCommandResultTripId) { "MISSING_RESULT_TRIP" }
++            checkNotNull(findTrip(id)) { "LOCAL_RESULT_TRIP_MISSING" }
++        } else if (ack.appliedTripCommandType == "STOP") {
++            // STOP may have committed locally before process death or a service-stop failure.
++            completedByCommand(ack.appliedTripCommandId) ?: return
++        } else return
++        check(session.driverId == assignment.driverId && session.vehicleId == assignment.vehicleId) {
++            "LOCAL_TRIP_IDENTITY_MISMATCH"
++        }
++        if (ack.appliedTripCommandType == "STOP") {
++            check(session.status == "COMPLETED" && session.lastAppliedCommandId == ack.appliedTripCommandId) {
++                "LOCAL_STOP_RESULT_MISMATCH"
++            }
++        }
++        // Read the current durable trip, so a delayed START cannot republish an earlier RUNNING snapshot.
++        upload(session)
++    }
++}
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/DriverAcknowledgementProtocol.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/DriverAcknowledgementProtocol.kt
 new file mode 100644
-index 0000000..504fe73
+index 0000000..87c2127
 --- /dev/null
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/DriverAcknowledgementProtocol.kt
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,70 @@
 +package com.atozpackersmovers.drivertrackerv5.firebase
 +
 +import com.atozpackersmovers.drivertrackerv5.command.CommandAcknowledgement
@@ -426,7 +471,8 @@ index 0000000..504fe73
 +
 +/** Only reads the driver's own command; rules intentionally deny Driver acknowledgement reads. */
 +interface CommandAckWire {
-+    suspend fun readCommand(commandId: String): Map<String, Any?>
++    /** Must contact the authenticated server; cached/optimistic SDK values are not evidence. */
++    suspend fun readServerCommand(commandId: String): Map<String, Any?>
 +    suspend fun update(updates: Map<String, Any?>)
 +}
 +
@@ -439,7 +485,7 @@ index 0000000..504fe73
 +) {
 +    private suspend fun status(id: String, type: String): String? {
 +        require(type == "START" || type == "STOP")
-+        val command = wire.readCommand(id)
++        val command = wire.readServerCommand(id)
 +        check(command["commandId"] == id && command["type"] == type &&
 +            command["driverId"] == driverId && command["vehicleId"] == vehicleId) { "COMMAND_IDENTITY_MISMATCH" }
 +        val value = command["status"] as? String
@@ -521,16 +567,30 @@ index 35ef34d..54dc920 100644
 -    suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement)
 +    override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement)
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ProductionFirebaseRepository.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ProductionFirebaseRepository.kt
-index 0c9c1bf..3e46588 100644
+index 0c9c1bf..c8aae88 100644
 --- a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ProductionFirebaseRepository.kt
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ProductionFirebaseRepository.kt
-@@ -56,0 +57,19 @@ class ProductionFirebaseRepository : FirebaseRepository {
+@@ -8,0 +9 @@ import com.atozpackersmovers.drivertrackerv5.offline.OfflinePointEntity
++import com.atozpackersmovers.drivertrackerv5.offline.TripSessionDao
+@@ -20,0 +22 @@ import kotlinx.coroutines.tasks.await
++import org.json.JSONObject
+@@ -22 +24 @@ import kotlinx.coroutines.tasks.await
+-class ProductionFirebaseRepository : FirebaseRepository {
++class ProductionFirebaseRepository(private val tripSessions: TripSessionDao) : FirebaseRepository {
+@@ -56,0 +59,26 @@ class ProductionFirebaseRepository : FirebaseRepository {
 +    private fun acknowledgementProtocol(assignment: DriverAssignment) = DriverAcknowledgementProtocol(
 +        object : CommandAckWire {
-+            override suspend fun readCommand(commandId: String): Map<String, Any?> {
++            override suspend fun readServerCommand(commandId: String): Map<String, Any?> {
 +                requirePilot(assignment)
-+                val snapshot = driverRoot.child("commands").child(commandId).get().await()
-+                return snapshot.children.associate { it.key.orEmpty() to it.value }
++                val user = checkNotNull(auth.currentUser)
++                val token = checkNotNull(user.getIdToken(false).await().token) { "AUTH_TOKEN_UNAVAILABLE" }
++                requirePilot(assignment)
++                check(auth.currentUser === user) { "AUTH_SESSION_CHANGED" }
++                val body = ServerCommandReader().read(BuildConfig.DATABASE_URL, BuildConfig.DATABASE_ROOT,
++                    BuildConfig.DRIVER_ID, commandId, token)
++                requirePilot(assignment)
++                val json = JSONObject(body)
++                return json.keys().asSequence().associateWith { key -> json.opt(key).takeUnless { it == JSONObject.NULL } }
 +            }
 +            override suspend fun update(updates: Map<String, Any?>) {
 +                requirePilot(assignment)
@@ -544,7 +604,7 @@ index 0c9c1bf..3e46588 100644
 +        acknowledgementProtocol(assignment).received(command.commandId, command.type.name)
 +    }
 +
-@@ -59,6 +78 @@ class ProductionFirebaseRepository : FirebaseRepository {
+@@ -59,6 +87,8 @@ class ProductionFirebaseRepository : FirebaseRepository {
 -        val values = acknowledgement.asCompatibilityFields().toMutableMap()
 -        values["commandId"] = acknowledgement.appliedTripCommandId
 -        values["driverId"] = BuildConfig.DRIVER_ID
@@ -552,24 +612,104 @@ index 0c9c1bf..3e46588 100644
 -        values["serverTimestamp"] = ServerValue.TIMESTAMP
 -        driverRoot.child("acknowledgements").child(acknowledgement.appliedTripCommandId).setValue(values).await()
 +        acknowledgementProtocol(assignment).deliver(acknowledgement)
++    }
++
++    override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++        requirePilot(assignment)
++        CommandTripSummaryDelivery(tripSessions::find, tripSessions::completedByCommand) { session ->
++            uploadTripSummary(assignment, session)
++        }.deliver(assignment, acknowledgement)
+diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ServerCommandReader.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ServerCommandReader.kt
+new file mode 100644
+index 0000000..cf5d5c6
+--- /dev/null
++++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/firebase/ServerCommandReader.kt
+@@ -0,0 +1,63 @@
++package com.atozpackersmovers.drivertrackerv5.firebase
++
++import java.net.URL
++import java.net.URLEncoder
++import javax.net.ssl.HttpsURLConnection
++import kotlinx.coroutines.CancellationException
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.ensureActive
++import kotlinx.coroutines.withContext
++
++/** Firebase SDK get() can fall back to optimistic local writes. REST GET has no SDK cache. */
++class ServerCommandReader(
++    private val connect: (URL) -> HttpsURLConnection = { it.openConnection() as HttpsURLConnection },
++) {
++    suspend fun read(databaseUrl: String, root: String, driverId: String, commandId: String, idToken: String): String =
++        withContext(Dispatchers.IO) {
++            fun segment(value: String): String {
++                require(value.isNotBlank() && value.none { it in "/.#$[]" || it.code < 32 || it.code == 127 })
++                return URLEncoder.encode(value, "UTF-8").replace("+", "%20")
++            }
++            val base = URL(databaseUrl)
++            require(base.protocol == "https" && base.userInfo == null && base.query == null &&
++                base.ref == null && base.port == -1 && base.path in listOf("", "/") &&
++                (base.host.endsWith(".firebasedatabase.app") || base.host.endsWith(".firebaseio.com")))
++            require(commandId.length <= 128 && idToken.isNotBlank())
++            val path = (root.split("/") + listOf("drivers", driverId, "commands", commandId)).joinToString("/") { segment(it) }
++            // Existing Firebase ID token, used transiently. Never log this URL or attach it to errors.
++            val address = URL("${base.protocol}://${base.host}/$path.json?auth=${URLEncoder.encode(idToken, "UTF-8")}")
++            var connection: HttpsURLConnection? = null
++            try {
++                ensureActive()
++                connection = connect(address)
++                connection.requestMethod = "GET"
++                connection.useCaches = false
++                connection.instanceFollowRedirects = false
++                connection.connectTimeout = 10_000
++                connection.readTimeout = 10_000
++                connection.setRequestProperty("Cache-Control", "no-cache, no-store")
++                connection.setRequestProperty("Accept", "application/json")
++                check(connection.responseCode == 200) { "SERVER_COMMAND_READ_REJECTED" }
++                val bytes = connection.inputStream.use { stream ->
++                    val buffer = ByteArray(65_537)
++                    var count = 0
++                    while (count < buffer.size) {
++                        val read = stream.read(buffer, count, buffer.size - count)
++                        if (read == -1) break
++                        count += read
++                    }
++                    check(count <= 65_536) { "SERVER_COMMAND_RESPONSE_TOO_LARGE" }
++                    buffer.copyOf(count)
++                }
++                ensureActive()
++                bytes.toString(Charsets.UTF_8)
++            } catch (cancelled: CancellationException) {
++                throw cancelled
++            } catch (_: Exception) {
++                // Transport exceptions may contain the authenticated URL. Keep them out of the outbox/logs.
++                throw IllegalStateException("SERVER_COMMAND_READ_FAILED")
++            } finally {
++                connection?.disconnect()
++            }
++        }
++}
 diff --git a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/OfflinePointDao.kt b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/OfflinePointDao.kt
-index 327069a..7a56108 100644
+index 327069a..bbba2ad 100644
 --- a/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/OfflinePointDao.kt
 +++ b/integrations/driver-android-ack/app/src/main/java/com/atozpackersmovers/drivertrackerv5/offline/OfflinePointDao.kt
-@@ -75,0 +76,2 @@ interface CommandRecordDao {
+@@ -66,0 +67,2 @@ interface TripSessionDao {
++    @Query("SELECT * FROM trip_sessions WHERE lastAppliedCommandId = :commandId AND status = 'COMPLETED' LIMIT 1")
++    suspend fun completedByCommand(commandId: String): TripSessionEntity?
+@@ -75,0 +78,2 @@ interface CommandRecordDao {
 +    @Query("SELECT * FROM command_records WHERE driverId = :driverId AND vehicleId = :vehicleId AND processingStatus LIKE 'ACK_PENDING_%' ORDER BY receivedAtMs LIMIT 100")
 +    suspend fun pendingAcknowledgements(driverId: String, vehicleId: String): List<CommandRecordEntity>
 diff --git a/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/AcknowledgementProtocolTest.kt b/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/AcknowledgementProtocolTest.kt
 new file mode 100644
-index 0000000..38b37da
+index 0000000..7031547
 --- /dev/null
 +++ b/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/AcknowledgementProtocolTest.kt
-@@ -0,0 +1,182 @@
+@@ -0,0 +1,310 @@
 +package com.atozpackersmovers.drivertrackerv5
 +
 +import com.atozpackersmovers.drivertrackerv5.command.*
 +import com.atozpackersmovers.drivertrackerv5.firebase.*
 +import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
++import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
 +import kotlinx.coroutines.*
 +import kotlinx.coroutines.test.runTest
 +import org.junit.Assert.*
@@ -595,8 +735,10 @@ index 0000000..38b37da
 +        var loseFinalResponse = false
 +        var receiveFails = false
 +        var foreign = false
++        var optimisticStatus: String? = null
++        var cacheFinalWithoutCommit = false
 +        val writes = mutableListOf<Map<String, Any?>>()
-+        override suspend fun readCommand(commandId: String): Map<String, Any?> {
++        override suspend fun readServerCommand(commandId: String): Map<String, Any?> {
 +            if (offline) error("OFFLINE")
 +            return mapOf("commandId" to c.commandId, "type" to c.type.name, "driverId" to if (foreign) "OTHER" else c.driverId,
 +                "vehicleId" to c.vehicleId, "status" to remoteStatus)
@@ -604,6 +746,8 @@ index 0000000..38b37da
 +        override suspend fun update(updates: Map<String, Any?>) {
 +            if (offline || receiveFails) error("OFFLINE")
 +            val next = updates["commands/${c.commandId}/status"] as String
++            optimisticStatus = next
++            if (cacheFinalWithoutCommit && next != "RECEIVED") { offline = true; error("CACHED_BUT_NOT_COMMITTED") }
 +            check((remoteStatus == null || remoteStatus == "PENDING") && next == "RECEIVED" ||
 +                remoteStatus == "RECEIVED" && next in setOf("EXECUTED", "FAILED")) { "ILLEGAL_TRANSITION" }
 +            writes += updates.toMap()
@@ -615,6 +759,7 @@ index 0000000..38b37da
 +        val protocol = DriverAcknowledgementProtocol(w, assignment.driverId, uid, assignment.vehicleId, now)
 +        override suspend fun markCommandReceived(assignment: DriverAssignment, command: TripCommand) = protocol.received(command.commandId, command.type.name)
 +        override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) = protocol.deliver(acknowledgement)
++        override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) = Unit
 +    }
 +    private class Store : CommandRecordStore {
 +        val rows = linkedMapOf<String, CommandRecordEntity>()
@@ -735,6 +880,128 @@ index 0000000..38b37da
 +        DurableCommandProcessor(s,delegate).retryPending(assignment)
 +        assertEquals("EXECUTED",w.remoteStatus)
 +    }
++    @Test fun `optimistic terminal cache cannot retire outbox before or after process death`() = runTest {
++        val w = Wire().apply { cacheFinalWithoutCommit = true }; val s = Store(); var executions = 0
++        val p = DurableCommandProcessor(s, channel(w))
++        process(p) { executions++; ack() }
++        assertEquals("EXECUTED", w.optimisticStatus)
++        assertEquals("RECEIVED", w.remoteStatus)
++        p.retryPending(assignment)
++        assertEquals("ACK_PENDING_APPLIED", s.rows.values.single().processingStatus)
++        val restored = Store().also { it.rows.putAll(s.rows.mapValues { row -> row.value.copy() }) }
++        w.optimisticStatus = null // In-memory SDK queue disappears with process death.
++        val restarted = DurableCommandProcessor(restored, channel(w))
++        restarted.retryPending(assignment)
++        assertEquals("ACK_PENDING_APPLIED", restored.rows.values.single().processingStatus)
++        w.offline = false; w.cacheFinalWithoutCommit = false
++        restarted.retryPending(assignment)
++        process(restarted) { executions++; ack() }
++        assertEquals(1, executions)
++        assertEquals("EXECUTED", w.remoteStatus)
++        assertEquals("ACKED_APPLIED", restored.rows.values.single().processingStatus)
++    }
++
++    private fun completed(c: TripCommand) = TripSessionEntity("OFFLINE_TRIP_001",
++        assignment.driverId, assignment.driverName, assignment.vehicleId, assignment.vehicleNumber,
++        "COMPLETED", now - 10_000, stoppedAtMs = now, lastAppliedCommandId = c.commandId, updatedAtMs = now)
++
++    @Test fun `STOP with empty GPS queue retains summary through offline restart before terminal ack`() = runTest {
++        val c = command(TripCommandType.STOP); val w = Wire(c); val s = Store()
++        val localTrips = mapOf("OFFLINE_TRIP_001" to completed(c))
++        val gpsQueue = emptyList<String>()
++        var summaryOffline = true; val uploaded = mutableListOf<TripSessionEntity>(); var executions = 0
++        fun delivery(store: Store): AcknowledgementChannel {
++            val delegate = channel(w)
++            return object : AcknowledgementChannel by delegate {
++                override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++                    assertEquals("ACK_PENDING_APPLIED", store.rows.values.single().processingStatus)
++                    CommandTripSummaryDelivery({ localTrips[it] }, { localTrips.values.find { t -> t.lastAppliedCommandId == it } }) {
++                        if (summaryOffline) error("SUMMARY_OFFLINE")
++                        uploaded += it
++                    }.deliver(assignment, acknowledgement)
++                }
++                override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++                    assertEquals("COMPLETED", uploaded.last().status)
++                    delegate.acknowledge(assignment, acknowledgement)
++                }
++            }
++        }
++        process(DurableCommandProcessor(s, delivery(s)), c) { executions++; ack(c).copy(tripCommandResultStatus = "COMPLETED") }
++        assertTrue(gpsQueue.isEmpty()); assertTrue(uploaded.isEmpty())
++        assertEquals("RECEIVED", w.remoteStatus)
++        assertEquals("ACK_PENDING_APPLIED", s.rows.values.single().processingStatus)
++        val restored = Store().also { it.rows.putAll(s.rows.mapValues { row -> row.value.copy() }) }
++        summaryOffline = false
++        val restarted = DurableCommandProcessor(restored, delivery(restored))
++        restarted.retryPending(assignment)
++        process(restarted, c) { executions++; ack(c) }
++        assertEquals(1, executions); assertEquals(1, uploaded.size)
++        assertEquals("EXECUTED", w.remoteStatus)
++        assertEquals("ACKED_APPLIED", restored.rows.values.single().processingStatus)
++    }
++
++    @Test fun `process death after local STOP commit recovers summary without executing STOP again`() = runTest {
++        val c = command(TripCommandType.STOP); val w = Wire(c).apply { remoteStatus = "RECEIVED" }
++        val s = Store(); s.begin(c, now)
++        val session = completed(c); val uploaded = mutableListOf<TripSessionEntity>()
++        val delegate = channel(w)
++        val recovering = object : AcknowledgementChannel by delegate {
++            override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++                CommandTripSummaryDelivery({ null }, { if (it == c.commandId) session else null }, { uploaded += it })
++                    .deliver(assignment, acknowledgement)
++            }
++        }
++        var executions = 0
++        val result = process(DurableCommandProcessor(s, recovering), c) { executions++; ack(c) }
++        assertEquals("EXECUTION_OUTCOME_UNKNOWN", result.tripCommandErrorCode)
++        assertEquals(0, executions); assertEquals(listOf(session), uploaded)
++        assertEquals("FAILED", w.remoteStatus)
++    }
++
++    @Test fun `summary timeout keeps STOP pending and retry uses current local trip`() = runTest {
++        val c = command(TripCommandType.STOP); val w = Wire(c); val s = Store()
++        val delegate = channel(w); var delayed = true; var delivered = 0
++        val ch = object : AcknowledgementChannel by delegate {
++            override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++                if (delayed) delay(60_000)
++                delivered++
++            }
++        }
++        process(DurableCommandProcessor(s, ch), c) { ack(c) }
++        assertEquals("ACK_PENDING_APPLIED", s.rows.values.single().processingStatus)
++        assertEquals("RECEIVED", w.remoteStatus); assertEquals(0, delivered)
++        delayed = false
++        DurableCommandProcessor(s, ch).retryPending(assignment)
++        assertEquals(1, delivered); assertEquals("EXECUTED", w.remoteStatus)
++    }
++
++    @Test fun `delayed START summary uses current completed state and rejects foreign local trip`() = runTest {
++        val c = command(); val session = completed(command(TripCommandType.STOP))
++        val uploaded = mutableListOf<TripSessionEntity>()
++        CommandTripSummaryDelivery({ session }, { null }, { uploaded += it }).deliver(assignment, ack(c))
++        assertEquals("COMPLETED", uploaded.single().status)
++        try {
++            CommandTripSummaryDelivery({ session.copy(driverId = "OTHER") }, { null }, { fail("Foreign upload") })
++                .deliver(assignment, ack(c))
++            fail("Expected identity rejection")
++        } catch (expected: IllegalStateException) { assertEquals("LOCAL_TRIP_IDENTITY_MISMATCH", expected.message) }
++    }
++
++    @Test fun `missing applied trip stays pending and rejected STOP never uploads unrelated history`() = runTest {
++        val c = command(TripCommandType.STOP); val w = Wire(c); val s = Store()
++        val delegate = channel(w)
++        val ch = object : AcknowledgementChannel by delegate {
++            override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
++                CommandTripSummaryDelivery({ null }, { null }, { fail("Unexpected upload") }).deliver(assignment, acknowledgement)
++            }
++        }
++        process(DurableCommandProcessor(s, ch), c) { ack(c) }
++        assertEquals("ACK_PENDING_APPLIED", s.rows.values.single().processingStatus)
++        assertEquals("RECEIVED", w.remoteStatus)
++        CommandTripSummaryDelivery({ fail("Must not read unrelated trip"); null }, { null }, { fail("Unexpected upload") })
++            .deliver(assignment, ack(c, "NO_ACTIVE_TRIP", "No active trip"))
++    }
++
 +    @Test fun `emit actual protocol payloads for saved rule expression checks`() = runTest {
 +        val fixtures=mutableListOf<Map<String,Any?>>()
 +        for(type in listOf(TripCommandType.START,TripCommandType.STOP)) for(fail in listOf(false,true)) {
@@ -745,5 +1012,94 @@ index 0000000..38b37da
 +        fun json(v: Any?):String=when(v) { null->"null"; is String->"\""+v.replace("\\","\\\\").replace("\"","\\\"")+"\""; is Number,is Boolean->v.toString(); is Map<*,*>->v.entries.joinToString(",","{","}"){json(it.key.toString())+":"+json(it.value)}; is List<*>->v.joinToString(",","[","]"){json(it)}; else->error("unsupported") }
 +        File("build/protocol-wire-fixtures.json").apply { parentFile?.mkdirs(); writeText(json(fixtures)) }
 +        assertEquals(4,fixtures.size)
++    }
++}
+diff --git a/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/ServerCommandReaderTest.kt b/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/ServerCommandReaderTest.kt
+new file mode 100644
+index 0000000..5e509b7
+--- /dev/null
++++ b/integrations/driver-android-ack/app/src/test/java/com/atozpackersmovers/drivertrackerv5/ServerCommandReaderTest.kt
+@@ -0,0 +1,83 @@
++package com.atozpackersmovers.drivertrackerv5
++
++import com.atozpackersmovers.drivertrackerv5.firebase.ServerCommandReader
++import java.io.ByteArrayInputStream
++import java.io.IOException
++import java.net.URL
++import java.security.cert.Certificate
++import javax.net.ssl.HttpsURLConnection
++import kotlinx.coroutines.runBlocking
++import org.junit.Assert.*
++import org.junit.Test
++
++class ServerCommandReaderTest {
++    private val base = "https://fixture.firebasedatabase.app"
++    private class Connection(url: URL, val code: Int = 200, val body: String = "{}") : HttpsURLConnection(url) {
++        var disconnected = false
++        override fun disconnect() { disconnected = true }
++        override fun usingProxy() = false
++        override fun connect() = Unit
++        override fun getResponseCode() = code
++        override fun getInputStream() = ByteArrayInputStream(body.toByteArray())
++        override fun getCipherSuite() = "FIXTURE"
++        override fun getLocalCertificates(): Array<Certificate>? = null
++        override fun getServerCertificates(): Array<Certificate> = emptyArray()
++    }
++
++    @Test fun `server request scopes path and disables HTTP cache and redirects`() = runBlocking {
++        var connection: Connection? = null
++        val reader = ServerCommandReader { Connection(it, body = "{\"status\":\"RECEIVED\"}").also { c -> connection = c } }
++        assertEquals("{\"status\":\"RECEIVED\"}", reader.read(base, "gpsProduction/v1", "DRIVER", "CMD 1", "FIXTURE_TOKEN"))
++        val c = checkNotNull(connection)
++        assertEquals("/gpsProduction/v1/drivers/DRIVER/commands/CMD%201.json", c.url.path)
++        assertEquals("auth=FIXTURE_TOKEN", c.url.query)
++        assertEquals("GET", c.requestMethod); assertFalse(c.useCaches); assertFalse(c.instanceFollowRedirects)
++        assertEquals("no-cache, no-store", c.getRequestProperty("Cache-Control"))
++        assertTrue(c.disconnected)
++    }
++
++    @Test fun `permission denial and redirects never return cached data`() = runBlocking {
++        for (status in listOf(301, 401, 403, 500)) {
++            val c = Connection(URL(base), status, "{\"status\":\"EXECUTED\"}")
++            try {
++                ServerCommandReader { c }.read(base, "gpsProduction/v1", "DRIVER", "CMD", "FIXTURE_TOKEN")
++                fail("HTTP $status accepted")
++            } catch (expected: IllegalStateException) { assertEquals("SERVER_COMMAND_READ_FAILED", expected.message) }
++            assertTrue(c.disconnected)
++        }
++    }
++
++    @Test fun `network errors cannot leak authenticated URL through outbox error`() = runBlocking {
++        try {
++            ServerCommandReader { throw IOException("Secret URL $it") }.read(base, "gpsProduction/v1", "DRIVER", "CMD", "FIXTURE_TOKEN")
++            fail("Expected error")
++        } catch (expected: IllegalStateException) {
++            assertEquals("SERVER_COMMAND_READ_FAILED", expected.message)
++            // Coroutine stack recovery may wrap a sanitized exception in another sanitized copy.
++            assertFalse(expected.stackTraceToString().contains("FIXTURE_TOKEN"))
++            assertFalse(expected.stackTraceToString().contains("Secret URL"))
++        }
++    }
++
++    @Test fun `invalid path or host is rejected before connection`() = runBlocking {
++        for (id in listOf("../CMD", "CMD/other", "CMD#", "", "CMD\n")) {
++            try {
++                ServerCommandReader { fail("Unexpected connection"); Connection(it) }.read(base, "gpsProduction/v1", "DRIVER", id, "FIXTURE")
++                fail("Accepted invalid id")
++            } catch (_: IllegalArgumentException) { }
++        }
++        try {
++            ServerCommandReader { fail("Unexpected connection"); Connection(it) }.read("https://example.com", "root", "DRIVER", "CMD", "FIXTURE")
++            fail("Accepted invalid host")
++        } catch (_: IllegalArgumentException) { }
++    }
++
++    @Test fun `oversized response stays retryable and connection closes`() = runBlocking {
++        val c = Connection(URL(base), body = "x".repeat(65_537))
++        try {
++            ServerCommandReader { c }.read(base, "gpsProduction/v1", "DRIVER", "CMD", "FIXTURE")
++            fail("Accepted oversized response")
++        } catch (expected: IllegalStateException) { assertEquals("SERVER_COMMAND_READ_FAILED", expected.message) }
++        assertTrue(c.disconnected)
 +    }
 +}

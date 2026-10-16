@@ -6,6 +6,7 @@ import com.atozpackersmovers.drivertrackerv5.command.CommandSource
 import com.atozpackersmovers.drivertrackerv5.command.TripCommand
 import com.atozpackersmovers.drivertrackerv5.command.TripCommandParser
 import com.atozpackersmovers.drivertrackerv5.offline.OfflinePointEntity
+import com.atozpackersmovers.drivertrackerv5.offline.TripSessionDao
 import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
 import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
 import com.google.firebase.auth.FirebaseAuth
@@ -18,8 +19,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import org.json.JSONObject
 
-class ProductionFirebaseRepository : FirebaseRepository {
+class ProductionFirebaseRepository(private val tripSessions: TripSessionDao) : FirebaseRepository {
     override val modeName: String = "PRODUCTION_PILOT"
     private val auth = FirebaseAuth.getInstance()
     private val root = FirebaseDatabase.getInstance(BuildConfig.DATABASE_URL).reference.child(BuildConfig.DATABASE_ROOT)
@@ -56,10 +58,17 @@ class ProductionFirebaseRepository : FirebaseRepository {
 
     private fun acknowledgementProtocol(assignment: DriverAssignment) = DriverAcknowledgementProtocol(
         object : CommandAckWire {
-            override suspend fun readCommand(commandId: String): Map<String, Any?> {
+            override suspend fun readServerCommand(commandId: String): Map<String, Any?> {
                 requirePilot(assignment)
-                val snapshot = driverRoot.child("commands").child(commandId).get().await()
-                return snapshot.children.associate { it.key.orEmpty() to it.value }
+                val user = checkNotNull(auth.currentUser)
+                val token = checkNotNull(user.getIdToken(false).await().token) { "AUTH_TOKEN_UNAVAILABLE" }
+                requirePilot(assignment)
+                check(auth.currentUser === user) { "AUTH_SESSION_CHANGED" }
+                val body = ServerCommandReader().read(BuildConfig.DATABASE_URL, BuildConfig.DATABASE_ROOT,
+                    BuildConfig.DRIVER_ID, commandId, token)
+                requirePilot(assignment)
+                val json = JSONObject(body)
+                return json.keys().asSequence().associateWith { key -> json.opt(key).takeUnless { it == JSONObject.NULL } }
             }
             override suspend fun update(updates: Map<String, Any?>) {
                 requirePilot(assignment)
@@ -76,6 +85,13 @@ class ProductionFirebaseRepository : FirebaseRepository {
     override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
         requirePilot(assignment)
         acknowledgementProtocol(assignment).deliver(acknowledgement)
+    }
+
+    override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
+        requirePilot(assignment)
+        CommandTripSummaryDelivery(tripSessions::find, tripSessions::completedByCommand) { session ->
+            uploadTripSummary(assignment, session)
+        }.deliver(assignment, acknowledgement)
     }
 
     override suspend fun uploadLive(assignment: DriverAssignment, session: TripSessionEntity, point: OfflinePointEntity) {

@@ -7,10 +7,7 @@ import com.atozpackersmovers.drivertrackerv5.security.AuthSessionProvider
 import com.atozpackersmovers.drivertrackerv5.security.DeviceIdentityProvider
 import com.atozpackersmovers.drivertrackerv5.trip.TripStateMachine
 import com.atozpackersmovers.drivertrackerv5.trip.TripTransitionResult
-import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.withTimeout
 
 interface TrackingController {
     suspend fun acquireFirstAcceptedFix(): Result<LocationSample>
@@ -49,7 +46,6 @@ class TripCommandConsumer(
             return acknowledgement(command, CommandApplyStatus.REJECTED, null, null,
                 validation?.code, validation?.reason, now)
         }
-        var completedSession: TripSessionEntity? = null
         val result = processor.process(command, assignment, now,
             failure = { code, reason -> acknowledgement(command, CommandApplyStatus.FAILED, null, null, code, reason, clock()) },
         ) {
@@ -101,7 +97,6 @@ class TripCommandConsumer(
             }
             when (transition) {
                 is TripTransitionResult.Applied -> {
-                    completedSession = transition.session
                     acknowledgement(command, CommandApplyStatus.APPLIED, transition.session.tripId,
                         transition.session.status, null, null, clock())
                 }
@@ -110,13 +105,6 @@ class TripCommandConsumer(
                 is TripTransitionResult.Failed -> acknowledgement(command, CommandApplyStatus.FAILED,
                     null, null, transition.code, transition.reason, clock())
             }
-        }
-        // The terminal result is already durable. A disconnected summary upload must not delay its persistence.
-        completedSession?.let { session ->
-            try { withTimeout(5_000) { repository.uploadTripSummary(assignment, session) } }
-            catch (_: TimeoutCancellationException) { }
-            catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { /* Existing uploader retains responsibility for trip data. */ }
         }
         return result
     }

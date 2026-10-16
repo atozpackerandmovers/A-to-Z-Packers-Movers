@@ -70,7 +70,11 @@ class DurableCommandProcessor(private val store: CommandRecordStore, private val
 
     private suspend fun deliver(assignment: DriverAssignment, record: CommandRecordEntity, ack: CommandAcknowledgement) {
         try {
-            withTimeout(30_000) { channel.acknowledge(assignment, ack) }
+            withTimeout(30_000) {
+                // The same durable outbox covers trip completion even with no queued GPS points.
+                channel.deliverTripSummary(assignment, ack)
+                channel.acknowledge(assignment, ack)
+            }
             store.finish(record.copy(processingStatus = "ACKED_${ack.tripCommandApplyStatus}"))
         } catch (_: TimeoutCancellationException) {
             // The write may still commit remotely. Retry reconciles command status first.

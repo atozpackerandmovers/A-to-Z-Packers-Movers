@@ -5,7 +5,8 @@ import com.atozpackersmovers.drivertrackerv5.command.TerminalCommandException
 
 /** Only reads the driver's own command; rules intentionally deny Driver acknowledgement reads. */
 interface CommandAckWire {
-    suspend fun readCommand(commandId: String): Map<String, Any?>
+    /** Must contact the authenticated server; cached/optimistic SDK values are not evidence. */
+    suspend fun readServerCommand(commandId: String): Map<String, Any?>
     suspend fun update(updates: Map<String, Any?>)
 }
 
@@ -18,7 +19,7 @@ class DriverAcknowledgementProtocol(
 ) {
     private suspend fun status(id: String, type: String): String? {
         require(type == "START" || type == "STOP")
-        val command = wire.readCommand(id)
+        val command = wire.readServerCommand(id)
         check(command["commandId"] == id && command["type"] == type &&
             command["driverId"] == driverId && command["vehicleId"] == vehicleId) { "COMMAND_IDENTITY_MISMATCH" }
         val value = command["status"] as? String

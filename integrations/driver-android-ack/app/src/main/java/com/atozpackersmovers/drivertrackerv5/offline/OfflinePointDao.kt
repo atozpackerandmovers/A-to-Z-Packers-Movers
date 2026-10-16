@@ -64,6 +64,8 @@ class OfflineQueueRepository(private val dao: OfflinePointDao) {
 
 @Dao
 interface TripSessionDao {
+    @Query("SELECT * FROM trip_sessions WHERE lastAppliedCommandId = :commandId AND status = 'COMPLETED' LIMIT 1")
+    suspend fun completedByCommand(commandId: String): TripSessionEntity?
     @Query("SELECT * FROM trip_sessions WHERE status IN ('STARTING','RUNNING') ORDER BY startedAtMs DESC LIMIT 1")
     suspend fun active(): TripSessionEntity?
     @Query("SELECT * FROM trip_sessions WHERE tripId = :tripId LIMIT 1") suspend fun find(tripId: String): TripSessionEntity?
