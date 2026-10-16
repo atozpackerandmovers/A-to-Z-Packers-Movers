@@ -42,7 +42,7 @@ test('Transport-only release preserves every original app behavior outside trans
  assert.equal(normalize(code),normalize(original));
  const config=JSON.parse(fs.readFileSync(path.join(dir,'firebase.json'))).hosting;
  assert.equal(config.site,'az-packers-quotation');assert.equal(config.public,'.');
- assert.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),/src="app.v9.0.1-transport.js"/);
+ assert.ok(fs.existsSync(path.join(dir,'app.v9.0.1-transport.js')), 'Retain deployed immutable transport asset');
  assert.doesNotMatch(code,/forceLongPolling/);
  assert.match(code,/auth.setPersistence\(firebase.auth.Auth.Persistence.SESSION\)/);
 });

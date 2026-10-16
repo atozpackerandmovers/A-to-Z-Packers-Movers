@@ -63,6 +63,15 @@
         ]
       },
       {
+        "source": "/app.v9.0.2-status-staging.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
         "source": "/styles.v9.0.0.css",
         "headers": [
           {

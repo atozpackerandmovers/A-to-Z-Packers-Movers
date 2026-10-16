@@ -1,0 +1,134 @@
+diff --git a/integrations/gps-admin-transport-only/app.v9.0.1-transport.js b/integrations/gps-admin-transport-only/app.v9.0.2-status-staging.js
+index 48547f5..d617223 100644
+--- a/integrations/gps-admin-transport-only/app.v9.0.1-transport.js
++++ b/integrations/gps-admin-transport-only/app.v9.0.2-status-staging.js
+@@ -38 +38 @@ const DRIVERS = Object.freeze([
+-const BUILD_VERSION = "2026-10-16-production-websocket-only-v9.0.1";
++const BUILD_VERSION = "2026-10-16-status-read-errors-staging-v9.0.2";
+@@ -62,0 +63,3 @@ const fleetLive = {};
++const dataReadErrors = {};
++const HISTORY_UNAVAILABLE = "History unavailable under current permissions; trip-list loading is suspended. No trip records were changed.";
++const LIVE_FRESHNESS_MS = 120000;
+@@ -109 +112 @@ const km = (meters) => `${(number(meters) / 1000).toFixed(2)} km`;
+-const listen = (path, callback, errorCallback = setDisconnected) => {
++const listen = (path, callback, onUnavailable = () => {}) => {
+@@ -110,0 +114 @@ const listen = (path, callback, errorCallback = setDisconnected) => {
++  const generation = sessionGeneration;
+@@ -112,2 +116,14 @@ const listen = (path, callback, errorCallback = setDisconnected) => {
+-  ref.on("value", callback, errorCallback);
+-  refs.push(() => ref.off("value", callback));
++  const onValue = (snapshot) => {
++    if (generation !== sessionGeneration) return;
++    delete dataReadErrors[path];
++    renderDataReadErrors();
++    callback(snapshot);
++  };
++  const onError = (error) => {
++    if (generation !== sessionGeneration) return;
++    dataReadErrors[path] = firebaseErrorLabel(error);
++    renderDataReadErrors();
++    onUnavailable();
++  };
++  ref.on("value", onValue, onError);
++  refs.push(() => ref.off("value", onValue));
+@@ -172,3 +188,5 @@ function setConnected(ok, message) {
+-function setDisconnected(error) {
+-  console.error(error);
+-  setConnected(false, error?.code === "PERMISSION_DENIED" ? "Access denied" : "Connection error");
++function renderDataReadErrors() {
++  const errors = Object.entries(dataReadErrors);
++  $("dataReadStatus").textContent = errors.length
++    ? errors.map(([path, error]) => `Data panel unavailable: /${CONFIG.root}/${path} ΓÇö ${error}`).join(" | ")
++    : "No live-data or acknowledgement read errors reported. Approval reads are listed separately below.";
+@@ -268 +286 @@ async function readApprovalFlag(key, expectedPath, generation, runId) {
+-      setConnected(false, `Firebase read failed: ${firebaseErrorLabel(error)}`);
++      // A rejected data read does not mean the RTDB transport is disconnected.
+@@ -277,0 +296,8 @@ async function readApprovalFlag(key, expectedPath, generation, runId) {
++function renderLiveStatus(live = {}) {
++  const status = String(first(live, ["status", "trip_status"], "OFFLINE")).toUpperCase();
++  const freshness = liveFreshness(live);
++  const unavailable = dataReadErrors[`drivers/${selectedDriver.driverId}/live`];
++  $("liveFreshness").textContent = unavailable ? "Live panel unavailable; see the read error above." : freshness.label;
++  $("tripStatus").textContent = unavailable ? "UNAVAILABLE" : freshness.fresh ? status : `STALE ΓÇö last reported ${status}`;
++  $("gpsStatus").textContent = unavailable ? "Unavailable" : freshness.fresh ? (["RUNNING", "STARTING"].includes(status) ? "Running" : status === "OFFLINE" ? "Offline" : "Stopped") : "Stale / current GPS unverified";
++}
+@@ -327 +353 @@ function renderLive(live = {}) {
+-  $("tripStatus").textContent = status;
++  renderLiveStatus(live);
+@@ -335 +360,0 @@ function renderLive(live = {}) {
+-  $("gpsStatus").textContent = ["RUNNING", "STARTING"].includes(status) ? "Running" : status === "OFFLINE" ? "Offline" : "Stopped";
+@@ -361,6 +386,6 @@ function renderTrips() {
+-  const list = normalizedTrips(trips);
+-  $("tripRows").innerHTML = list.length ? list.map((trip) => `<tr><td>${esc(trip.id)}</td><td>${esc(first(trip, ["status", "trip_status"], "ΓÇö"))}</td><td>${date(first(trip, ["startedAtMs", "started_at_ms"]))}</td><td>${date(first(trip, ["stoppedAtMs", "stopped_at_ms"]))}</td><td>${km(first(trip, ["distanceMeters", "estimated_total_m", "gps_tracked_distance_m"]))}</td></tr>`).join("") : emptyRow("No trip history is available.");
+-  const current = $("routeTripSelect").value;
+-  $("routeTripSelect").innerHTML = `<option value="">Select trip</option>${list.map((trip) => `<option value="${esc(trip.id)}">${esc(trip.id)}</option>`).join("")}`;
+-  if (list.some((trip) => trip.id === current)) $("routeTripSelect").value = current;
+-  renderRoute($("routeTripSelect").value);
++  // Parent-level trip enumeration is not granted by the current deployed rules.
++  $("tripRows").innerHTML = emptyRow(HISTORY_UNAVAILABLE);
++  $("routeTripSelect").innerHTML = '<option value="">History unavailable</option>';
++  $("routeTripSelect").disabled = true;
++  renderRoute("");
++  return;
+@@ -374 +399 @@ function renderRoute(tripId) {
+-  $("routeTripLabel").textContent = tripId || "No trip selected";
++  $("routeTripLabel").textContent = tripId || "History unavailable under current permissions";
+@@ -379 +404 @@ function renderRoute(tripId) {
+-  }).join("") : emptyRow(tripId ? "No route points are stored for this trip." : "Select a trip to view route history.");
++  }).join("") : emptyRow(tripId ? "No route points are stored for this trip." : HISTORY_UNAVAILABLE);
+@@ -397,0 +423,2 @@ function clearRenderedFirebaseData() {
++  Object.keys(dataReadErrors).forEach((key) => delete dataReadErrors[key]);
++  renderDataReadErrors();
+@@ -408,0 +436,10 @@ function esc(value) {
++function liveFreshness(live = {}) {
++  // Prefer the sync timestamp shown on the card; fall back only if absent.
++  const timestamp = Number(first(live, ["lastSyncAt", "lastSyncAtMs", "last_sync_ms", "lastUpdateAt", "lastUpdateAtMs", "last_update_ms", "updatedAtMs", "timestampMs"], 0));
++  if (!Number.isFinite(timestamp) || timestamp <= 0) return { fresh: false, label: "Snapshot age unknown ΓÇö missing or invalid timestamp" };
++  const age = Date.now() - timestamp;
++  if (age < 0) return { fresh: false, label: "Snapshot age unknown ΓÇö device timestamp is in the future" };
++  const seconds = Math.floor(age / 1000);
++  const elapsed = seconds < 60 ? `${seconds}s` : seconds < 3600 ? `${Math.floor(seconds / 60)}m` : seconds < 86400 ? `${Math.floor(seconds / 3600)}h ${Math.floor(seconds % 3600 / 60)}m` : `${Math.floor(seconds / 86400)}d ${Math.floor(seconds % 86400 / 3600)}h`;
++  return { fresh: age <= LIVE_FRESHNESS_MS, label: `Snapshot age: ${elapsed} ago${age > LIVE_FRESHNESS_MS ? " ΓÇö historical data; current GPS unverified" : ""}` };
++}
+@@ -411,0 +449 @@ function fleetStatus(live = {}) {
++  if (!liveFreshness(live).fresh) return "STALE";
+@@ -422 +460,5 @@ function renderFleetCards() {
+-    const status = fleetStatus(live);
++    const unavailable = dataReadErrors[`drivers/${driver.driverId}/live`];
++    const status = unavailable ? "UNAVAILABLE" : fleetStatus(live);
++    const reportedStatus = String(first(live, ["status", "tripStatus", "trip_status"], "UNKNOWN")).toUpperCase();
++    const statusLabel = status === "STALE" ? `STALE ΓÇö last reported ${reportedStatus}` : status;
++    const freshness = liveFreshness(live);
+@@ -437 +479 @@ function renderFleetCards() {
+-        <span class="fleet-state ${status.toLowerCase()}">${esc(status)}</span>
++        <span class="fleet-state ${status.toLowerCase()}">${esc(statusLabel)}</span>
+@@ -441 +483 @@ function renderFleetCards() {
+-        <div><span>GPS accuracy</span><strong>${accuracy == null ? "ΓÇö" : `${number(accuracy).toFixed(1)} m`}</strong></div>
++        <div><span>Last reported GPS accuracy</span><strong>${accuracy == null ? "ΓÇö" : `${number(accuracy).toFixed(1)} m`}</strong></div>
+@@ -444 +486 @@ function renderFleetCards() {
+-        <div><span>Active trip</span><strong>${esc(tripId)}</strong></div>
++        <div><span>Last reported trip</span><strong>${esc(tripId)}</strong></div>
+@@ -446,2 +488,2 @@ function renderFleetCards() {
+-        <div><span>Last sync</span><strong>${date(lastSync)}</strong></div>
+-        <div class="fleet-location"><span>Current location</span><strong>${esc(location)}</strong></div>
++        <div><span>Last sync</span><strong>${date(lastSync)}</strong><small>${esc(unavailable ? "Live panel unavailable; see read error above." : freshness.label)}</small></div>
++        <div class="fleet-location"><span>Last reported location</span><strong>${esc(location)}</strong></div>
+@@ -484,0 +527,4 @@ function startLiveData() {
++    }, () => {
++      delete fleetLive[driver.driverId];
++      renderFleetCards();
++      if (driver.driverId === selectedDriver.driverId) renderLive({});
+@@ -487,2 +533,4 @@ function startLiveData() {
+-  listen(`drivers/${selectedDriver.driverId}/trips`, (snap) => { trips = snap.val() || {}; renderTrips(); });
+-  listen(`drivers/${selectedDriver.driverId}/acknowledgements`, (snap) => renderAcks(snap.val() || {}));
++  renderTrips(); // No parent trip-list read under current permissions.
++  listen(`drivers/${selectedDriver.driverId}/acknowledgements`, (snap) => renderAcks(snap.val() || {}), () => {
++    $("ackRows").innerHTML = emptyRow("Acknowledgements unavailable; see the read error above.");
++  });
+@@ -760,0 +809,6 @@ document.querySelectorAll("nav button").forEach((button) => button.addEventListe
++// Age displayed snapshots even when the device sends no new event. No network writes.
++window.setInterval(() => {
++  if (document.visibilityState !== "visible" || auth?.currentUser?.uid !== CONFIG.adminUid) return;
++  renderFleetCards();
++  renderLiveStatus(fleetLive[selectedDriver.driverId] || {});
++}, 15000);

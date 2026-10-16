@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071523">
   <title>A TO Z GPS — Production Admin</title>
-  <meta name="application-version" content="2026-10-16-production-websocket-only-v9.0.1">
+  <meta name="application-version" content="2026-10-16-status-read-errors-staging-v9.0.2">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://www.gstatic.com">
-  <link rel="stylesheet" href="styles.v9.0.0.css" data-dashboard-build="2026-10-16-production-websocket-only-v9.0.1">
+  <link rel="stylesheet" href="styles.v9.0.0.css" data-dashboard-build="2026-10-16-status-read-errors-staging-v9.0.2">
 </head>
 <body>
   <div id="loginScreen" class="login-screen">
@@ -53,7 +53,7 @@
       </div>
       <div class="lock-card">
         <strong>Firebase diagnostics</strong>
-        <span>Build: <b id="buildVersion">v9.0.1</b></span>
+        <span>Build: <b id="buildVersion">v9.0.2</b></span>
         <span>Transport: <b id="transportMode">Initializing</b></span>
         <span>Project: <b id="projectId">—</b></span>
         <span>Database: <b id="databaseUrl">—</b></span>
@@ -73,6 +73,8 @@
       </header>
 
       <div id="pilotBanner" class="pilot-banner">Checking Production Pilot approval…</div>
+
+      <div class="diagnostic-card" role="status"><code id="dataReadStatus">Waiting for data reads.</code></div>
 
       <details class="diagnostic-card" open>
         <summary>Firebase approval diagnostics</summary>
@@ -108,23 +110,24 @@
       </section>
 
       <section id="overviewView" class="view hidden">
+        <p id="liveFreshness" role="status">Snapshot age unknown</p>
         <div class="identity-grid">
           <article><span>Driver</span><strong id="driverName">Mahesh</strong><small id="driverIdLabel">DRIVER_MAHESH_001</small></article>
           <article><span>Vehicle</span><strong id="vehicleNumber">OD-33-AR-8855</strong><small id="vehicleIdLabel">VEHICLE_OD33AR8855</small></article>
           <article><span>Trip status</span><strong id="tripStatus">OFFLINE</strong><small id="tripId">No active trip</small></article>
-          <article><span>Current distance</span><strong id="distance">0.00 km</strong><small>Driver-reported distance</small></article>
+          <article><span>Last reported distance</span><strong id="distance">0.00 km</strong><small>Driver-reported distance</small></article>
         </div>
 
         <div class="content-grid">
           <article class="map-card">
-            <div class="card-head"><div><span>Current GPS location</span><strong id="coordinates">No GPS fix</strong></div><a id="openMap" class="map-link disabled" target="_blank" rel="noopener">Open map</a></div>
+            <div class="card-head"><div><span>Last reported GPS location</span><strong id="coordinates">No GPS fix</strong></div><a id="openMap" class="map-link disabled" target="_blank" rel="noopener">Open map</a></div>
             <div id="mapPlaceholder" class="map-placeholder"><div class="pin">●</div><p>Waiting for a valid GPS location</p></div>
-            <iframe id="mapFrame" class="hidden" title="Current GPS map" loading="lazy" referrerpolicy="no-referrer"></iframe>
-            <div class="address"><span>Current address</span><strong id="address">Waiting for location data</strong></div>
+            <iframe id="mapFrame" class="hidden" title="Last reported GPS map" loading="lazy" referrerpolicy="no-referrer"></iframe>
+            <div class="address"><span>Last reported address</span><strong id="address">Waiting for location data</strong></div>
           </article>
 
           <article class="metrics-card">
-            <div><span>GPS accuracy</span><strong id="accuracy">—</strong></div>
+            <div><span>Last reported GPS accuracy</span><strong id="accuracy">—</strong></div>
             <div><span>Speed</span><strong id="speed">—</strong></div>
             <div><span>Pending queue</span><strong id="queue">0</strong></div>
             <div><span>Last sync</span><strong id="lastSync">Never</strong></div>
@@ -159,6 +162,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="app.v9.0.1-transport.js" data-dashboard-build="2026-10-16-production-websocket-only-v9.0.1"></script>
+  <script src="app.v9.0.2-status-staging.js" data-dashboard-build="2026-10-16-status-read-errors-staging-v9.0.2"></script>
 </body>
 </html>
