@@ -42,7 +42,7 @@ class AppGraph(application: Application) {
     val database = TrackerDatabase.get(application)
     val authSessionProvider = AuthSessionProvider(application)
     val deviceIdentityProvider = DeviceIdentityProvider(application)
-    val firebaseRepository: FirebaseRepository = ProductionFirebaseRepository()
+    val firebaseRepository: FirebaseRepository = ProductionFirebaseRepository(database.tripSessionDao())
     val offlineQueue = OfflineQueueRepository(database.offlinePointDao())
     val tripStore = TripSessionStore(database.tripSessionDao())
     val diagnostics = TrackerDiagnostics()

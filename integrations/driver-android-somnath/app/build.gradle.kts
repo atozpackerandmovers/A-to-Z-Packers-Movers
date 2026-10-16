@@ -2,7 +2,16 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
+}
+
+// Local JVM/compile checks need no Firebase configuration and must not package an installable build.
+if (!providers.gradleProperty("isolatedProtocolTest").isPresent) apply(plugin = "com.google.gms.google-services")
+else gradle.taskGraph.whenReady {
+    check(allTasks.none { it.name.startsWith("install", true) || it.name.startsWith("validateSigning", true) ||
+        it.name.matches(Regex("(?i)(assemble|package|bundle)(Debug|Release)(AndroidTest)?")) }) {
+        "isolatedProtocolTest permits compile/unit tests only; packaging and installation are blocked"
+    }
 }
 
 android {
@@ -14,8 +23,8 @@ android {
         applicationId = "com.atozpackersmovers.drivertracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 50015
-        versionName = "5.0.15-production-somnath"
+        versionCode = 50016
+        versionName = "5.0.16-somnath-ack-recovery"
         buildConfigField("boolean", "PRODUCTION_FIREBASE_ENABLED", "true")
         buildConfigField("boolean", "PILOT_ENABLED", "true")
         buildConfigField("boolean", "REMOTE_RESET_ENABLED", "false")

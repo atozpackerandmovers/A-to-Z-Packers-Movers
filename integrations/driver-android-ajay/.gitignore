@@ -7,3 +7,8 @@ captures/
 app/google-services.json
 *.jks
 *.keystore
+
+.kotlin/
+app/google-services.json
+*.jks
+*.keystore

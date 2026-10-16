@@ -6,6 +6,7 @@ import com.atozpackersmovers.drivertrackerv5.command.CommandSource
 import com.atozpackersmovers.drivertrackerv5.command.TripCommand
 import com.atozpackersmovers.drivertrackerv5.command.TripCommandParser
 import com.atozpackersmovers.drivertrackerv5.offline.OfflinePointEntity
+import com.atozpackersmovers.drivertrackerv5.offline.TripSessionDao
 import com.atozpackersmovers.drivertrackerv5.trip.DriverAssignment
 import com.atozpackersmovers.drivertrackerv5.trip.TripSessionEntity
 import com.google.firebase.auth.FirebaseAuth
@@ -18,8 +19,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import org.json.JSONObject
 
-class ProductionFirebaseRepository : FirebaseRepository {
+class ProductionFirebaseRepository(private val tripSessions: TripSessionDao) : FirebaseRepository {
     override val modeName: String = "PRODUCTION_PILOT"
     private val auth = FirebaseAuth.getInstance()
     private val root = FirebaseDatabase.getInstance(BuildConfig.DATABASE_URL).reference.child(BuildConfig.DATABASE_ROOT)
@@ -54,47 +56,42 @@ class ProductionFirebaseRepository : FirebaseRepository {
         awaitClose { reference.removeEventListener(listener) }
     }
 
+    private fun acknowledgementProtocol(assignment: DriverAssignment) = DriverAcknowledgementProtocol(
+        object : CommandAckWire {
+            override suspend fun readServerCommand(commandId: String): Map<String, Any?> {
+                requirePilot(assignment)
+                val user = checkNotNull(auth.currentUser)
+                val token = checkNotNull(user.getIdToken(false).await().token) { "AUTH_TOKEN_UNAVAILABLE" }
+                requirePilot(assignment)
+                check(auth.currentUser === user) { "AUTH_SESSION_CHANGED" }
+                val body = ServerCommandReader().read(BuildConfig.DATABASE_URL, BuildConfig.DATABASE_ROOT,
+                    BuildConfig.DRIVER_ID, commandId, token)
+                requirePilot(assignment)
+                val json = JSONObject(body)
+                return json.keys().asSequence().associateWith { key -> json.opt(key).takeUnless { it == JSONObject.NULL } }
+            }
+            override suspend fun update(updates: Map<String, Any?>) {
+                requirePilot(assignment)
+                driverRoot.updateChildren(updates).await()
+            }
+        }, BuildConfig.DRIVER_ID, BuildConfig.DRIVER_UID, BuildConfig.VEHICLE_ID, ServerValue.TIMESTAMP,
+    )
+
     override suspend fun markCommandReceived(assignment: DriverAssignment, command: TripCommand) {
         requirePilot(assignment)
-        check(command.type.name == "START" || command.type.name == "STOP") { "UNSUPPORTED_COMMAND_TYPE" }
-        val acknowledgement = mapOf(
-            "commandId" to command.commandId,
-            "commandType" to command.type.name,
-            "status" to "RECEIVED",
-            "receivedAt" to ServerValue.TIMESTAMP,
-            "driverId" to BuildConfig.DRIVER_ID,
-            "driverUid" to BuildConfig.DRIVER_UID,
-            "vehicleId" to BuildConfig.VEHICLE_ID,
-            "errorCode" to "",
-            "errorMessage" to "",
-        )
-        driverRoot.updateChildren(
-            mapOf(
-                "acknowledgements/${command.commandId}" to acknowledgement,
-                "commands/${command.commandId}/status" to "RECEIVED",
-            ),
-        ).await()
+        acknowledgementProtocol(assignment).received(command.commandId, command.type.name)
     }
 
     override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
         requirePilot(assignment)
-        val commandId = acknowledgement.appliedTripCommandId
-        val executed = acknowledgement.tripCommandApplyStatus == "APPLIED"
-        val status = if (executed) "EXECUTED" else "FAILED"
-        val updates = mutableMapOf<String, Any?>(
-            "acknowledgements/$commandId/status" to status,
-            "acknowledgements/$commandId/${if (executed) "executedAt" else "failedAt"}" to ServerValue.TIMESTAMP,
-            "acknowledgements/$commandId/errorCode" to (acknowledgement.tripCommandErrorCode ?: ""),
-            "acknowledgements/$commandId/errorMessage" to (acknowledgement.tripCommandErrorReason ?: ""),
-            "commands/$commandId/status" to status,
-        )
-        if (executed && acknowledgement.appliedTripCommandType == "START") {
-            updates["acknowledgements/$commandId/tripId"] = acknowledgement.tripCommandResultTripId
-        }
-        if (executed && acknowledgement.appliedTripCommandType == "STOP") {
-            updates["acknowledgements/$commandId/stoppedTripId"] = acknowledgement.tripCommandResultTripId
-        }
-        driverRoot.updateChildren(updates).await()
+        acknowledgementProtocol(assignment).deliver(acknowledgement)
+    }
+
+    override suspend fun deliverTripSummary(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
+        requirePilot(assignment)
+        CommandTripSummaryDelivery(tripSessions::find, tripSessions::completedByCommand) { session ->
+            uploadTripSummary(assignment, session)
+        }.deliver(assignment, acknowledgement)
     }
 
     override suspend fun uploadLive(assignment: DriverAssignment, session: TripSessionEntity, point: OfflinePointEntity) {

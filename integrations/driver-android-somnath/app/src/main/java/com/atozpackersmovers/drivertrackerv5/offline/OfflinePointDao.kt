@@ -64,6 +64,8 @@ class OfflineQueueRepository(private val dao: OfflinePointDao) {
 
 @Dao
 interface TripSessionDao {
+    @Query("SELECT * FROM trip_sessions WHERE lastAppliedCommandId = :commandId AND status = 'COMPLETED' LIMIT 1")
+    suspend fun completedByCommand(commandId: String): TripSessionEntity?
     @Query("SELECT * FROM trip_sessions WHERE status IN ('STARTING','RUNNING') ORDER BY startedAtMs DESC LIMIT 1")
     suspend fun active(): TripSessionEntity?
     @Query("SELECT * FROM trip_sessions WHERE tripId = :tripId LIMIT 1") suspend fun find(tripId: String): TripSessionEntity?
@@ -73,6 +75,8 @@ interface TripSessionDao {
 
 @Dao
 interface CommandRecordDao {
+    @Query("SELECT * FROM command_records WHERE driverId = :driverId AND vehicleId = :vehicleId AND processingStatus LIKE 'ACK_PENDING_%' ORDER BY receivedAtMs LIMIT 100")
+    suspend fun pendingAcknowledgements(driverId: String, vehicleId: String): List<CommandRecordEntity>
     @Query("SELECT * FROM command_records WHERE commandId = :commandId LIMIT 1") suspend fun find(commandId: String): CommandRecordEntity?
     @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun insertIfAbsent(record: CommandRecordEntity): Long
     @Update suspend fun update(record: CommandRecordEntity)
