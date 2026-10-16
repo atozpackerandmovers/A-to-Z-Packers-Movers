@@ -1,0 +1,81 @@
+[
+  {
+    "driver": "ajay",
+    "tests": 60,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.AcknowledgementProtocolTest",
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.CoreUnitTest",
+        "tests": 29,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.ServerCommandReaderTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.ui.TrackingStatusFormatterTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  {
+    "driver": "somnath",
+    "tests": 67,
+    "failures": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.AcknowledgementProtocolTest",
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.CoreUnitTest",
+        "tests": 32,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.PostRecoveryDistanceAccumulatorTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.ServerCommandReaderTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.atozpackersmovers.drivertrackerv5.ui.TrackingStatusFormatterTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  }
+]

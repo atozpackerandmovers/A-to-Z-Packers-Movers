@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.AtoZDriverTrackerV5" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#B91C1C</item>
+    </style>
+</resources>

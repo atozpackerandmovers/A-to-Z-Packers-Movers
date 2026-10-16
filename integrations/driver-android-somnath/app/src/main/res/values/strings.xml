@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">A TO Z Driver - Somnath</string>
+    <string name="tracking_channel">Vehicle GPS tracking</string>
+    <string name="tracking_notification">Vehicle GPS tracking active</string>
+</resources>
