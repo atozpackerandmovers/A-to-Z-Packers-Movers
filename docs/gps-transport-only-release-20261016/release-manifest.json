@@ -1,0 +1,31 @@
+{
+  "sourceVersion": "projects/az-packers-quotation/sites/az-packers-quotation/versions/31f2a8d04f60d777",
+  "backupVersion": "sites/az-packers-quotation/versions/4d17866f1dd7501f",
+  "targetProject": "az-packers-quotation",
+  "targetSite": "az-packers-quotation",
+  "targetChannel": "live",
+  "files": {
+    "/__/firebase/init.js": "87bb7ffaf6aaf23f5481d56cc093cda9f55d67d258d2606d8218bddfb555274b",
+    "/__/firebase/init.json": "20a95c3007d4f2ae333e4dba5a9c27750ce5d2210fe836b1a01acf76193a2b6c",
+    "/app.js": "b8e5de843595aa5f68e6cc0300f21e1520c35f93213bab0f8649b0a940696efd",
+    "/app.v9.0.0.js": "1c08e1ccec6dd72ec87f04e913d5cee54358f617ab4bcc246f3ec4025152a417",
+    "/index.html": "c5600049ff0d0948db62d434dedff3158c8ac635c234a928308e9d5b24dd7e20",
+    "/styles.css": "ac3b2e4e4f391399ffcea39e31a2805d929257f58af051f6e3732ccc723041ca",
+    "/styles.v9.0.0.css": "ac3b2e4e4f391399ffcea39e31a2805d929257f58af051f6e3732ccc723041ca",
+    "/app.v9.0.1-transport.js": "936fbd00e9f769d4d17d64df9d19c3d8a93151f4c7894b5d4faed5eb4d3bd52d"
+  },
+  "changedFiles": [
+    {
+      "path": "/index.html",
+      "bytes": 9532,
+      "sha256": "477f90be2fb485aaf5cbf3a15697687e02bf0917fd799fcca89aaf9ed9414436",
+      "hostingGzipHash": "c5600049ff0d0948db62d434dedff3158c8ac635c234a928308e9d5b24dd7e20"
+    },
+    {
+      "path": "/app.v9.0.1-transport.js",
+      "bytes": 38906,
+      "sha256": "4284bb290911c25eec9f6dc2002ca5ef647c126782543290e4522be78c8bb2fd",
+      "hostingGzipHash": "936fbd00e9f769d4d17d64df9d19c3d8a93151f4c7894b5d4faed5eb4d3bd52d"
+    }
+  ]
+}
