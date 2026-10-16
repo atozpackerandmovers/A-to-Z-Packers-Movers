@@ -54,14 +54,28 @@ class ProductionFirebaseRepository : FirebaseRepository {
         awaitClose { reference.removeEventListener(listener) }
     }
 
+    private fun acknowledgementProtocol(assignment: DriverAssignment) = DriverAcknowledgementProtocol(
+        object : CommandAckWire {
+            override suspend fun readCommand(commandId: String): Map<String, Any?> {
+                requirePilot(assignment)
+                val snapshot = driverRoot.child("commands").child(commandId).get().await()
+                return snapshot.children.associate { it.key.orEmpty() to it.value }
+            }
+            override suspend fun update(updates: Map<String, Any?>) {
+                requirePilot(assignment)
+                driverRoot.updateChildren(updates).await()
+            }
+        }, BuildConfig.DRIVER_ID, BuildConfig.DRIVER_UID, BuildConfig.VEHICLE_ID, ServerValue.TIMESTAMP,
+    )
+
+    override suspend fun markCommandReceived(assignment: DriverAssignment, command: TripCommand) {
+        requirePilot(assignment)
+        acknowledgementProtocol(assignment).received(command.commandId, command.type.name)
+    }
+
     override suspend fun acknowledge(assignment: DriverAssignment, acknowledgement: CommandAcknowledgement) {
         requirePilot(assignment)
-        val values = acknowledgement.asCompatibilityFields().toMutableMap()
-        values["commandId"] = acknowledgement.appliedTripCommandId
-        values["driverId"] = BuildConfig.DRIVER_ID
-        values["vehicleId"] = BuildConfig.VEHICLE_ID
-        values["serverTimestamp"] = ServerValue.TIMESTAMP
-        driverRoot.child("acknowledgements").child(acknowledgement.appliedTripCommandId).setValue(values).await()
+        acknowledgementProtocol(assignment).deliver(acknowledgement)
     }
 
     override suspend fun uploadLive(assignment: DriverAssignment, session: TripSessionEntity, point: OfflinePointEntity) {

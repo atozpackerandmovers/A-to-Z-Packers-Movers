@@ -73,6 +73,8 @@ interface TripSessionDao {
 
 @Dao
 interface CommandRecordDao {
+    @Query("SELECT * FROM command_records WHERE driverId = :driverId AND vehicleId = :vehicleId AND processingStatus LIKE 'ACK_PENDING_%' ORDER BY receivedAtMs LIMIT 100")
+    suspend fun pendingAcknowledgements(driverId: String, vehicleId: String): List<CommandRecordEntity>
     @Query("SELECT * FROM command_records WHERE commandId = :commandId LIMIT 1") suspend fun find(commandId: String): CommandRecordEntity?
     @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun insertIfAbsent(record: CommandRecordEntity): Long
     @Update suspend fun update(record: CommandRecordEntity)

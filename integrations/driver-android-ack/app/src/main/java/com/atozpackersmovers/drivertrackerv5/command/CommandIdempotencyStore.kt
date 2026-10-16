@@ -20,11 +20,11 @@ data class CommandRecordEntity(
     val acknowledgementJson: String? = null,
 )
 
-class CommandIdempotencyStore(private val dao: CommandRecordDao) {
-    suspend fun previous(commandId: String): CommandRecordEntity? = dao.find(commandId)
-    suspend fun latest(driverId: String, vehicleId: String): CommandRecordEntity? = dao.latest(driverId, vehicleId)
+class CommandIdempotencyStore(private val dao: CommandRecordDao) : CommandRecordStore {
+    override suspend fun previous(commandId: String): CommandRecordEntity? = dao.find(commandId)
+    override suspend fun latest(driverId: String, vehicleId: String): CommandRecordEntity? = dao.latest(driverId, vehicleId)
 
-    suspend fun begin(command: TripCommand, nowMs: Long): Boolean = dao.insertIfAbsent(
+    override suspend fun begin(command: TripCommand, nowMs: Long): Boolean = dao.insertIfAbsent(
         CommandRecordEntity(
             commandId = command.commandId,
             commandType = command.type.name,
@@ -36,5 +36,6 @@ class CommandIdempotencyStore(private val dao: CommandRecordDao) {
         ),
     ) != -1L
 
-    suspend fun finish(record: CommandRecordEntity) = dao.update(record)
+    override suspend fun finish(record: CommandRecordEntity) = dao.update(record)
+    override suspend fun pending(driverId: String, vehicleId: String): List<CommandRecordEntity> = dao.pendingAcknowledgements(driverId, vehicleId)
 }
