@@ -6,7 +6,7 @@ This candidate repairs the Mahesh Android 5.0.9 acknowledgement protocol. It doe
 
 - Branch: `staging/driver-ack-protocol-20261016`.
 - App source: `integrations/driver-android-ack`.
-- Candidate version: `5.0.14-staging-ack-protocol`, code `50014` (source candidate; no signed APK).
+- Candidate version: `5.0.14-staging-ack-protocol`, code `50014` (signed owner-review artifact built; not installed).
 - Package: `com.atozpackersmovers.drivertracker`.
 - Original source: local `C:/AndroidProjects/production-driver-source/production-driver-android`, reporting `5.0.9-production-pilot`, code `50009`.
 - Unmodified, sanitized source import: `d2387601ae9d1bcc1050d0094706590c9fbe710c` on repository base `c5d3cb509bd376eea4f0469b4944d519d8438742`.
@@ -59,6 +59,10 @@ node tests/driver-ack-preservation.cjs
 ```
 
 ## Update and signing verification plan — approval required before execution
+
+The owner subsequently authorized artifact building/delivery with the existing compatible signer, while installation/deployment remain unapproved. The parent independently verified the uploaded original `app-debug(9).apk` through Library: package `com.atozpackersmovers.drivertracker`, `5.0.9-production-pilot` / 50009, APK SHA-256 `010741dd6de1c0030444d661e62fb0c619f43d9b7fadfee35434ba7807362099`, valid APK v2 signature and signed-content digest. Its certificate matches the existing local signer. This is supplied-artifact evidence, not installed-phone byte identity.
+
+The Mahesh artifact was built from `9a4089b3a3408fdc187ff62b5004542834bb7c03` using the existing client configuration and signer. APK SHA-256: `0a4f772828f19484c047b8d0451a65144b8731cb4f67b568a829a93024df894f`; 6,056,857 bytes. The SDK verifies its single APK v2 signer, and all 501 ZIP entries pass CRC/size checks. Driver/vehicle markers match Mahesh. See `artifacts.json` and `artifact-build.log`. No key was created/exported and no APK was executed.
 
 1. Preserve the exact current working signed APK/version and its SHA-256 and signing certificate before any approved installation. No phone APK backup was taken in this task. Android `allowBackup=false` is unchanged; do not assume an APK backup includes private Room/session data or promise a generic data backup.
 2. Establish the installed package/version and certificate using an already-authorized device inspection channel or a verified installed APK artifact. Do not enable USB debugging, create credentials, alter security settings, uninstall, clear app storage or infer installed signing identity from the source tree or a random local APK.
