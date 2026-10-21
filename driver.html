@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script src="gps-eta-view.js?v=20261021-timing1"></script>
+  <script src="gps-eta-view.js?v=20261021-stability1"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -1290,9 +1290,8 @@
       }).sort((a,b)=>azpEtaRecordTime(b)-azpEtaRecordTime(a))[0]||null;
     }
     function azpEtaBoxId(j){return 'azp-eta-'+sid(azpEtaJobKey(j)+'_'+azpEtaAssignedDriver(j))}
-    function azpEtaContent(eta,state=''){
-      const failed=/error|failed|stale|retry/i.test(state);
-      return AzpEtaView.html(eta,{reason:!eta||failed?state:''});
+    function azpEtaContent(eta,state='',stopped=false){
+      return AzpEtaView.html(eta,{stopped,reason:state==='Synced with Execution Software'?'':state});
     }
     function azpEtaUnavailableReason(j){
       if(!azpEtaDriverOwnsJob(j))return 'ETA is available only for the assigned driver.';
@@ -1302,12 +1301,12 @@
       return '';
     }
     function azpDriverEtaHtml(j){
-      const reason=azpEtaUnavailableReason(j),record=reason?null:azpDriverEtaRecord(j);
-      return `<div id="${azpEtaBoxId(j)}">${azpEtaContent(record,reason)}</div>`;
+      const reason=azpEtaUnavailableReason(j),record=azpEtaDriverOwnsJob(j)?azpDriverEtaRecord(j):null;
+      return `<div id="${azpEtaBoxId(j)}">${azpEtaContent(record,reason,azpEtaStatusDone(azpEtaJobStatus(j)))}</div>`;
     }
     function azpEtaRender(j,eta,state=''){
       const box=document.getElementById(azpEtaBoxId(j));
-      if(box){box.innerHTML=azpEtaContent(eta,state);azpEtaSecondTick()}
+      if(box){const record=azpEtaDriverOwnsJob(j)?eta||azpDriverEtaRecord(j):null;box.innerHTML=azpEtaContent(record,state,azpEtaStatusDone(azpEtaJobStatus(j)));azpEtaSecondTick()}
     }
     function azpEtaDurationDigits(ms){if(!Number.isFinite(ms)||ms<=0)return'00:00:00';const t=Math.ceil(ms/1000),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return[h,m,s].map(v=>String(v).padStart(2,'0')).join(':')}
     function azpEtaSecondTick(){
@@ -1315,6 +1314,10 @@
       if(currentUser?.role==='Driver')myJobs().forEach(j=>{
         const reason=azpEtaUnavailableReason(j),box=document.getElementById(azpEtaBoxId(j));
         if(reason&&box)AzpEtaView.tick(box,Date.now(),reason);
+        else if(box){
+          let prior='';try{prior=JSON.parse(box.querySelector('[data-azp-eta-view]')?.dataset.etaSnapshot||'{}').reason||''}catch(_){}
+          if(prior.startsWith('Assigned GPS is unavailable, stale or not connected.'))AzpEtaView.tick(box,Date.now(),'');
+        }
       });
     }
     function azpEtaGpsTime(r){
@@ -1401,12 +1404,12 @@
         const jobKey=azpEtaJobKey(job),driver=azpEtaAssignedDriver(job),now=route.requestedAtMs;
         data={module:'eta',collection:'eta',eta_version:'Phase 2.4 Active Test Driver Fix',eta_route_method:'Existing Google Routes with exact GPS Plus Code',eta_status:'Live',eta_sync_status:'Synced',eta_job_status:azpEtaJobStatus(job),eta_job_id:jobKey,eta_source_job_document:String(job.id||''),eta_driver_id:point.driverId||'',eta_driver_uid:point.driverUid||prodAuth.currentUser?.uid||'',eta_driver_name:driver||currentUser.name,eta_vehicle_number:point.vehicle||job.vehicle_number||'',eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:route.currentLocation,eta_origin_plus_code:route.origin,eta_destination:route.destination,eta_remaining_distance_meters:route.distanceMeters,eta_remaining_distance_text:route.distanceText,eta_duration_seconds:route.durationSeconds,eta_duration_text:route.durationText,eta_arrival_iso:route.arrival.toISOString(),eta_arrival_day:route.arrivalDay,eta_arrival_time:route.arrivalTime,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_route_time_basis:'CLIENT_REQUEST_START',eta_route_requested_at_ms:now,eta_route_received_at_ms:Date.now(),eta_source:point.source,customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
       }catch(err){
-        const reason=String(err?.code||err?.message||'Unknown route error');const existing=azpDriverEtaRecord(job);azpEtaRender(job,existing,existing?`STALE • ${reason} • Automatic retry scheduled.`:`ETA error: ${reason} • Automatic retry scheduled.`);console.warn('Phase 2 ETA update skipped',reason);
+        const reason=AzpEtaView.errorReason(AzpEtaView.failure(err));const existing=azpDriverEtaRecord(job);azpEtaRender(job,existing,existing?`STALE • ${reason} • Automatic retry scheduled.`:`ETA error: ${reason} • Automatic retry scheduled.`);console.warn('Phase 2 ETA update skipped',reason);
         return false;
       }
       azpEtaRender(job,null,'Calculated. Saving ETA to Execution Software…');
       try{await setDoc(doc(db,MAIN,sid('ETA_'+data.eta_job_id+'_'+data.eta_driver_name)),data,{merge:true});if(!azpEtaRequestCurrent(job,requestState,point))return false;azpEtaRender(job,data,'Synced with Execution Software');return true;}
-      catch(err){const existing=azpDriverEtaRecord(job);azpEtaRender(job,existing,existing?'STALE • New ETA calculated but Execution sync failed. Retrying…':'ETA calculated but Execution sync failed. Retrying…');console.warn('Phase 2 ETA handoff will retry',err?.message||err);return false;}
+      catch(err){const existing=azpDriverEtaRecord(job);azpEtaRender(job,existing,'ETA error: '+AzpEtaView.errorReason(AzpEtaView.failure(err,'save')));console.warn('Phase 2 ETA handoff will retry',err?.message||err);return false;}
     }
     async function azpEtaPoll(){
       if(azpEtaBusy||Date.now()<azpEtaRetryAfter||!currentUser||currentUser.role!=='Driver')return;
