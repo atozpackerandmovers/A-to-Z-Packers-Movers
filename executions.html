@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script src="gps-eta-view.js?v=20261021-timing1"></script>
   <script src="/quotation-notes.js?v=4"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -2928,6 +2929,7 @@
       const candidates=allData.filter(r=>String(r.module||r.collection||'').toLowerCase()==='eta'&&azpEtaJobKey({job_id:r.eta_job_id})===jobKey);
       const scored=candidates.map(r=>{
         let score=0;const uid=String(r.eta_driver_uid||'').trim(),id=String(r.eta_driver_id||'').trim(),name=String(r.eta_driver_name||r.driver_name||'').trim(),vehicle=azpEtaVehicleKey(r.eta_vehicle_number||r.vehicle_number);
+        if((uid&&driverUids.length&&!driverUids.includes(uid))||(id&&driverIds.length&&!driverIds.includes(id)))return {r,score:0};
         if(uid&&driverUids.includes(uid))score=Math.max(score,100);
         if(id&&driverIds.includes(id))score=Math.max(score,80);
         if(name&&driverNames.some(v=>azpEtaNameMatches(name,v)))score=Math.max(score,60);
@@ -2937,14 +2939,11 @@
       return scored[0]?.r||null;
     }
     function azpExecutionEtaHtml(job){
-      const eta=azpExecutionEtaForJob(job),driver=azpEtaAssignedDriver(job);
-      if(!eta)return `<div class="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3"><p class="text-xs font-black uppercase text-blue-700">Live ETA • Assigned Driver Only</p><p class="text-xs font-bold text-slate-500 mt-1">Waiting for ${azpEsc(driver||'assigned driver')} live ETA…</p></div>`;
-      const arrival=[eta.eta_arrival_day,eta.eta_arrival_time||eta.eta_arrival_text].filter(Boolean).join(' • ')||'—';
-      const recordMs=azpEtaRecordMs(eta),gpsMs=Number(eta.eta_gps_timestamp_ms||0),freshMs=gpsMs||recordMs,jobStatus=String(job.status||job.job_status||job.planning_status||job.execution_status||job.work_status||'').trim().toLowerCase(),jobStopped=['completed','cancelled'].includes(jobStatus),stale=!freshMs||Date.now()-freshMs>60*1000;
-      const updated=recordMs?new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(new Date(recordMs)):'—';
-      const badge=jobStopped?{text:'STOPPED',cls:'bg-slate-200 text-slate-700'}:(stale?{text:'STALE',cls:'bg-amber-100 text-amber-800'}:{text:'AUTO',cls:'bg-emerald-100 text-emerald-800'}),notice=jobStopped?'Job Completed/Cancelled • ETA updates stopped':(stale?'Driver GPS/ETA has not updated for more than 60 seconds':'Live Firestore sync active');
-      const arrivalIso=String(eta.eta_arrival_iso||''),driverId=azpEtaKnownDriverId(job,eta);
-      return `<div data-azp-exec-eta-card data-driver-id="${azpEsc(driverId)}" data-route-ms="${recordMs}" data-fresh-ms="${freshMs}" data-job-stopped="${jobStopped?'1':'0'}" data-arrival-iso="${azpEsc(arrivalIso)}" class="mt-3 rounded-xl border ${stale&&!jobStopped?'border-amber-300 bg-amber-50':'border-blue-200 bg-blue-50'} p-3"><div class="flex items-center justify-between gap-2"><p class="text-xs font-black uppercase text-blue-700">Live ETA • ${azpEsc(driver)}</p><span data-azp-exec-eta-badge class="chip ${badge.cls}">${badge.text}</span></div><p data-azp-exec-eta-notice class="mt-2 text-[11px] font-black ${stale&&!jobStopped?'text-amber-800':'text-slate-600'}">${azpEsc(notice)}</p><div class="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2 text-sm"><div class="rounded-lg bg-white border p-2"><span class="block text-xs font-black text-slate-500">Current Location</span><b data-azp-exec-eta-location>${azpEsc(eta.eta_current_location||'—')}</b></div><div class="rounded-lg bg-white border p-2"><span class="block text-xs font-black text-slate-500">Remaining Distance</span><b>${azpEsc(eta.eta_remaining_distance_text||'—')}</b></div><div class="rounded-lg bg-white border p-2"><span class="block text-xs font-black text-slate-500">Estimated Arrival</span><b>${azpEsc(arrival)}</b></div><div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2"><span class="block text-xs font-black text-emerald-700">Live Time Remaining</span><b data-azp-exec-eta-countdown class="text-emerald-900">--:--:--</b></div></div><p class="text-[11px] font-bold text-slate-500 mt-2">Latest ETA: ${azpEsc(updated)} • GPS Freshness: <span data-azp-exec-eta-age>checking…</span> • <span data-azp-exec-eta-tracking>${stale||jobStopped?'Customer Tracking Paused':'Customer Tracking Ready'}</span></p></div>`;
+      const eta=azpExecutionEtaForJob(job),driverId=azpEtaKnownDriverId(job,eta);
+      const status=String(job.status||job.job_status||job.planning_status||job.execution_status||job.work_status||'').trim().toLowerCase();
+      const stopped=['completed','cancelled'].includes(status);
+      const error=window.__AZP_EXEC_ETA_ERRORS__?.[driverId];
+      return `<div data-azp-exec-eta-card data-driver-id="${azpEsc(driverId)}">${AzpEtaView.html(eta,{stopped,reason:error?'Route calculation is unavailable. Check GPS access and the route service.':''})}</div>`;
     }
 
     function azpExecutionEtaDigits(ms){
@@ -2961,18 +2960,9 @@
     }
     function azpExecutionEtaSecondTick(){
       if(document.hidden||currentModule!=='jobs')return;
-      const now=Date.now();
       document.querySelectorAll('[data-azp-exec-eta-card]').forEach(card=>{
-        const driverId=String(card.dataset.driverId||''),live=window.__AZP_EXEC_ETA_LIVE__?.[driverId],liveFresh=live&&live.ts&&now-live.ts<=120000;
-        let freshMs=Number(card.dataset.freshMs||0);if(liveFresh){freshMs=Number(live.ts);card.dataset.freshMs=String(freshMs);const loc=card.querySelector('[data-azp-exec-eta-location]');if(loc&&Number.isFinite(live.lat)&&Number.isFinite(live.lng))loc.textContent=`Live GPS ${live.lat.toFixed(6)}, ${live.lng.toFixed(6)}`}
-        const stopped=card.dataset.jobStopped==='1',stale=!freshMs||now-freshMs>60000,routeMs=Number(card.dataset.routeMs||0),routeStale=!routeMs||now-routeMs>60000,routeError=window.__AZP_EXEC_ETA_ERRORS__?.[driverId];
-        const arrival=Date.parse(card.dataset.arrivalIso||''),countdown=card.querySelector('[data-azp-exec-eta-countdown]');
-        if(countdown)countdown.textContent=stopped?'STOPPED':(Number.isFinite(arrival)?azpExecutionEtaDigits(arrival-now):'--:--:--');
-        const age=card.querySelector('[data-azp-exec-eta-age]');if(age){age.textContent=azpExecutionEtaAge(freshMs,now);age.classList.toggle('text-red-700',stale&&!stopped)}
-        const badge=card.querySelector('[data-azp-exec-eta-badge]');if(badge){badge.textContent=stopped?'STOPPED':stale?'STALE':routeError?'RETRY':routeStale?'GPS LIVE':'AUTO';badge.className=`chip ${stopped?'bg-slate-200 text-slate-700':stale||routeError||routeStale?'bg-amber-100 text-amber-800':'bg-emerald-100 text-emerald-800'}`}
-        const notice=card.querySelector('[data-azp-exec-eta-notice]');if(notice){notice.textContent=stopped?'Job Completed/Cancelled • ETA updates stopped':stale?'Driver production GPS has not updated for more than 60 seconds':routeError?`Live GPS connected • ETA route retry: ${routeError.message||routeError}`:routeStale?'Live GPS connected • ETA recalculation in progress':'Live Production GPS + ETA sync active';notice.className=`mt-2 text-[11px] font-black ${stale||routeError||routeStale?'text-amber-800':'text-slate-600'}`}
-        const tracking=card.querySelector('[data-azp-exec-eta-tracking]');if(tracking)tracking.textContent=stale||stopped?'Customer Tracking Paused':'Customer Tracking Ready';
-        card.classList.toggle('border-amber-300',stale&&!stopped);card.classList.toggle('bg-amber-50',stale&&!stopped);card.classList.toggle('border-blue-200',!stale||stopped);card.classList.toggle('bg-blue-50',!stale||stopped);
+        const error=window.__AZP_EXEC_ETA_ERRORS__?.[card.dataset.driverId];
+        AzpEtaView.tick(card,Date.now(),error?'Route calculation is unavailable. Check GPS access and the route service.':'');
       });
     }
     setInterval(azpExecutionEtaSecondTick,1000);
@@ -6688,7 +6678,7 @@ const vehicleKey=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const nameMatch=(a,b)=>{const x=nameKey(a),y=nameKey(b);return !!(x&&y&&(x===y||(x.length>=4&&y.length>=4&&(x.includes(y)||y.includes(x)))))};
 function first(o,keys){for(const k of keys){const v=o?.[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v}return null}
 function toMs(v){if(v&&typeof v==='object')v=v.timestamp??v.time??v.seconds;const n=Number(v);if(Number.isFinite(n)&&n>0)return n<1e11?n*1000:n;const p=Date.parse(String(v||''));return Number.isFinite(p)?p:0}
-function num(v,min,max){const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null}
+function num(v,min,max){if(!['number','string'].includes(typeof v)||String(v).trim()==='')return null;const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null}
 function recordMs(r){const v=r?.eta_updated_at_ms||r?.updatedAtMs||r?.updated_at_ms||r?.updatedAt||r?.createdAt;if(v?.toMillis)return v.toMillis();if(v?.seconds)return Number(v.seconds)*1000;return toMs(v)}
 function jobKey(r){const a=[r?.planning_no,r?.planningId,r?.planning_id,r?.plan_no,r?.job_id,r?.id].map(v=>String(v||'').replace(/^PLAN_/i,'').trim()).filter(Boolean);return a.find(v=>/^PLN/i.test(v))||a[0]||''}
 function assignedNames(r){return [...new Set(['assigned_driver','assigned_driver_name','driver_name','driverName','plan_driver','team_leader_name','team_leader','plan_team_leader','vehicle_driver','done_by_driver','driver'].flatMap(k=>Array.isArray(r?.[k])?r[k]:[r?.[k]]).flatMap(v=>String(v||'').split(/[,/|;\n]+/)).map(v=>v.trim()).filter(Boolean))]}
@@ -6712,6 +6702,7 @@ function etaFor(key,d){
 }
 function jobMatchesDriver(r,d){
   const ids=assignedIds(r),names=assignedNames(r),vehicle=vehicleKey(first(r,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']));
+  if(ids.length&&!ids.includes(d.id))return false;
   return ids.includes(d.id)||names.some(n=>nameMatch(n,d.name))||(vehicle&&vehicle===vehicleKey(d.vehicle));
 }
 function indiaToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
@@ -6735,7 +6726,7 @@ function gpsPoint(d,node){
   return {lat,lng,ts,driverId:d.id,driverName:String(first(profile,['driverName','driver_name','name'])||d.name),driverUid:String(first(profile,['driverUid','driver_uid','authUid','auth_uid','uid'])||''),vehicle:String(first(live,['vehicleNumber','vehicle_number','vehicle'])||first(profile,['vehicleNumber','vehicle_number','vehicle'])||d.vehicle)};
 }
 function plusCode(latitude,longitude){
-  const alphabet='23456789CFGHJMPQRVWX',resolutions=[20,20,1,1,.05,.05,.0025,.0025,.000125,.000125,.00000625];
+  const alphabet='23456789CFGHJMPQRVWX',resolutions=[20,1,.05,.0025,.000125];
   let lat=Math.min(90,Math.max(-90,Number(latitude))),lng=Number(longitude);while(lng<-180)lng+=360;while(lng>=180)lng-=360;if(lat===90)lat-=1e-12;lat+=90;lng+=180;let code='';
   for(const resolution of resolutions){const a=Math.floor(lat/resolution),b=Math.floor(lng/resolution);lat-=a*resolution;lng-=b*resolution;code+=alphabet[a]+alphabet[b];if(code.length===8)code+='+'}
   return code;
@@ -6745,21 +6736,23 @@ function arrivalParts(date){
   return {day:target===today?'Today':weekday,time:new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hour12:true}).format(date)};
 }
 function timeout(promise,ms){let timer=0;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Route request timed out')),ms)})]).finally(()=>clearTimeout(timer))}
+function requestState(job){return JSON.stringify([job?.id,jobKey(job),status(job),assignedIds(job),assignedNames(job),first(job,['assigned_driver_uid','driver_uid','driverUid','assignedDriverUid']),destination(job),first(job,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']),signedInUser?.uid||''])}
+function requestCurrent(d,job,state,point){const current=currentJob(d)?.r,live=window.__AZP_EXEC_ETA_LIVE__[d.id],age=Date.now()-point.ts;return !!signedInUser&&current?.id===job.id&&requestState(current)===state&&age>=0&&age<=60000&&live?.driverId===point.driverId&&live.driverUid===point.driverUid&&live.vehicle===point.vehicle}
 async function heal(d,point){
-  if(!signedInUser||Date.now()-point.ts>120000)return;
+  if(!signedInUser||!Number.isFinite(point.ts)||Date.now()-point.ts<0||Date.now()-point.ts>60000)return;
   const selected=currentJob(d);if(!selected)return;
   const job=selected.r,key=jobKey(job),startedAt=routeStarted.get(key)||0,routeAge=selected.e?Date.now()-recordMs(selected.e):Infinity;
   if(busy.has(key)||Date.now()-startedAt<30000||routeAge<30000)return;
-  busy.add(key);routeStarted.set(key,Date.now());
+  const state=requestState(job);busy.add(key);routeStarted.set(key,Date.now());
   try{
-    const dest=destination(job),origin=plusCode(point.lat,point.lng),response=await timeout(routeCall({from:origin,to:dest}),20000),result=response?.data||{};
-    const distanceMeters=Number(result.distanceMeters||0)||Math.round((Number(result.distanceKm)||0)*1000),raw=String(result.duration||result.durationSeconds||''),seconds=Number(result.durationSeconds||raw.replace(/s$/i,''));
-    if(!distanceMeters||!Number.isFinite(seconds)||seconds<=0)throw new Error('Route service returned incomplete ETA');
-    const now=Date.now(),arrival=new Date(now+seconds*1000),parts=arrivalParts(arrival),distanceKm=distanceMeters/1000,durationText=seconds>=3600?Math.floor(seconds/3600)+' hr '+Math.round((seconds%3600)/60)+' min':Math.max(1,Math.round(seconds/60))+' min';
-    const data={module:'eta',collection:'eta',eta_version:'Phase 2.5 Execution GPS Self-Healer',eta_route_method:'Existing Google Routes with production GPS',eta_status:'Live',eta_sync_status:'Synced',eta_job_status:status(job),eta_job_id:key,eta_source_job_document:String(job.id||''),eta_driver_id:d.id,eta_driver_uid:point.driverUid||signedInUser.uid||'',eta_driver_name:d.name,eta_vehicle_number:point.vehicle||d.vehicle,eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:'Live GPS '+point.lat.toFixed(6)+', '+point.lng.toFixed(6),eta_origin_plus_code:origin,eta_destination:dest,eta_remaining_distance_meters:distanceMeters,eta_remaining_distance_text:distanceKm.toLocaleString('en-IN',{maximumFractionDigits:1})+' KM',eta_duration_seconds:seconds,eta_duration_text:durationText,eta_arrival_iso:arrival.toISOString(),eta_arrival_day:parts.day,eta_arrival_time:parts.time,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_source:'Production RTDB via Execution ETA self-healer',customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
+    const dest=destination(job),origin=plusCode(point.lat,point.lng),now=Date.now(),response=await timeout(routeCall({from:origin,to:dest}),20000);
+    if(!requestCurrent(d,job,state,point))throw Error('Job, login or GPS changed while calculating ETA; recalculation required.');
+    const timing=AzpEtaView.routeTiming(response?.data,now),distanceMeters=timing.distanceMeters,seconds=timing.durationSeconds;
+    const arrival=new Date(timing.arrivalMs),parts=arrivalParts(arrival),distanceKm=distanceMeters/1000,durationText=seconds>=3600?Math.floor(seconds/3600)+' hr '+Math.round((seconds%3600)/60)+' min':Math.max(1,Math.round(seconds/60))+' min';
+    const data={module:'eta',collection:'eta',eta_version:'Phase 2.5 Execution GPS Self-Healer',eta_route_method:'Existing Google Routes with production GPS',eta_status:'Live',eta_sync_status:'Synced',eta_job_status:status(job),eta_job_id:key,eta_source_job_document:String(job.id||''),eta_driver_id:d.id,eta_driver_uid:point.driverUid||signedInUser.uid||'',eta_driver_name:d.name,eta_vehicle_number:point.vehicle||d.vehicle,eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:'Live GPS '+point.lat.toFixed(6)+', '+point.lng.toFixed(6),eta_origin_plus_code:origin,eta_destination:dest,eta_remaining_distance_meters:distanceMeters,eta_remaining_distance_text:distanceKm.toLocaleString('en-IN',{maximumFractionDigits:1})+' KM',eta_duration_seconds:seconds,eta_duration_text:durationText,eta_arrival_iso:arrival.toISOString(),eta_arrival_day:parts.day,eta_arrival_time:parts.time,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_route_time_basis:'CLIENT_REQUEST_START',eta_route_requested_at_ms:now,eta_route_received_at_ms:Date.now(),eta_source:'Production RTDB via Execution ETA self-healer',customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
     const id=('ETA_'+key+'_'+d.name).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120);
     await setDoc(doc(fs,'azpExecutionRecords',id),data,{merge:true});
-    delete window.__AZP_EXEC_ETA_ERRORS__[d.id];
+    if(requestCurrent(d,job,state,point))delete window.__AZP_EXEC_ETA_ERRORS__[d.id];
   }catch(err){
     const message=String(err?.code||err?.message||'Unknown route error').replace(/^functions\//,'');
     window.__AZP_EXEC_ETA_ERRORS__[d.id]={message,at:Date.now()};
