@@ -2939,12 +2939,9 @@
       return scored[0]?.r||null;
     }
     function azpExecutionEtaReason(key,driverId,targetKey){
-      if(window.__AZP_EXEC_GPS_ERROR__)return AzpEtaView.errorReason(window.__AZP_EXEC_GPS_ERROR__);
-      const error=window.__AZP_EXEC_ETA_ERRORS__?.[key];
-      if(!error||error.driverId!==driverId||error.targetKey!==targetKey)return '';
-      const live=window.__AZP_EXEC_ETA_LIVE__?.[driverId],age=Date.now()-Number(live?.ts);
-      if(!live||!Number.isFinite(age)||age<0||age>60000)return 'Assigned GPS is unavailable, stale or not connected. Check GPS sign-in and the latest location report.';
-      return AzpEtaView.errorReason(error);
+      const detail={key,driverId,targetKey,reason:'Checking the existing GPS Admin connection.'};
+      document.dispatchEvent(new CustomEvent('azp-eta-diagnostic-query',{detail}));
+      return detail.reason;
     }
     function azpExecutionEtaHtml(job){
       const eta=azpExecutionEtaForJob(job),driverId=azpEtaKnownDriverId(job,eta);
@@ -5957,6 +5954,7 @@ body:has(#mod-gps.azp-production-monitor-active:not(.hidden)) #page-heading,body
 import {initializeApp,getApps,getApp} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
 import {getDatabase,ref,onValue} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js';
 import {getFirestore,doc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
+import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js';
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence,inMemoryPersistence} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
 const pgmCfg={apiKey:'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',authDomain:'az-packers-quotation.firebaseapp.com',databaseURL:'https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'az-packers-quotation',storageBucket:'az-packers-quotation.firebasestorage.app',messagingSenderId:'682004383688',appId:'1:682004383688:web:b795a19579dba9a612a2fd'};
 // GPS authentication is separate from Execution's default app and Firestore identity.
@@ -6127,9 +6125,9 @@ function pgmRenderCards(){
   pgmRenderFuelBalances();
 }
 function pgmShell(){return `<header class="p-toolbar"><h2>Vehicle GPS <small>Fleet overview</small></h2><div class="p-tools"><a href="https://az-packers-quotation.web.app/#dashboard" target="_blank" rel="noopener noreferrer" class="p-btn azp-pgm-admin-link">GPS Admin ↗</a><button type="button" class="p-btn primary" id="azp-pgm-add">+ Add fuel</button></div></header><details id="azp-pgm-auth" class="p-auth" style="display:none"><summary><div><strong>GPS panel is signed out</strong> <span>Your Execution session stays separate.</span></div><em>Sign in</em></summary><p class="p-auth-help">Use the existing authorized GPS Admin account. Passwords are not saved by this page.</p><form id="azp-pgm-auth-form" class="p-auth-form"><div class="p-field"><label for="azp-pgm-email">EMAIL</label><input id="azp-pgm-email" type="email" autocomplete="username" required></div><div class="p-field"><label for="azp-pgm-password">PASSWORD</label><input id="azp-pgm-password" type="password" autocomplete="current-password" required></div><button id="azp-pgm-login" class="p-btn" type="submit">Login & Connect</button></form><div id="azp-pgm-auth-msg" class="azp-pgm-msg" role="status"></div></details><div class="p-session"><div id="azp-pgm-connection" role="status" aria-live="polite">Checking GPS sign-in.</div><button id="azp-pgm-logout" class="p-btn" type="button" hidden>Sign out GPS</button></div><div class="p-workspace"><aside><div class="p-rail-title">VEHICLES <span>3 assigned</span></div><div id="azp-pgm-vehicles" class="p-vehicles">${PGM_DRIVERS.map(d=>`<button type="button" class="p-vehicle" data-pgm-select="${d.id}" aria-pressed="${d.id===pgmSelected}" aria-controls="azp-pgm-cards"><span class="p-reg">${pgmEsc(d.vehicle)}</span><span class="p-driver">${pgmEsc(d.name)}</span><span class="p-vehicle-bottom"><span data-pgm-summary></span><time></time></span></button>`).join('')}</div><p class="p-side-note">Select a vehicle to review its latest reported GPS readings.<br><br>Recent reports do not guarantee the vehicle is still at that location.</p></aside><div id="azp-pgm-cards">${PGM_DRIVERS.map(pgmCard).join('')}</div></div><section class="p-fuel-section"><div class="p-fuel-title"><div><h3>Fuel overview</h3><p>Existing fuel estimates · details and reset remain available.</p></div><span class="p-status">3 vehicles</span></div><div id="azp-pgm-fuel-balances" class="p-fuel-table">${PGM_DRIVERS.map(pgmFuelCard).join('')}</div><p class="p-footnote">Fuel figures are estimates from the existing calculation, not measured tank contents. GPS access and the fuel record are separate.</p></section><section id="azp-pgm-fuel" class="p-fuel-form" hidden><h3>Add fuel to a vehicle</h3><p>Litres and price are saved to this vehicle's Execution fuel record.</p><form id="azp-pgm-form" class="p-fuel-form-grid"><div class="p-field"><label>VEHICLE / DRIVER</label><select id="azp-pgm-driver" required>${PGM_DRIVERS.map(d=>`<option value="${d.id}">${d.vehicle} — ${d.name}</option>`).join('')}</select></div><div class="p-field"><label>LITRES ADDED</label><input id="azp-pgm-litres" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="e.g. 12" required></div><div class="p-field"><label>PRICE / LITRE (₹)</label><input id="azp-pgm-price" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="e.g. 94.50" required></div><div class="p-field"><label>ODOMETER KM (OPTIONAL)</label><input id="azp-pgm-odo" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Current vehicle meter"></div><div id="azp-pgm-total" class="azp-pgm-total">Entry Cost: —</div><div id="azp-pgm-preview" class="azp-pgm-preview">Vehicle fuel preview loading…</div><div class="azp-pgm-form-note">Formula: Remaining Fuel = Balance after fill − (Live trip KM - Fill trip KM) / Vehicle KM per litre. New Trip ID par अगली fuel entry नया baseline set करेगी.</div><button id="azp-pgm-save" class="p-btn primary" type="submit">Save & Start Fuel Calculation</button></form><div id="azp-pgm-msg" class="azp-pgm-msg"></div></section><details class="p-info"><summary>How to read GPS updates</summary><p>Missing or denied data is unavailable. Older measurements are marked last known. After connection loss, live speed waits for a newer report. Snapshot timestamps are not a continuous tracker heartbeat or proof of current permissions. Speed alert limit: ${PGM_LIMIT} KM/H. This GPS monitor sends no start, stop or reset commands.</p></details>`}
-function pgmStopReads(){pgmReadGeneration++;pgmUnsubs.splice(0).forEach(u=>{try{u()}catch(_){}});pgmStarted=false;pgmConnected=null;pgmReadStatus.clear();pgmErrors.clear();pgmRecoveryFloor.clear();pgmLastReport.clear()}
+function pgmStopReads(){pgmEta.invalidate();pgmReadGeneration++;pgmUnsubs.splice(0).forEach(u=>{try{u()}catch(_){}});pgmStarted=false;pgmConnected=null;pgmReadStatus.clear();pgmErrors.clear();pgmRecoveryFloor.clear();pgmLastReport.clear()}
 function pgmConnectionLost(){
-  pgmConnected=false;
+  pgmEta.invalidate();pgmConnected=false;
   for(const d of PGM_DRIVERS)pgmRecoveryFloor.set(d.id,Math.max(pgmRecoveryFloor.get(d.id)||0,pgmLastReport.get(d.id)||0));
 }
 function pgmObserveReport(id,live){
@@ -6141,11 +6139,11 @@ function pgmObserveReport(id,live){
 }
 function pgmStart(){
   if(pgmStarted||!pgmAuthorized())return;pgmStarted=true;const generation=++pgmReadGeneration;
-  pgmUnsubs.push(onValue(ref(pgmDb,'.info/connected'),s=>{if(generation!==pgmReadGeneration)return;if(s.val()===true)pgmConnected=true;else pgmConnectionLost();pgmRenderCards()},()=>{if(generation!==pgmReadGeneration)return;pgmConnectionLost();pgmRenderCards()}));
+  pgmUnsubs.push(onValue(ref(pgmDb,'.info/connected'),s=>{if(generation!==pgmReadGeneration)return;if(s.val()===true)pgmConnected=true;else pgmConnectionLost();pgmEta.sync();pgmRenderCards()},()=>{if(generation!==pgmReadGeneration)return;pgmConnectionLost();pgmRenderCards()}));
   PGM_DRIVERS.forEach(d=>['profile','live'].forEach(child=>{const key=d.name+' '+child;pgmReadStatus.set(key,'pending');pgmUnsubs.push(onValue(ref(pgmDb,`gpsProduction/v1/drivers/${d.id}/${child}`),s=>{
     if(generation!==pgmReadGeneration||!pgmAuthorized())return;
-    const old=pgmState.get(d.id)||{profile:null,live:null};pgmState.set(d.id,{...old,[child]:s.exists()?s.val():null});if(child==='live')pgmObserveReport(d.id,s.exists()?s.val():null);pgmReadStatus.set(key,s.exists()?'ok':'missing');pgmErrors.delete(key);pgmRenderCards();
-  },err=>{if(generation!==pgmReadGeneration)return;const old=pgmState.get(d.id)||{profile:null,live:null};pgmState.set(d.id,{...old,[child]:null});pgmReadStatus.set(key,'error');pgmErrors.set(key,err?.code||'READ_FAILED');pgmRenderCards()}))}));
+    const old=pgmState.get(d.id)||{profile:null,live:null};pgmState.set(d.id,{...old,[child]:s.exists()?s.val():null});if(child==='live')pgmObserveReport(d.id,s.exists()?s.val():null);pgmReadStatus.set(key,s.exists()?'ok':'missing');pgmErrors.delete(key);pgmEta.sync();pgmRenderCards();
+  },err=>{if(generation!==pgmReadGeneration)return;const old=pgmState.get(d.id)||{profile:null,live:null};pgmState.set(d.id,{...old,[child]:null});pgmReadStatus.set(key,'error');pgmErrors.set(key,err?.code||'READ_FAILED');pgmEta.invalidate();pgmRenderCards()}))}));
 }
 async function pgmLogin(e){e.preventDefault();if(pgmLoginBusy||pgmLogoutBusy)return;pgmLoginBusy=true;pgmSignedOutIntent=false;const email=document.getElementById('azp-pgm-email').value.trim(),input=document.getElementById('azp-pgm-password'),msg=document.getElementById('azp-pgm-auth-msg'),btn=document.getElementById('azp-pgm-login');btn.disabled=true;msg.textContent='Signing in to GPS.';try{if(!await pgmPersistence)throw {code:'auth/storage-unavailable'};const credential=await signInWithEmailAndPassword(pgmAuth,email,input.value);if(pgmSignedOutIntent){await signOut(pgmAuth);throw {code:'auth/sign-in-cancelled'}}if(credential.user.uid!==PGM_ADMIN_UID){await signOut(pgmAuth);throw {code:'auth/gps-admin-required'}}e.target.reset()}catch(err){msg.style.color='#b91c1c';msg.textContent='GPS sign-in failed - '+(err?.code||'UNKNOWN')}finally{pgmLoginBusy=false;input.value='';btn.disabled=false}}
 async function pgmLogout(){if(pgmLogoutBusy||!confirm('Sign out of this GPS panel? Your Execution login will stay unchanged.'))return;pgmSignedOutIntent=true;pgmLogoutBusy=true;pgmStopReads();pgmRenderCards();try{await signOut(pgmAuth)}catch(_){pgmSignedOutIntent=false;pgmAuthMessage='GPS sign-out could not be confirmed. Try again.'}finally{pgmLogoutBusy=false;if(pgmAuthorized())pgmStart();pgmRenderCards()}}
@@ -6189,6 +6187,137 @@ window.addEventListener('azp-execution-data',e=>pgmAcceptFuelRows(e.detail?.rows
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-module="gps"]'))setTimeout(pgmEnsure,80)},true);
 document.addEventListener('DOMContentLoaded',()=>{const gps=document.getElementById('mod-gps');if(gps&&!gps.classList.contains('hidden'))pgmEnsure()});
 onAuthStateChanged(pgmAuth,async user=>{const generation=++pgmAuthGeneration;await pgmPersistence;if(generation!==pgmAuthGeneration||user?.uid!==pgmAuth.currentUser?.uid)return;pgmAuthReady=true;pgmStopReads();PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmUser=user?.uid===PGM_ADMIN_UID?user:null;if(pgmUser)pgmAuthMessage=pgmPersistenceMessage;if(user&&user.uid!==PGM_ADMIN_UID)pgmAuthMessage='This GPS session is not the authorized Admin account. Sign in here with the existing authorized account.';if(pgmAuthorized())pgmStart();pgmRenderCards()},()=>{pgmAuthGeneration++;pgmStopReads();pgmAuthReady=true;pgmUser=null;PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmAuthMessage='GPS authentication could not be verified. Retry sign-in; saved Execution login is unchanged.';pgmRenderCards()});
+
+// ETA uses this module's existing authorized child reads; no GPS snapshots or getter are exported.
+const pgmEta=(()=>{
+const app=pgmDefaultApp,fs=pgmFs,auth=getAuth(pgmDefaultApp);
+const routeCall=httpsCallable(getFunctions(app,'asia-south1'),'calculateRouteDistance');
+const DRIVERS=[
+  {id:'DRIVER_MAHESH_001',name:'Mahesh',vehicle:'OD-33-AR-8855'},
+  {id:'DRIVER_AJAY_001',name:'Ajay',vehicle:'OD-05-BD-8855'},
+  {id:'DRIVER_SOMNATH_001',name:'Somnath',vehicle:'OD-05-AP-9537'}
+];
+const routeStarted=new Map(),busy=new Set();
+let signedInUser=null,generation=0,rows=Array.isArray(window.__AZP_SHARED_EXECUTION_ROWS__)?window.__AZP_SHARED_EXECUTION_ROWS__:[];
+const errors=new Map();
+const expectedUids={DRIVER_MAHESH_001:'WoVSnY7tchXAVWFeP7UgJEuwlHu2',DRIVER_AJAY_001:'RpLO7VqVUaUBWc4XsBcMGYwYWqP2',DRIVER_SOMNATH_001:'FCFwdn24rkMScoAdBXzfOF7c3rP2'};
+function authorized(){return pgmAuthorized()&&signedInUser?.uid===PGM_ADMIN_UID&&auth.currentUser?.uid===PGM_ADMIN_UID&&signedInUser===auth.currentUser}
+function invalidate(){generation++;errors.clear()}
+function gpsReason(d){
+  if(!pgmAuthorized())return 'Connect the existing authorized GPS Admin session in Live GPS.';
+  if(!authorized())return 'Execution and Live GPS must use the same existing authorized GPS Admin account.';
+  if(!d)return 'Assigned GPS driver is unavailable.';
+  const keys=['profile','live'].map(child=>d.name+' '+child);
+  if(keys.some(key=>pgmErrors.has(key)))return 'GPS child read failed. Check the existing Live GPS session and access.';
+  if(pgmConnected!==true)return 'Live GPS is disconnected. Waiting for its existing connection.';
+  if(!keys.every(key=>pgmReadStatus.get(key)==='ok'))return 'Waiting for the authorized driver profile and GPS report.';
+  if(pgmRecoveryFloor.has(d.id))return 'GPS reconnected; waiting for a newer report.';
+  const node=pgmState.get(d.id),profile=node?.profile,live=node?.live;
+  if(!profile||!live||profile.driverId!==d.id||String(first(profile,['driverUid','driver_uid','authUid','auth_uid','uid'])||'')!==expectedUids[d.id]||vehicleKey(first(profile,['vehicleNumber','vehicle_number','vehicle']))!==vehicleKey(d.vehicle)||(live.driverId!=null&&live.driverId!==d.id)||(first(live,['driverUid','driver_uid','authUid','auth_uid','uid'])&&String(first(live,['driverUid','driver_uid','authUid','auth_uid','uid']))!==expectedUids[d.id])||(first(live,['vehicleNumber','vehicle_number','vehicle'])&&vehicleKey(first(live,['vehicleNumber','vehicle_number','vehicle']))!==vehicleKey(d.vehicle)))return 'GPS driver/profile binding does not match the assigned vehicle.';
+  const point=gpsPoint(d,node),report=pgmGpsData(node);
+  const pointAge=point?Date.now()-point.ts:Infinity;
+  if(!point||!report||report.age<0||report.age>60000||pointAge<0||pointAge>60000)return 'Assigned GPS is unavailable or stale; a report within 60 seconds is required.';
+  return '';
+}
+function readPoint(d){return gpsReason(d)?null:gpsPoint(d,pgmState.get(d.id))}
+function diagnostic(detail){
+  const d=DRIVERS.find(d=>d.id===detail.driverId),reason=gpsReason(d);if(reason)return reason;
+  const error=errors.get(detail.key);return error?.driverId===detail.driverId&&error.targetKey===detail.targetKey?AzpEtaView.errorReason(error):'';
+}
+
+const nameKey=v=>String(v||'').toLowerCase().replace(/\b(driver|drv)\b/g,'').replace(/[^a-z0-9]/g,'');
+const vehicleKey=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const nameMatch=(a,b)=>{const x=nameKey(a),y=nameKey(b);return !!(x&&y&&(x===y||(x.length>=4&&y.length>=4&&(x.includes(y)||y.includes(x)))))};
+function first(o,keys){for(const k of keys){const v=o?.[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v}return null}
+function toMs(v){if(v&&typeof v==='object')v=v.timestamp??v.time??v.seconds;const n=Number(v);if(Number.isFinite(n)&&n>0)return n<1e11?n*1000:n;const p=Date.parse(String(v||''));return Number.isFinite(p)?p:0}
+function num(v,min,max){if(!['number','string'].includes(typeof v)||String(v).trim()==='')return null;const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null}
+function recordMs(r){const v=r?.eta_updated_at_ms||r?.updatedAtMs||r?.updated_at_ms||r?.updatedAt||r?.createdAt;if(v?.toMillis)return v.toMillis();if(v?.seconds)return Number(v.seconds)*1000;return toMs(v)}
+function jobKey(r){const a=[r?.planning_no,r?.planningId,r?.planning_id,r?.plan_no,r?.job_id,r?.id].map(v=>String(v||'').replace(/^PLAN_/i,'').trim()).filter(Boolean);return a.find(v=>/^PLN/i.test(v))||a[0]||''}
+function assignedNames(r){return [...new Set(['assigned_driver','assigned_driver_name','driver_name','driverName','plan_driver','team_leader_name','team_leader','plan_team_leader','vehicle_driver','done_by_driver','driver'].flatMap(k=>Array.isArray(r?.[k])?r[k]:[r?.[k]]).flatMap(v=>String(v||'').split(/[,/|;\n]+/)).map(v=>v.trim()).filter(Boolean))]}
+function assignedIds(r){return [...new Set(['assigned_driver_id','driver_id','driverId','assignedDriverId'].map(k=>String(r?.[k]||'').trim()).filter(Boolean))]}
+function status(r){return String(first(r,['status','job_status','planning_status','execution_status','work_status'])||'').trim().toLowerCase()}
+function stopped(r){const s=status(r);return s.includes('completed')||s.includes('cancelled')||s.includes('canceled')}
+function destinationCoordinates(r){
+  const lat=num(first(r,['delivery_latitude','deliveryLatitude','delivery_lat','deliveryLat','to_latitude','toLatitude','to_lat','toLat']),-90,90);
+  const lng=num(first(r,['delivery_longitude','deliveryLongitude','delivery_lng','deliveryLng','delivery_lon','deliveryLon','to_longitude','toLongitude','to_lng','toLng','to_lon','toLon']),-180,180);
+  if(lat!==null&&lng!==null)return {lat,lng};
+  for(const o of [r?.delivery_coordinates,r?.deliveryCoordinates,r?.to_coordinates,r?.toCoordinates,r?.delivery_location,r?.to_location_geo,r?.toLocationGeo]){
+    if(!o||typeof o!=='object')continue;const a=num(o.latitude??o.lat,-90,90),b=num(o.longitude??o.lng??o.lon,-180,180);if(a!==null&&b!==null)return {lat:a,lng:b};
+  }
+  return null;
+}
+function destination(r){const c=destinationCoordinates(r);return c?plusCode(c.lat,c.lng):String(r?.to_location||r?.delivery_address||r?.deliveryAddress||'').trim()}
+function etaFor(key,d){
+  return rows.filter(r=>String(r?.module||r?.collection||'').toLowerCase()==='eta'&&jobKey({job_id:r?.eta_job_id})===key)
+    .filter(r=>String(r?.eta_driver_id||'')===d.id||nameMatch(r?.eta_driver_name,d.name)||vehicleKey(r?.eta_vehicle_number)===vehicleKey(d.vehicle))
+    .sort((a,b)=>recordMs(b)-recordMs(a))[0]||null;
+}
+function jobMatchesDriver(r,d){
+  const ids=assignedIds(r),names=assignedNames(r),vehicle=vehicleKey(first(r,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']));
+  const uids=['assigned_driver_uid','driver_uid','driverUid','assignedDriverUid'].map(k=>String(r?.[k]||'').trim()).filter(Boolean);
+  if(ids.some(id=>id!==d.id)||uids.some(uid=>uid!==expectedUids[d.id])||(vehicle&&vehicle!==vehicleKey(d.vehicle)))return false;
+  return ids.includes(d.id)||uids.includes(expectedUids[d.id])||names.some(n=>nameMatch(n,d.name))||(vehicle&&vehicle===vehicleKey(d.vehicle));
+}
+function indiaToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function jobDate(r){return String(first(r,['work_date','work_start_date','shifting_date','shiftingDate','moving_date','date'])||'').slice(0,10)}
+function currentJob(d){
+  const today=indiaToday();
+  return rows.filter(r=>String(r?.module||r?.collection||'').toLowerCase()!=='eta'&&/^PLN/i.test(jobKey(r))&&!stopped(r)&&destination(r)&&jobMatchesDriver(r,d)).map(r=>{
+    const e=etaFor(jobKey(r),d),s=status(r);let score=0;
+    if(['reached pickup','loading','in transit','reached destination','unloading','running','started','ongoing'].some(x=>s.includes(x)))score+=3000;
+    if(jobDate(r)===today)score+=2000;
+    if(e)score+=1000+Math.min(900,recordMs(e)/1e12);
+    score+=Math.min(99,toMs(r?.updatedAtMs||r?.createdAtMs||r?.updatedAt||r?.createdAt)/1e12);
+    return {r,e,score};
+  }).sort((a,b)=>b.score-a.score)[0]||null;
+}
+function gpsPoint(d,node){
+  const profile=node?.profile||{},live=node?.live||{};
+  const lat=num(first(live,['latitude','lat','currentLatitude','current_latitude']),-90,90),lng=num(first(live,['longitude','lng','currentLongitude','current_longitude']),-180,180);
+  const ts=toMs(first(live,['lastUpdateAt','lastUpdateAtMs','last_update_ms','updatedAtMs','timestampMs','lastSyncAt','lastSyncAtMs','last_sync_ms','timestamp','updatedAt','lastUpdate','last_updated','heartbeatMs','heartbeat_ms']));
+  if(lat===null||lng===null||!ts)return null;
+  return {lat,lng,ts,driverId:d.id,driverName:String(first(profile,['driverName','driver_name','name'])||d.name),driverUid:String(first(profile,['driverUid','driver_uid','authUid','auth_uid','uid'])||''),vehicle:String(first(live,['vehicleNumber','vehicle_number','vehicle'])||first(profile,['vehicleNumber','vehicle_number','vehicle'])||d.vehicle)};
+}
+function plusCode(latitude,longitude){
+  const alphabet='23456789CFGHJMPQRVWX',resolutions=[20,1,.05,.0025,.000125];
+  let lat=Math.min(90,Math.max(-90,Number(latitude))),lng=Number(longitude);while(lng<-180)lng+=360;while(lng>=180)lng-=360;if(lat===90)lat-=1e-12;lat+=90;lng+=180;let code='';
+  for(const resolution of resolutions){const a=Math.floor(lat/resolution),b=Math.floor(lng/resolution);lat-=a*resolution;lng-=b*resolution;code+=alphabet[a]+alphabet[b];if(code.length===8)code+='+'}
+  return code;
+}
+function arrivalParts(date){
+  const parts=new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true}).formatToParts(date),weekday=parts.find(p=>p.type==='weekday')?.value||'',today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date()),target=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(date);
+  return {day:target===today?'Today':weekday,time:new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hour12:true}).format(date)};
+}
+function timeout(promise,ms){let timer=0;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Route request timed out')),ms)})]).finally(()=>clearTimeout(timer))}
+function requestState(job){return JSON.stringify([job?.id,jobKey(job),status(job),assignedIds(job),assignedNames(job),first(job,['assigned_driver_uid','driver_uid','driverUid','assignedDriverUid']),destination(job),first(job,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']),signedInUser?.uid||''])}
+function requestCurrent(d,job,state,point,ticket){const current=currentJob(d)?.r,live=readPoint(d),age=Date.now()-point.ts;return authorized()&&generation===ticket.generation&&pgmReadGeneration===ticket.readGeneration&&pgmAuth.currentUser===ticket.gpsUser&&auth.currentUser===ticket.executionUser&&current?.id===job.id&&requestState(current)===state&&age>=0&&age<=60000&&live?.driverId===point.driverId&&live.driverUid===point.driverUid&&live.vehicle===point.vehicle}
+async function heal(d,point){
+  if(!authorized()||!point||gpsReason(d)||!Number.isFinite(point.ts)||Date.now()-point.ts<0||Date.now()-point.ts>60000)return;
+  const selected=currentJob(d);if(!selected)return;
+  const job=selected.r,key=jobKey(job),startedAt=routeStarted.get(key)||0,routeAge=selected.e?Date.now()-recordMs(selected.e):Infinity;
+  if(busy.has(key)||Date.now()-startedAt<30000||routeAge<30000)return;
+  const state=requestState(job),targetKey=AzpEtaView.deliveryKey(job),ticket={generation,readGeneration:pgmReadGeneration,gpsUser:pgmAuth.currentUser,executionUser:auth.currentUser};busy.add(key);routeStarted.set(key,Date.now());
+  let phase='route';
+  try{
+    const dest=destination(job),origin=plusCode(point.lat,point.lng),now=Date.now(),response=await timeout(routeCall({from:origin,to:dest}),20000);
+    if(!requestCurrent(d,job,state,point,ticket))throw Error('Job, login or GPS changed while calculating ETA; recalculation required.');
+    const timing=AzpEtaView.routeTiming(response?.data,now),distanceMeters=timing.distanceMeters,seconds=timing.durationSeconds;
+    const arrival=new Date(timing.arrivalMs),parts=arrivalParts(arrival),distanceKm=distanceMeters/1000,durationText=seconds>=3600?Math.floor(seconds/3600)+' hr '+Math.round((seconds%3600)/60)+' min':Math.max(1,Math.round(seconds/60))+' min';
+    const data={module:'eta',collection:'eta',eta_version:'Phase 2.5 Execution GPS Self-Healer',eta_route_method:'Existing Google Routes with production GPS',eta_status:'Live',eta_sync_status:'Synced',eta_job_status:status(job),eta_job_id:key,eta_source_job_document:String(job.id||''),eta_driver_id:d.id,eta_driver_uid:point.driverUid||signedInUser.uid||'',eta_driver_name:d.name,eta_vehicle_number:point.vehicle||d.vehicle,eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:'Live GPS '+point.lat.toFixed(6)+', '+point.lng.toFixed(6),eta_origin_plus_code:origin,eta_destination:dest,eta_remaining_distance_meters:distanceMeters,eta_remaining_distance_text:distanceKm.toLocaleString('en-IN',{maximumFractionDigits:1})+' KM',eta_duration_seconds:seconds,eta_duration_text:durationText,eta_arrival_iso:arrival.toISOString(),eta_arrival_day:parts.day,eta_arrival_time:parts.time,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_route_time_basis:'CLIENT_REQUEST_START',eta_route_requested_at_ms:now,eta_route_received_at_ms:Date.now(),eta_source:'Production RTDB via Execution ETA self-healer',customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
+    const id=('ETA_'+key+'_'+d.name).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120);
+    phase='save';
+    await setDoc(doc(fs,'azpExecutionRecords',id),data,{merge:true});
+    if(requestCurrent(d,job,state,point,ticket))errors.delete(key);
+  }catch(err){
+    if(authorized()&&generation===ticket.generation&&pgmReadGeneration===ticket.readGeneration&&pgmAuth.currentUser===ticket.gpsUser&&auth.currentUser===ticket.executionUser)errors.set(key,{...AzpEtaView.failure(err,phase),targetKey,driverId:d.id,at:Date.now()});
+  }finally{busy.delete(key)}
+}
+function sync(){if(!authorized())return;DRIVERS.forEach(d=>{const point=readPoint(d);if(point)heal(d,point)})}
+window.addEventListener('azp-execution-data',e=>{rows=Array.isArray(e.detail?.rows)?e.detail.rows:[];sync()});
+document.addEventListener('azp-eta-diagnostic-query',e=>{const detail=e.detail;if(detail&&typeof detail==='object')detail.reason=diagnostic(detail)});
+onAuthStateChanged(auth,user=>{invalidate();signedInUser=user||null;sync()},()=>{invalidate();signedInUser=null});
+return Object.freeze({sync,invalidate});
+})();
 </script>
 <!-- ===== END ISOLATED PRODUCTION VEHICLE GPS MONITOR V10.0 ===== -->
 <!-- ===== A TO Z FLEET MANAGEMENT & PREVENTIVE MAINTENANCE V1.0 ===== -->
@@ -6661,121 +6790,7 @@ window.addEventListener('azp-execution-data',e=>acceptMain(e.detail?.rows||[]));
 <!-- ===== EXECUTION ETA LIVE GPS SELF-HEALER V2.5 =====
      Keeps ETA independent from the Driver planning tab. Production GPS is read-only;
      only the existing separate ETA document is refreshed through the existing route service. -->
-<script type="module" id="azp-execution-eta-self-healer-v25">
-import {initializeApp,getApps,getApp} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js';
-import {getDatabase,ref,onValue} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js';
-import {getFirestore,doc,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
-import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-functions.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
-
-const cfg={apiKey:'AIzaSyC4I13JSUkhun5DgpgLlnyiimTzdPobT14',authDomain:'az-packers-quotation.firebaseapp.com',databaseURL:'https://az-packers-quotation-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'az-packers-quotation',storageBucket:'az-packers-quotation.firebasestorage.app',messagingSenderId:'682004383688',appId:'1:682004383688:web:b795a19579dba9a612a2fd'};
-const app=getApps().length?getApp():initializeApp(cfg),rtdb=getDatabase(app,cfg.databaseURL),fs=getFirestore(app),auth=getAuth(app);
-const routeCall=httpsCallable(getFunctions(app,'asia-south1'),'calculateRouteDistance');
-const DRIVERS=[
-  {id:'DRIVER_MAHESH_001',name:'Mahesh',vehicle:'OD-33-AR-8855'},
-  {id:'DRIVER_AJAY_001',name:'Ajay',vehicle:'OD-05-BD-8855'},
-  {id:'DRIVER_SOMNATH_001',name:'Somnath',vehicle:'OD-05-AP-9537'}
-];
-const routeStarted=new Map(),busy=new Set();
-let signedInUser=null,started=false,rows=Array.isArray(window.__AZP_SHARED_EXECUTION_ROWS__)?window.__AZP_SHARED_EXECUTION_ROWS__:[];
-window.__AZP_EXEC_ETA_LIVE__=window.__AZP_EXEC_ETA_LIVE__||{};
-window.__AZP_EXEC_ETA_ERRORS__=window.__AZP_EXEC_ETA_ERRORS__||{};
-
-const nameKey=v=>String(v||'').toLowerCase().replace(/\b(driver|drv)\b/g,'').replace(/[^a-z0-9]/g,'');
-const vehicleKey=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-const nameMatch=(a,b)=>{const x=nameKey(a),y=nameKey(b);return !!(x&&y&&(x===y||(x.length>=4&&y.length>=4&&(x.includes(y)||y.includes(x)))))};
-function first(o,keys){for(const k of keys){const v=o?.[k];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v}return null}
-function toMs(v){if(v&&typeof v==='object')v=v.timestamp??v.time??v.seconds;const n=Number(v);if(Number.isFinite(n)&&n>0)return n<1e11?n*1000:n;const p=Date.parse(String(v||''));return Number.isFinite(p)?p:0}
-function num(v,min,max){if(!['number','string'].includes(typeof v)||String(v).trim()==='')return null;const n=Number(v);return Number.isFinite(n)&&n>=min&&n<=max?n:null}
-function recordMs(r){const v=r?.eta_updated_at_ms||r?.updatedAtMs||r?.updated_at_ms||r?.updatedAt||r?.createdAt;if(v?.toMillis)return v.toMillis();if(v?.seconds)return Number(v.seconds)*1000;return toMs(v)}
-function jobKey(r){const a=[r?.planning_no,r?.planningId,r?.planning_id,r?.plan_no,r?.job_id,r?.id].map(v=>String(v||'').replace(/^PLAN_/i,'').trim()).filter(Boolean);return a.find(v=>/^PLN/i.test(v))||a[0]||''}
-function assignedNames(r){return [...new Set(['assigned_driver','assigned_driver_name','driver_name','driverName','plan_driver','team_leader_name','team_leader','plan_team_leader','vehicle_driver','done_by_driver','driver'].flatMap(k=>Array.isArray(r?.[k])?r[k]:[r?.[k]]).flatMap(v=>String(v||'').split(/[,/|;\n]+/)).map(v=>v.trim()).filter(Boolean))]}
-function assignedIds(r){return [...new Set(['assigned_driver_id','driver_id','driverId','assignedDriverId'].map(k=>String(r?.[k]||'').trim()).filter(Boolean))]}
-function status(r){return String(first(r,['status','job_status','planning_status','execution_status','work_status'])||'').trim().toLowerCase()}
-function stopped(r){const s=status(r);return s.includes('completed')||s.includes('cancelled')||s.includes('canceled')}
-function destinationCoordinates(r){
-  const lat=num(first(r,['delivery_latitude','deliveryLatitude','delivery_lat','deliveryLat','to_latitude','toLatitude','to_lat','toLat']),-90,90);
-  const lng=num(first(r,['delivery_longitude','deliveryLongitude','delivery_lng','deliveryLng','delivery_lon','deliveryLon','to_longitude','toLongitude','to_lng','toLng','to_lon','toLon']),-180,180);
-  if(lat!==null&&lng!==null)return {lat,lng};
-  for(const o of [r?.delivery_coordinates,r?.deliveryCoordinates,r?.to_coordinates,r?.toCoordinates,r?.delivery_location,r?.to_location_geo,r?.toLocationGeo]){
-    if(!o||typeof o!=='object')continue;const a=num(o.latitude??o.lat,-90,90),b=num(o.longitude??o.lng??o.lon,-180,180);if(a!==null&&b!==null)return {lat:a,lng:b};
-  }
-  return null;
-}
-function destination(r){const c=destinationCoordinates(r);return c?plusCode(c.lat,c.lng):String(r?.to_location||r?.delivery_address||r?.deliveryAddress||'').trim()}
-function etaFor(key,d){
-  return rows.filter(r=>String(r?.module||r?.collection||'').toLowerCase()==='eta'&&jobKey({job_id:r?.eta_job_id})===key)
-    .filter(r=>String(r?.eta_driver_id||'')===d.id||nameMatch(r?.eta_driver_name,d.name)||vehicleKey(r?.eta_vehicle_number)===vehicleKey(d.vehicle))
-    .sort((a,b)=>recordMs(b)-recordMs(a))[0]||null;
-}
-function jobMatchesDriver(r,d){
-  const ids=assignedIds(r),names=assignedNames(r),vehicle=vehicleKey(first(r,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']));
-  if(ids.length&&!ids.includes(d.id))return false;
-  return ids.includes(d.id)||names.some(n=>nameMatch(n,d.name))||(vehicle&&vehicle===vehicleKey(d.vehicle));
-}
-function indiaToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
-function jobDate(r){return String(first(r,['work_date','work_start_date','shifting_date','shiftingDate','moving_date','date'])||'').slice(0,10)}
-function currentJob(d){
-  const today=indiaToday();
-  return rows.filter(r=>String(r?.module||r?.collection||'').toLowerCase()!=='eta'&&/^PLN/i.test(jobKey(r))&&!stopped(r)&&destination(r)&&jobMatchesDriver(r,d)).map(r=>{
-    const e=etaFor(jobKey(r),d),s=status(r);let score=0;
-    if(['reached pickup','loading','in transit','reached destination','unloading','running','started','ongoing'].some(x=>s.includes(x)))score+=3000;
-    if(jobDate(r)===today)score+=2000;
-    if(e)score+=1000+Math.min(900,recordMs(e)/1e12);
-    score+=Math.min(99,toMs(r?.updatedAtMs||r?.createdAtMs||r?.updatedAt||r?.createdAt)/1e12);
-    return {r,e,score};
-  }).sort((a,b)=>b.score-a.score)[0]||null;
-}
-function gpsPoint(d,node){
-  const profile=node?.profile||{},live=node?.live||{};
-  const lat=num(first(live,['latitude','lat','currentLatitude','current_latitude']),-90,90),lng=num(first(live,['longitude','lng','currentLongitude','current_longitude']),-180,180);
-  const ts=toMs(first(live,['lastUpdateAt','lastUpdateAtMs','last_update_ms','updatedAtMs','timestampMs','lastSyncAt','lastSyncAtMs','last_sync_ms','timestamp','updatedAt','lastUpdate','last_updated','heartbeatMs','heartbeat_ms']));
-  if(lat===null||lng===null||!ts)return null;
-  return {lat,lng,ts,driverId:d.id,driverName:String(first(profile,['driverName','driver_name','name'])||d.name),driverUid:String(first(profile,['driverUid','driver_uid','authUid','auth_uid','uid'])||''),vehicle:String(first(live,['vehicleNumber','vehicle_number','vehicle'])||first(profile,['vehicleNumber','vehicle_number','vehicle'])||d.vehicle)};
-}
-function plusCode(latitude,longitude){
-  const alphabet='23456789CFGHJMPQRVWX',resolutions=[20,1,.05,.0025,.000125];
-  let lat=Math.min(90,Math.max(-90,Number(latitude))),lng=Number(longitude);while(lng<-180)lng+=360;while(lng>=180)lng-=360;if(lat===90)lat-=1e-12;lat+=90;lng+=180;let code='';
-  for(const resolution of resolutions){const a=Math.floor(lat/resolution),b=Math.floor(lng/resolution);lat-=a*resolution;lng-=b*resolution;code+=alphabet[a]+alphabet[b];if(code.length===8)code+='+'}
-  return code;
-}
-function arrivalParts(date){
-  const parts=new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:true}).formatToParts(date),weekday=parts.find(p=>p.type==='weekday')?.value||'',today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date()),target=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(date);
-  return {day:target===today?'Today':weekday,time:new Intl.DateTimeFormat('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit',hour12:true}).format(date)};
-}
-function timeout(promise,ms){let timer=0;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Route request timed out')),ms)})]).finally(()=>clearTimeout(timer))}
-function requestState(job){return JSON.stringify([job?.id,jobKey(job),status(job),assignedIds(job),assignedNames(job),first(job,['assigned_driver_uid','driver_uid','driverUid','assignedDriverUid']),destination(job),first(job,['vehicle_number','vehicle_no','vehicleNumber','plan_vehicle_number','assigned_vehicle']),signedInUser?.uid||''])}
-function requestCurrent(d,job,state,point){const current=currentJob(d)?.r,live=window.__AZP_EXEC_ETA_LIVE__[d.id],age=Date.now()-point.ts;return !!signedInUser&&current?.id===job.id&&requestState(current)===state&&age>=0&&age<=60000&&live?.driverId===point.driverId&&live.driverUid===point.driverUid&&live.vehicle===point.vehicle}
-async function heal(d,point){
-  if(!signedInUser||!Number.isFinite(point.ts)||Date.now()-point.ts<0||Date.now()-point.ts>60000)return;
-  const selected=currentJob(d);if(!selected)return;
-  const job=selected.r,key=jobKey(job),startedAt=routeStarted.get(key)||0,routeAge=selected.e?Date.now()-recordMs(selected.e):Infinity;
-  if(busy.has(key)||Date.now()-startedAt<30000||routeAge<30000)return;
-  const state=requestState(job),targetKey=AzpEtaView.deliveryKey(job);busy.add(key);routeStarted.set(key,Date.now());
-  let phase='route';
-  try{
-    const dest=destination(job),origin=plusCode(point.lat,point.lng),now=Date.now(),response=await timeout(routeCall({from:origin,to:dest}),20000);
-    if(!requestCurrent(d,job,state,point))throw Error('Job, login or GPS changed while calculating ETA; recalculation required.');
-    const timing=AzpEtaView.routeTiming(response?.data,now),distanceMeters=timing.distanceMeters,seconds=timing.durationSeconds;
-    const arrival=new Date(timing.arrivalMs),parts=arrivalParts(arrival),distanceKm=distanceMeters/1000,durationText=seconds>=3600?Math.floor(seconds/3600)+' hr '+Math.round((seconds%3600)/60)+' min':Math.max(1,Math.round(seconds/60))+' min';
-    const data={module:'eta',collection:'eta',eta_version:'Phase 2.5 Execution GPS Self-Healer',eta_route_method:'Existing Google Routes with production GPS',eta_status:'Live',eta_sync_status:'Synced',eta_job_status:status(job),eta_job_id:key,eta_source_job_document:String(job.id||''),eta_driver_id:d.id,eta_driver_uid:point.driverUid||signedInUser.uid||'',eta_driver_name:d.name,eta_vehicle_number:point.vehicle||d.vehicle,eta_current_latitude:point.lat,eta_current_longitude:point.lng,eta_current_location:'Live GPS '+point.lat.toFixed(6)+', '+point.lng.toFixed(6),eta_origin_plus_code:origin,eta_destination:dest,eta_remaining_distance_meters:distanceMeters,eta_remaining_distance_text:distanceKm.toLocaleString('en-IN',{maximumFractionDigits:1})+' KM',eta_duration_seconds:seconds,eta_duration_text:durationText,eta_arrival_iso:arrival.toISOString(),eta_arrival_day:parts.day,eta_arrival_time:parts.time,eta_gps_timestamp_ms:point.ts,eta_updated_at_ms:now,eta_route_time_basis:'CLIENT_REQUEST_START',eta_route_requested_at_ms:now,eta_route_received_at_ms:Date.now(),eta_source:'Production RTDB via Execution ETA self-healer',customer_tracking_ready:'Yes',updatedAt:serverTimestamp()};
-    const id=('ETA_'+key+'_'+d.name).replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120);
-    phase='save';
-    await setDoc(doc(fs,'azpExecutionRecords',id),data,{merge:true});
-    if(requestCurrent(d,job,state,point))delete window.__AZP_EXEC_ETA_ERRORS__[key];
-  }catch(err){
-    window.__AZP_EXEC_ETA_ERRORS__[key]={...AzpEtaView.failure(err,phase),targetKey,driverId:d.id,at:Date.now()};
-  }finally{busy.delete(key)}
-}
-function publish(root){
-  delete window.__AZP_EXEC_GPS_ERROR__;
-  DRIVERS.forEach(d=>{const point=gpsPoint(d,root?.[d.id]);if(!point)return;window.__AZP_EXEC_ETA_LIVE__[d.id]=point;heal(d,point)});
-  window.dispatchEvent(new CustomEvent('azp-production-gps-live',{detail:window.__AZP_EXEC_ETA_LIVE__}));
-}
-function start(){if(started||!signedInUser)return;started=true;onValue(ref(rtdb,'gpsProduction/v1/drivers'),snap=>publish(snap.val()||{}),err=>{window.__AZP_EXEC_GPS_ERROR__={...AzpEtaView.failure(err,'gps'),at:Date.now()}})}
-window.addEventListener('azp-execution-data',e=>{rows=Array.isArray(e.detail?.rows)?e.detail.rows:[];DRIVERS.forEach(d=>{const p=window.__AZP_EXEC_ETA_LIVE__[d.id];if(p)heal(d,p)})});
-onAuthStateChanged(auth,user=>{signedInUser=user||null;if(user)start()});
-</script>
+<!-- Execution ETA now uses the private authorized GPS monitor feed above. -->
 <!-- ===== END EXECUTION ETA LIVE GPS SELF-HEALER V2.5 ===== -->
 <script src="owner-score-config.js"></script>
 <script src="execution-owner-score.js?v=20261015-persist1"></script>
