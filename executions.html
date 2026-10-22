@@ -6186,11 +6186,12 @@ function pgmAcceptFuelRows(rows){pgmFuelRows=(Array.isArray(rows)?rows:[]).filte
 window.addEventListener('azp-execution-data',e=>pgmAcceptFuelRows(e.detail?.rows||[]));if(window.__AZP_SHARED_EXECUTION_ROWS__)pgmAcceptFuelRows(window.__AZP_SHARED_EXECUTION_ROWS__);
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-module="gps"]'))setTimeout(pgmEnsure,80)},true);
 document.addEventListener('DOMContentLoaded',()=>{const gps=document.getElementById('mod-gps');if(gps&&!gps.classList.contains('hidden'))pgmEnsure()});
-onAuthStateChanged(pgmAuth,async user=>{const generation=++pgmAuthGeneration;await pgmPersistence;if(generation!==pgmAuthGeneration||user?.uid!==pgmAuth.currentUser?.uid)return;pgmAuthReady=true;pgmStopReads();PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmUser=user?.uid===PGM_ADMIN_UID?user:null;if(pgmUser)pgmAuthMessage=pgmPersistenceMessage;if(user&&user.uid!==PGM_ADMIN_UID)pgmAuthMessage='This GPS session is not the authorized Admin account. Sign in here with the existing authorized account.';if(pgmAuthorized())pgmStart();pgmRenderCards()},()=>{pgmAuthGeneration++;pgmStopReads();pgmAuthReady=true;pgmUser=null;PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmAuthMessage='GPS authentication could not be verified. Retry sign-in; saved Execution login is unchanged.';pgmRenderCards()});
+onAuthStateChanged(pgmAuth,async user=>{const generation=++pgmAuthGeneration;pgmEta.acceptAuth(null);await pgmPersistence;if(generation!==pgmAuthGeneration||user?.uid!==pgmAuth.currentUser?.uid)return;pgmAuthReady=true;pgmStopReads();PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmUser=user?.uid===PGM_ADMIN_UID?user:null;if(pgmUser)pgmAuthMessage=pgmPersistenceMessage;if(user&&user.uid!==PGM_ADMIN_UID)pgmAuthMessage='This GPS session is not the authorized Admin account. Sign in here with the existing authorized account.';pgmEta.acceptAuth(pgmUser);if(pgmAuthorized())pgmStart();pgmRenderCards()},()=>{pgmAuthGeneration++;pgmEta.acceptAuth(null);pgmStopReads();pgmAuthReady=true;pgmUser=null;PGM_DRIVERS.forEach(d=>pgmState.set(d.id,{profile:null,live:null}));pgmAuthMessage='GPS authentication could not be verified. Retry sign-in; saved Execution login is unchanged.';pgmRenderCards()});
 
 // ETA uses this module's existing authorized child reads; no GPS snapshots or getter are exported.
 const pgmEta=(()=>{
-const app=pgmDefaultApp,fs=pgmFs,auth=getAuth(pgmDefaultApp);
+// Only private ETA requests use the existing GPS Admin session; default business clients stay unchanged.
+const app=pgmApp,fs=getFirestore(pgmApp),auth=pgmAuth;
 const routeCall=httpsCallable(getFunctions(app,'asia-south1'),'calculateRouteDistance');
 const DRIVERS=[
   {id:'DRIVER_MAHESH_001',name:'Mahesh',vehicle:'OD-33-AR-8855'},
@@ -6201,11 +6202,11 @@ const routeStarted=new Map(),busy=new Set();
 let signedInUser=null,generation=0,rows=Array.isArray(window.__AZP_SHARED_EXECUTION_ROWS__)?window.__AZP_SHARED_EXECUTION_ROWS__:[];
 const errors=new Map();
 const expectedUids={DRIVER_MAHESH_001:'WoVSnY7tchXAVWFeP7UgJEuwlHu2',DRIVER_AJAY_001:'RpLO7VqVUaUBWc4XsBcMGYwYWqP2',DRIVER_SOMNATH_001:'FCFwdn24rkMScoAdBXzfOF7c3rP2'};
-function authorized(){return pgmAuthorized()&&signedInUser?.uid===PGM_ADMIN_UID&&auth.currentUser?.uid===PGM_ADMIN_UID&&signedInUser===auth.currentUser}
+function authorized(){return pgmAuthorized()&&pgmUser===auth.currentUser&&signedInUser?.uid===PGM_ADMIN_UID&&auth.currentUser?.uid===PGM_ADMIN_UID&&signedInUser===auth.currentUser}
 function invalidate(){generation++;errors.clear()}
 function gpsReason(d){
   if(!pgmAuthorized())return 'Connect the existing authorized GPS Admin session in Live GPS.';
-  if(!authorized())return 'Execution and Live GPS must use the same existing authorized GPS Admin account.';
+  if(!authorized())return 'GPS Admin authentication is changing or could not be verified. ETA is paused.';
   if(!d)return 'Assigned GPS driver is unavailable.';
   const keys=['profile','live'].map(child=>d.name+' '+child);
   if(keys.some(key=>pgmErrors.has(key)))return 'GPS child read failed. Check the existing Live GPS session and access.';
@@ -6315,8 +6316,9 @@ async function heal(d,point){
 function sync(){if(!authorized())return;DRIVERS.forEach(d=>{const point=readPoint(d);if(point)heal(d,point)})}
 window.addEventListener('azp-execution-data',e=>{rows=Array.isArray(e.detail?.rows)?e.detail.rows:[];sync()});
 document.addEventListener('azp-eta-diagnostic-query',e=>{const detail=e.detail;if(detail&&typeof detail==='object')detail.reason=diagnostic(detail)});
-onAuthStateChanged(auth,user=>{invalidate();signedInUser=user||null;sync()},()=>{invalidate();signedInUser=null});
-return Object.freeze({sync,invalidate});
+// The existing monitor accepts this identity only after clearing previous-session snapshots.
+function acceptAuth(user){invalidate();signedInUser=user||null}
+return Object.freeze({sync,invalidate,acceptAuth});
 })();
 </script>
 <!-- ===== END ISOLATED PRODUCTION VEHICLE GPS MONITOR V10.0 ===== -->
