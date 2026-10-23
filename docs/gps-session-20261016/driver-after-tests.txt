@@ -1,0 +1,16 @@
+✔ partial/cache snapshot preserves saved login until master arrives (2.573994ms)
+✔ active master restores saved portal login (0.78874ms)
+✔ explicitly disabled master still clears saved portal login (0.798274ms)
+✔ logout cancellation retains session (1.766065ms)
+✔ azpProdLogout cancellation retains session (1.131888ms)
+✔ azpStopLiveGps cancellation retains session (0.788961ms)
+✔ logout confirmed signout executes (0.759756ms)
+✔ azpProdLogout confirmed signout executes (0.730272ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96.658782

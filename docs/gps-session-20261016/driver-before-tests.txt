@@ -1,0 +1,87 @@
+✖ partial/cache snapshot preserves saved login until master arrives (4.139165ms)
+✔ active master restores saved portal login (1.186631ms)
+✔ explicitly disabled master still clears saved portal login (0.616851ms)
+✖ logout cancellation retains session (2.157055ms)
+✖ azpProdLogout cancellation retains session (1.066684ms)
+✖ azpStopLiveGps cancellation retains session (0.952778ms)
+✔ logout confirmed signout executes (1.025126ms)
+✔ azpProdLogout confirmed signout executes (0.796322ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 4
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.024474
+
+✖ failing tests:
+
+test at ../../atoz-staging/tests/driver-login-retention.test.cjs:19:1
+✖ partial/cache snapshot preserves saved login until master arrives (4.139165ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'azp_staff_login'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (/workspace/atoz-staging/tests/driver-login-retention.test.cjs:20:47)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'azp_staff_login' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at ../../atoz-staging/tests/driver-login-retention.test.cjs:28:63
+✖ logout cancellation retains session (2.157055ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/workspace/atoz-staging/tests/driver-login-retention.test.cjs:35:38)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../atoz-staging/tests/driver-login-retention.test.cjs:28:63
+✖ azpProdLogout cancellation retains session (1.066684ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/workspace/atoz-staging/tests/driver-login-retention.test.cjs:35:38)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../atoz-staging/tests/driver-login-retention.test.cjs:28:63
+✖ azpStopLiveGps cancellation retains session (0.952778ms)
+  ReferenceError: azpGpsWatchId is not defined
+      at window.azpStopLiveGps (evalmachine.<anonymous>:2:7)
+      at TestContext.<anonymous> (/workspace/atoz-staging/tests/driver-login-retention.test.cjs:35:28)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7)
