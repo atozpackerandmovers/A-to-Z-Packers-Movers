@@ -1,0 +1,51 @@
+{
+  "status": "BUILT_AND_STATICALLY_VERIFIED_NOT_INSTALLED_NOT_DEPLOYED",
+  "package": "com.atozpackersmovers.drivertracker",
+  "signerSha256": "ce73570e7a15a5916d5b4435e82a297661521067a900d9a99efdcdb1866dc391",
+  "signature": "APK v2 verified, single existing Android Debug signer",
+  "apkExecution": false,
+  "productionWrites": 0,
+  "libraryUpload": "BLOCKED: current required upload helper unavailable; Windows Python runtime unavailable. No upload started.",
+  "deviceAcceptance": "NOT TESTED: real Android in-place update, permissions, process death, GPS, network-loss recovery and authenticated Firebase REST/summary access.",
+  "artifacts": [
+    {
+      "driver": "Mahesh",
+      "filename": "A_TO_Z_Driver_Mahesh_5.0.14.apk",
+      "versionName": "5.0.14-staging-ack-protocol",
+      "versionCode": 50014,
+      "bytes": 6056857,
+      "sha256": "0a4f772828f19484c047b8d0451a65144b8731cb4f67b568a829a93024df894f",
+      "sourceCommit": "9a4089b3a3408fdc187ff62b5004542834bb7c03",
+      "jvmTestsPassed": 60,
+      "zipEntriesVerified": 501,
+      "driverId": "DRIVER_MAHESH_001",
+      "vehicleId": "VEHICLE_OD33AR8855"
+    },
+    {
+      "driver": "Ajay",
+      "filename": "A_TO_Z_Driver_Ajay_5.0.16.apk",
+      "versionName": "5.0.16-ajay-ack-recovery",
+      "versionCode": 50016,
+      "bytes": 6058201,
+      "sha256": "5cff262f11751cc1421539aaf6965dc68110398a21eb2ecbe137584e977cf104",
+      "sourceCommit": "85dc738a3d843787463790789b9fae57e1288ff8",
+      "jvmTestsPassed": 60,
+      "zipEntriesVerified": 501,
+      "driverId": "DRIVER_AJAY_001",
+      "vehicleId": "VEHICLE_OD05BD8855"
+    },
+    {
+      "driver": "Somnath",
+      "filename": "A_TO_Z_Driver_Somnath_5.0.16.apk",
+      "versionName": "5.0.16-somnath-ack-recovery",
+      "versionCode": 50016,
+      "bytes": 6060385,
+      "sha256": "8b63a23ddcbd7def022858ff4feef3a05163ded6edc3b9c5ec1df4c3d77daf61",
+      "sourceCommit": "85dc738a3d843787463790789b9fae57e1288ff8",
+      "jvmTestsPassed": 67,
+      "zipEntriesVerified": 501,
+      "driverId": "DRIVER_SOMNATH_001",
+      "vehicleId": "VEHICLE_OD05AP9537"
+    }
+  ]
+}
