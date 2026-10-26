@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attendance identity diagnostic</title>
+<style>body{font:16px system-ui;max-width:760px;margin:30px auto;padding:20px;color:#20334a;background:#f5f7fa}button,input{box-sizing:border-box;font:inherit;padding:12px;margin:8px 0}button{background:#234d83;color:white;border:0;border-radius:6px}button:disabled{opacity:.45}label{display:block}input{width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:white;padding:16px}aside{background:#fff1cc;padding:16px}details{margin:16px 0}p{overflow-wrap:anywhere}</style>
+<h1>Attendance identity diagnostic</h1>
+<aside>Synthetic records only. This does not activate attendance alerts or change business records.</aside>
+<p>Use the operator's current run ID and expiry. Recovery only reads the exact record. Each write needs a separate click; never repeat an uncertain write. Keep this browser profile until cleanup.</p>
+<label>Run ID <input id="run" autocomplete="off"></label>
+<label>Capture expiry (UTC) <input id="expiry" placeholder="2026-10-26T00:00:00Z" autocomplete="off"></label>
+<details><summary>Recover an uncertain create using the operator's verified provider receipt</summary>
+<p>Enter the original creation and version timestamps from the operator's independently checked receipt, not a guess. These are record-version checks, not proof of who wrote it.</p>
+<label>Verified original creation time <input id="anchor-create" autocomplete="off"></label>
+<label>Verified step-1 version <input id="anchor-version" autocomplete="off"></label></details>
+<div><button id="check">Check owner session</button><button id="recover" disabled>Inspect / recover exact run</button><button id="register" disabled>Register operator's unused run</button></div>
+<div><button id="create" disabled>Create synthetic record (step 1)</button><button id="update" disabled>Update synthetic record (step 2)</button></div>
+<p id="status" role="status">Owner verification has not run.</p><pre id="receipt">No write attempted.</pre>
+<script type="module">
+import {ownerScoreSession} from './owner-score-session.js?v=20261015-persist1';
+import {getIdToken,reload} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
+if(location.origin!=='https://atozpackersmovers.in')throw Error('Use the approved website origin');
+const session=await ownerScoreSession(),$=id=>document.getElementById(id),UID='88IIhxscilQqcT0XsHqRpE0JC0V2';
+const ROOT='projects/az-packers-quotation/databases/(default)/documents',BASE='https://firestore.googleapis.com/v1/'+ROOT;
+const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+let verifiedAt=null,ownerUser=null,busy=false,generation=0,disposed=false,prepared=null,bound=null;
+// Browser storage is a retry guard, never authorization or authoritative actor evidence.
+function stamp(s){
+ const m=typeof s==='string'&&/^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(?:\.(\d{1,9}))?Z$/.exec(s);
+ if(!m)throw Error('Exact UTC timestamp required');const ms=Date.parse(m[1]+'Z');
+ if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,19)!==m[1])throw Error('Invalid UTC timestamp');
+ return BigInt(ms)*1000000n+BigInt((m[2]||'').padEnd(9,'0'));
+}
+function config(){const run=$('run').value.trim(),expiry=$('expiry').value.trim();if(!uuid.test(run))throw Error('Valid operator run ID required');const end=stamp(expiry);if(end%1000000n)throw Error('Use the operator expiry with millisecond precision');return{run,expiry,end,name:ROOT+'/azpAttendanceIdentityProbe/'+run,key:'azp.identity.v1.'+run};}
+function inWindow(c){const now=BigInt(Date.now())*1000000n;if(c.end<=now+30000000000n||c.end>now+600000000000n)throw Error('Capture window expired or invalid; no write allowed');}
+function eligible(u){return !!u&&u.uid===UID&&u.emailVerified===true&&u.isAnonymous===false&&u.providerData?.some(p=>p.providerId==='password');}
+function owner(){if(!eligible(session.view.currentUser)||session.view.currentUser!==ownerUser||verifiedAt===null||Date.now()-verifiedAt>=300000)throw Error('Fresh verified owner session required');}
+function guard(c,g,checking=false){if(disposed||g!==generation)throw Error('Page or session changed; inspect again');if(!checking){owner();inWindow(c);if(bound&&(bound.run!==c.run||bound.expiry!==c.expiry))throw Error('Run binding changed');}}
+function invalidate(){prepared=null;generation++;}
+function read(c){let raw;try{raw=localStorage.getItem(c.key);}catch{throw Error('Local retry journal unavailable; read-only');}if(raw===null)return{raw,value:null};let j;try{j=JSON.parse(raw);}catch{throw Error('Local retry journal corrupt; read-only');}
+ if(j.schema!==1||j.run!==c.run||j.expiry!==c.expiry||!j.attempts||typeof j.attempts!=='object'||Array.isArray(j.attempts))throw Error('Run journal binding mismatch; read-only');
+ for(const [k,a]of Object.entries(j.attempts)){if(!['1','2'].includes(k)||!a||!['pending','observed'].includes(a.state)||!Number.isFinite(a.at)||k==='2'&&typeof a.beforeVersion!=='string')throw Error('Invalid attempt journal; read-only');}
+ if(j.attempts[2]&&!j.attempts[1])throw Error('Invalid attempt sequence; read-only');
+ if(j.anchor){stamp(j.anchor.createTime);stamp(j.anchor.updateTime);if(![1,2].includes(j.anchor.step)||!j.attempts[j.anchor.step])throw Error('Invalid version anchor; read-only');}
+ return{raw,value:j};
+}
+function save(c,j){const raw=JSON.stringify(j);try{localStorage.setItem(c.key,raw);if(localStorage.getItem(c.key)!==raw)throw Error();}catch{throw Error('Cannot persist retry guard; no request will be sent');}return raw;}
+function validate(d,c){
+ const f=d?.fields,step=f?.step?.integerValue,keys=Object.keys(f||{}).sort().join(',');
+ if(d?.name!==c.name||!['1','2','3'].includes(step)||keys!==(step==='3'?'claimedActor,probe,runId,step':'probe,runId,step')||JSON.stringify(f.probe)!=='{"booleanValue":true}'||JSON.stringify(f.runId)!==JSON.stringify({stringValue:c.run})||Object.keys(f.step).join()!=='integerValue'||step==='3'&&JSON.stringify(f.claimedActor)!=='{"stringValue":"synthetic-owner-claim"}')throw Error('Exact synthetic document/fields mismatch');
+ const created=stamp(d.createTime),updated=stamp(d.updateTime),now=BigInt(Date.now())*1000000n;
+ if(created<c.end-600000000000n||created>=c.end||updated<created||updated>=c.end||updated>now+5000000000n||step==='1'&&created!==updated||step!=='1'&&updated<=created)throw Error('Stale run or invalid document version');
+ return Number(step);
+}
+function anchor(d,step){return{createTime:d.createTime,updateTime:d.updateTime,step};}
+function same(a,b){return stamp(a)===stamp(b);}
+function show(c,d,extra={}){$('receipt').textContent=JSON.stringify({runId:c.run,...(d?{step:Number(d.fields.step.integerValue),createTime:d.createTime,updateTime:d.updateTime}:{}),...extra},null,2);}
+async function call(url,{c,g,checking=false,body}={}){
+ guard(c,g,checking);const u=session.view.currentUser;if(!eligible(u))throw Error('Verified owner session required');await reload(u);
+ if(session.view.currentUser!==u||!eligible(u))throw Error('Owner session changed');guard(c,g,checking);
+ const t=await getIdToken(u,true);if(session.view.currentUser!==u||!eligible(u))throw Error('Owner session changed');guard(c,g,checking);
+ const r=await fetch(url,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+t,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(12000)});
+ const value=await r.json();if(session.view.currentUser!==u||!eligible(u))throw Error('Owner session changed');guard(c,g,checking);if(!r.ok){if(!body&&r.status===404&&!checking)return null;throw Error('Request HTTP '+r.status);}return value;
+}
+function controls(){let valid=false;try{owner();inWindow(config());valid=true;}catch{}const lockOK=!!navigator.locks?.request;
+ $('check').disabled=busy;$('recover').disabled=busy||!valid;$('register').disabled=busy||!valid||!lockOK||prepared?.step!==0;
+ $('create').disabled=busy||!valid||!lockOK||prepared?.step!==1;$('update').disabled=busy||!valid||!lockOK||prepared?.step!==2;
+ $('run').disabled=busy||!!bound;$('expiry').disabled=busy||!!bound;
+}
+async function action(fn){if(busy)return;busy=true;controls();try{await fn();}catch(e){prepared=null;$('status').textContent=e.message;}finally{busy=false;controls();}}
+async function locked(c,fn){if(!navigator.locks?.request)throw Error('Cross-tab lock unavailable; read-only');return navigator.locks.request(c.key,{ifAvailable:true},async lock=>{if(!lock)throw Error('Another tab is using this run; inspect again');return fn();});}
+$('check').onclick=()=>action(async()=>{invalidate();ownerUser=null;verifiedAt=null;const g=generation;const ready=await call('https://faultownergateway-onqwi7to4a-el.a.run.app/api/staff-score/owner-session',{g,checking:true});if(ready.ownerVerified!==true)throw Error('Owner backend verification failed');ownerUser=session.view.currentUser;verifiedAt=Date.now();$('status').textContent='Owner backend verification passed - '+new Date(verifiedAt).toISOString();});
+$('recover').onclick=()=>action(async()=>{
+ invalidate();const c=config(),g=generation;guard(c,g);await locked(c,async()=>{const initial=read(c),d=await call(BASE+'/azpAttendanceIdentityProbe/'+c.run,{c,g});
+ // A concurrent tab can change the journal while a read is in flight. Never prepare from that stale read.
+ if(read(c).raw!==initial.raw)throw Error('Run changed in another tab; inspect again');bound={run:c.run,expiry:c.expiry};
+ if(!d){show(c,null,{exists:false});if(initial.value?.attempts[1]||initial.value?.anchor)throw Error('Record absent after a saved attempt; do not recreate or retry');prepared={c,raw:initial.raw,step:initial.value?1:0};$('status').textContent=initial.value?'Unused registered run verified absent. Create is a separate action.':'Record absent. Recovery has sent no write. Only register a newly assigned, never-used operator run.';return;}
+ const step=validate(d,c);show(c,d,{source:'exact readback; actor not inferred'});const j=initial.value;if(!j)throw Error('Existing record has no local attempt journal; read-only. Operator reconciliation required');
+ if(!j.attempts[1])throw Error('Unexpected record without a saved create attempt; read-only');
+ if(step===3)throw Error('Control step already observed; no further owner writes');
+ if(!j.anchor){
+  if(step!==1||j.attempts[2])throw Error('Missing original version anchor; read-only');
+  const a=$('anchor-create').value.trim(),v=$('anchor-version').value.trim();
+  if(!a||!v)throw Error('Uncertain create: operator-verified original creation and step-1 version required. Never repeat create');
+  if(!same(a,d.createTime)||!same(v,d.updateTime))throw Error('Provider receipt anchor mismatch; read-only');
+  j.anchor=anchor(d,1);j.attempts[1].state='observed';
+ }
+ if(!same(j.anchor.createTime,d.createTime))throw Error('Original creation time changed; read-only');
+ if(j.attempts[2]){
+  if(step===2&&same(j.attempts[2].beforeVersion,d.createTime)&&stamp(d.updateTime)>stamp(j.attempts[2].beforeVersion)&&(j.anchor.step===1&&same(j.anchor.updateTime,j.attempts[2].beforeVersion)||j.anchor.step===2&&same(j.anchor.updateTime,d.updateTime))){j.anchor=anchor(d,2);j.attempts[2].state='observed';save(c,j);$('status').textContent='Step 2 observed by readback. No retry. Operator must verify the provider event and actor.';return;}
+  throw Error('Update was already attempted; outcome unresolved or changed. Never retry');
+ }
+ if(step!==1||j.anchor.step!==1||!same(j.anchor.updateTime,d.updateTime))throw Error('Exact saved version mismatch; read-only');
+ const raw=save(c,j);prepared={c,raw,step:2,source:d};$('status').textContent='Exact step 1 recovered. Create stays blocked. After operator event verification, update is a separate action.';
+ });
+});
+$('register').onclick=()=>action(async()=>{const p=prepared;if(p?.step!==0)throw Error('Inspect an unused run first');const c=p.c,g=generation;await locked(c,async()=>{guard(c,g);if(read(c).raw!==null)throw Error('Run already registered; inspect again');if(await call(BASE+'/azpAttendanceIdentityProbe/'+c.run,{c,g}))throw Error('Run already exists; no registration');const j={schema:1,run:c.run,expiry:c.expiry,attempts:{}};if(read(c).raw!==null)throw Error('Run changed; inspect again');const raw=save(c,j);prepared={c,raw,step:1};$('status').textContent='Unused run registered locally. No write sent. Create is a separate action.';});});
+async function write(step){return action(async()=>{
+ const p=prepared;if(p?.step!==step)throw Error('Inspect the exact run before this write');const c=p.c,g=generation;
+ await locked(c,async()=>{
+  guard(c,g);const current=read(c);if(current.raw!==p.raw||!current.value||current.value.attempts[step])throw Error('Saved attempt changed; inspect again');
+  const j=current.value;j.attempts[step]={state:'pending',at:Date.now(),...(step===2?{beforeVersion:p.source.updateTime}:{})};save(c,j);prepared=null;controls();
+  const value={update:{name:c.name,fields:step===1?{probe:{booleanValue:true},runId:{stringValue:c.run},step:{integerValue:'1'}}:{step:{integerValue:'2'}}},currentDocument:step===1?{exists:false}:{updateTime:p.source.updateTime},...(step===2?{updateMask:{fieldPaths:['step']}}:{})};
+  try{
+   const receipt=await call(BASE+':commit',{c,g,body:{writes:[value]}}),d=await call(BASE+'/azpAttendanceIdentityProbe/'+c.run,{c,g});
+   if(validate(d,c)!==step||!same(receipt.writeResults?.[0]?.updateTime,d.updateTime)||step===2&&(!same(d.createTime,p.source.createTime)||stamp(d.updateTime)<=stamp(p.source.updateTime)))throw Error('Commit/readback version mismatch');
+   // Do not overwrite a journal replaced while the request was in flight.
+   if(read(c).raw!==JSON.stringify(j))throw Error('Journal changed during request');j.anchor=anchor(d,step);j.attempts[step].state='observed';save(c,j);
+   show(c,d,{commitTime:receipt.commitTime,writeResults:receipt.writeResults});$('status').textContent='Synthetic step '+step+' committed and read back. Wait for operator event verification; inspect before any next action.';
+  }catch(e){show(c,null,{step,outcome:'uncertain'});throw Error('Step '+step+' outcome uncertain. Never retry; use read-only recovery. '+e.message);}
+ });
+});}
+$('create').onclick=()=>write(1);$('update').onclick=()=>write(2);
+for(const id of ['run','expiry','anchor-create','anchor-version'])$(id).oninput=()=>{invalidate();controls();};
+session.subscribe(()=>{if(ownerUser&&(!eligible(session.view.currentUser)||session.view.currentUser!==ownerUser)){verifiedAt=null;ownerUser=null;invalidate();$('status').textContent='Owner session changed. Verify again; saved attempts remain blocked.';controls();}});
+window.addEventListener('storage',e=>{if(e.key?.startsWith('azp.identity.v1.')){invalidate();controls();}});
+window.addEventListener('pagehide',()=>{disposed=true;invalidate();session.dispose();});
+setInterval(controls,1000);controls();
+</script></html>
