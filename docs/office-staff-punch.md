@@ -88,3 +88,12 @@ in Attendance History. Connection errors and save feedback remain visible.
 Owner-requested correction on 7 October reopened Swagatika's incorrect 13:51
 morning Out while retaining the original session in attendance_corrections.
 The stored 10:24 In remains; Out must be explicitly pressed to close the session.
+
+## Forgotten Punch Out recovery (28 October 2026)
+
+An open shift on a previous India date stops blocking new punches once its
+Punch In is at least 24 hours old. Short overnight shifts still close normally.
+The dashboard lists missed Punch Out dates for Office review. Today's punch
+uses today's record and company decisions; old attendance, salary, hours and
+punch times remain unchanged. No estimated departure is written. Office must
+correct the actual exit time separately.

@@ -11,7 +11,16 @@
   function eligible(master,date){if(!master)throw Error('Indoor Staff Master is required.');if(/inactive|suspend|black/.test(norm(master.status||'Active')))throw Error('Punching is available only for active staff.');const join=String(master.reactivation_date||master.joining_date||master.join_date||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(join)||date<join)throw Error('Office must set a valid Joining Date before punching.');}
   function own(r,m){return r.master_id?String(r.master_id)===String(m.id):alias(r.employee_name||r.staff_name)===alias(nameOf(m))&&(!r.role||r.role==='Indoor Staff');}
   function dayRows(rows,m,date){return rows.filter(r=>['attendance','leaveApproval'].includes(moduleOf(r))&&own(r,m)&&R.effective(r)&&R.start(r)<=date&&R.end(r)>=date).sort((a,b)=>R.time(a)-R.time(b));}
-  function target(rows,m,now){const open=rows.filter(r=>moduleOf(r)==='attendance'&&own(r,m)&&(r.punch_in||r.check_in)&&!(r.punch_out||r.check_out)).sort((a,b)=>R.time(b)-R.time(a))[0];if(open)return open;return dayRows(rows,m,india(now).date).filter(r=>moduleOf(r)==='attendance').at(-1)||null;}
+  // Keep overnight departures available, but never carry a forgotten shift indefinitely.
+  function staleOpen(r,now){
+    const open=sessions(r).find(x=>x.punch_in&&!x.punch_out);
+    if(!open||!r.date||r.date>=india(now).date)return false;
+    const started=Number(open.punch_in_at_ms)||Date.parse(`${open.punch_in_date||r.date}T${open.punch_in}:00+05:30`);
+    return !Number.isFinite(started)||now-started>=24*60*60*1000;
+  }
+  function missedRows(rows,m,now){return rows.filter(r=>moduleOf(r)==='attendance'&&own(r,m)&&staleOpen(r,now));}
+  function target(rows,m,now){const open=rows.filter(r=>moduleOf(r)==='attendance'&&own(r,m)&&sessions(r).some(x=>x.punch_in&&!x.punch_out)&&!staleOpen(r,now)).sort((a,b)=>R.time(b)-R.time(a))[0];if(open)return open;return dayRows(rows,m,india(now).date).filter(r=>moduleOf(r)==='attendance').at(-1)||null;}
+
   const minutes=t=>{const m=String(t||'').match(/^(\d{2}):(\d{2})$/);return m?+m[1]*60+ +m[2]:null;};
   const SHIFTS=[{id:'morning',label:'Morning',start:'10:00',end:'14:30'},{id:'evening',label:'Evening',start:'18:00',end:'22:00'}];
   function sessions(r={}){
@@ -54,7 +63,7 @@
     const distinct=new Set(reports.map(r=>r.report_id.trim()));
     return {score:Math.max(0,100-2*distinct.size),reported:true,reason:String(reports[0].reason||'')};
   }
-  const api={alias,india,resolveMaster,eligible,dayRows,target,patch,SHIFTS,sessions,shiftState,scoreState};root.AZPStaffPunch=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  const api={alias,india,resolveMaster,eligible,dayRows,target,staleOpen,missedRows,patch,SHIFTS,sessions,shiftState,scoreState};root.AZPStaffPunch=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
   if(!root.document)return;
   let rows=[],user=null,db=null,busy=false,synced=false,message='',selectedShift='';
   let scoreReports=[],scoreLoaded=false,scoreError='',scoreLoading=false;
@@ -81,8 +90,9 @@
     if(!dash||!user||!['swagatika','sanju'].includes(alias(user.name))){box?.remove();return;}
     if(!box){box=document.createElement('section');box.id='office-punch';box.className='panel';dash.prepend(box);}
     let m,r,error='';try{if(synced){m=resolveMaster(rows,user);eligible(m,india().date);r=target(rows,m,Date.now());}}catch(e){error=e.message;}
+    const missed=m?missedRows(rows,m,Date.now()):[];
     const state=shiftState(r||{},Date.now(),selectedShift),pin=state.session.punch_in,pout=state.session.punch_out,disabled=busy||!synced||!!error;
-    box.innerHTML=`<div class="punch-head"><div><h2>Office Attendance</h2><p>${esc(india().date)} · India time</p></div><span class="punch-badge">${esc(r?.office_presence||(pin?(pout?'Left Office':'In Office'):'Not punched in'))}</span></div>${scoreboard(m)}<label class="punch-note" for="office-punch-shift">Select shift</label><select id="office-punch-shift" class="punch-select" ${busy||state.open?'disabled':''}>${SHIFTS.map(x=>`<option value="${x.id}" ${x.id===state.shift.id?'selected':''}>${x.label} · ${x.start}–${x.end}</option>`).join('')}</select><div class="punch-times"><div><span>${state.shift.label} In</span><strong>${esc(pin||'—')}</strong></div><div><span>${state.shift.label} Out</span><strong>${esc(pout||'—')}</strong></div><div><span>Shift Hours</span><strong>${pout?`${Math.floor((state.session.working_minutes||0)/60)}h ${(state.session.working_minutes||0)%60}m`:pin?'In progress':'—'}</strong></div></div>${r?.date&&r.date!==india().date?`<p class="punch-note">Open shift from ${esc(r.date)}. Punch Out closes that shift first.</p>`:''}<div class="punch-actions"><button id="office-punch-in" class="btn green" ${disabled||pin?'disabled':''}>Punch In</button><button id="office-punch-out" class="btn" ${disabled||!pin||pout?'disabled':''}>Punch Out</button></div><p id="office-punch-message" role="status" ${error||message||!synced?'':'hidden'}>${esc(error||message||(!synced?'Connecting to Execution attendance…':''))}</p>`;
+    box.innerHTML=`<div class="punch-head"><div><h2>Office Attendance</h2><p>${esc(india().date)} · India time</p></div><span class="punch-badge">${esc(r?.office_presence||(pin?(pout?'Left Office':'In Office'):'Not punched in'))}</span></div>${scoreboard(m)}<label class="punch-note" for="office-punch-shift">Select shift</label><select id="office-punch-shift" class="punch-select" ${busy||state.open?'disabled':''}>${SHIFTS.map(x=>`<option value="${x.id}" ${x.id===state.shift.id?'selected':''}>${x.label} · ${x.start}–${x.end}</option>`).join('')}</select><div class="punch-times"><div><span>${state.shift.label} In</span><strong>${esc(pin||'—')}</strong></div><div><span>${state.shift.label} Out</span><strong>${esc(pout||'—')}</strong></div><div><span>Shift Hours</span><strong>${pout?`${Math.floor((state.session.working_minutes||0)/60)}h ${(state.session.working_minutes||0)%60}m`:pin?'In progress':'—'}</strong></div></div>${r?.date&&r.date!==india().date?`<p class="punch-note">Open shift from ${esc(r.date)}. Punch Out closes that shift first.</p>`:''}${missed.length?`<p class="punch-note">Missed Punch Out: ${missed.map(x=>esc(x.date)).join(', ')}. Today’s Punch In is available. Ask Office to correct the actual exit time for those dates.</p>`:''}<div class="punch-actions"><button id="office-punch-in" class="btn green" ${disabled||pin?'disabled':''}>Punch In</button><button id="office-punch-out" class="btn" ${disabled||!pin||pout?'disabled':''}>Punch Out</button></div><p id="office-punch-message" role="status" ${error||message||!synced?'':'hidden'}>${esc(error||message||(!synced?'Connecting to Execution attendance…':''))}</p>`;
     box.querySelector('#office-punch-shift').onchange=e=>{selectedShift=e.target.value;render();};box.querySelector('#office-punch-in').onclick=()=>save('in');box.querySelector('#office-punch-out').onclick=()=>save('out');
   }
   async function save(action){

@@ -15,3 +15,24 @@ test('legacy morning punches retained and evening can be added without including
 test('an open shift cannot be replaced by choosing the other shift',()=>{const a=P.patch('in',{},master,at('2026-10-06T10:00:00'),{},[],'morning');assert.throws(()=>P.patch('in',a,master,at('2026-10-06T18:00:00'),{},[],'evening'));const b=P.patch('out',a,master,at('2026-10-06T14:30:00'),{},[],'evening');assert.equal(b.punch_sessions.length,1);assert.equal(b.punch_sessions[0].shift_id,'morning');});
 test('Execution honors fixed shift flags instead of applying global 09:00 office start',()=>{const fs=require('fs'),vm=require('vm'),source=fs.readFileSync(require('path').join(__dirname,'../executions.html'),'utf8');const start=source.indexOf('    function azpAttMetrics('),end=source.indexOf('\n    function ',start+5);const r={punch_sessions:[{},{}],punch_in:'10:00',punch_out:'22:00',punch_out_date:'2026-10-06',late:'No',early_exit:'No'};const ctx={azpAttMonthDates:()=>['2026-10-06'],azpAttDayMap:()=>new Map(),azpAttSettings:()=>({work_start:'09:00',work_end:'23:00'}),azpAttDayData:()=>({r,status:'Present',minutes:510,foodEligible:false}),normName:v=>String(v).toLowerCase(),azpAttMinutes:v=>{const [h,m]=v.split(':').map(Number);return h*60+m;}};vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);const m=ctx.azpAttMetrics(master,'2026-10');assert.equal(m.late,0);assert.equal(m.early,0);assert.equal(m.workingMinutes,510);assert.equal(m.present,1);});
 test('Attendance counts all four saved punches and keeps morning Out visible while evening is open',()=>{const fs=require('fs'),vm=require('vm'),src=fs.readFileSync(require('path').join(__dirname,'../executions.html'),'utf8');let record={};const ctx={azpAttMonthDates:()=>['2026-10-06'],azpAttDayMap:()=>new Map(),azpAttSettings:()=>({work_start:'09:00',work_end:'18:00'}),azpAttDayData:()=>({r:record,status:'Present',minutes:record.working_minutes,foodEligible:false}),normName:v=>String(v).toLowerCase(),azpAttMinutes:v=>{const [h,m]=v.split(':').map(Number);return h*60+m;},azpEsc:v=>String(v??''),azpAttDurationText:v=>`${Math.floor(v/60)}h ${v%60}m`};vm.createContext(ctx);for(const name of ['azpAttMetrics','azpAttPunchRowsHtml']){const start=src.indexOf('    function '+name+'('),end=src.indexOf('\n    function ',start+5);vm.runInContext(src.slice(start,end),ctx);}const steps=[['in','10:31','morning',1,0],['out','14:26','morning',1,1],['in','18:04','evening',2,1],['out','22:01','evening',2,2]];for(const [action,time,shift,ins,outs]of steps){record={...record,...P.patch(action,record,master,at('2026-10-06T'+time+':00'),{},[],shift)};const m=ctx.azpAttMetrics(master,'2026-10');assert.equal(m.punchIn,ins);assert.equal(m.punchOut,outs);assert.equal(m.present,1);const html=ctx.azpAttPunchRowsHtml(record);assert.match(html,/10:31/);if(outs)assert.match(html,/14:26/);if(ins===2)assert.match(html,/18:04/);if(outs===2)assert.match(html,/22:01/);}});
+
+test('26 October missed Out does not block 28 October or change old attendance',()=>{
+  const m={...master,id:'sw',indoor_staff_name:'Swagatika'};
+  const old={id:'old',...P.patch('in',{},m,at('2026-10-26T09:40:00'),{},[],'morning'),attendance_status:'Half Day'};
+  const snapshot=JSON.stringify(old),now=at('2026-10-28T10:00:00');
+  assert.equal(P.target([old],m,now),null);
+  assert.deepEqual(P.missedRows([old],m,now),[old]);
+  const today=P.patch('in',{},m,now,{},P.dayRows([old],m,'2026-10-28'),'morning');
+  assert.equal(today.date,'2026-10-28');assert.equal(today.punch_in,'10:00');
+  assert.equal(today.working_minutes,0);assert.equal(JSON.stringify(old),snapshot);
+  assert.equal(P.target([old,{id:'today',...today}],m,now).id,'today');
+});
+test('24 hour boundary, legacy punches, account isolation and current leave are respected',()=>{
+  const old={id:'legacy',module:'attendance',master_id:master.id,date:'2026-10-26',punch_in:'09:40'};
+  assert.equal(P.target([old],master,at('2026-10-27T09:39:00')).id,'legacy');
+  const now=at('2026-10-27T09:40:00');assert.equal(P.target([old],master,now),null);
+  assert.equal(P.missedRows([old],{...master,id:'other'},now).length,0);
+  const leave={module:'attendance',master_id:master.id,date:'2026-10-27',attendance_status:'Absent'};
+  assert.equal(P.target([old,leave],master,now),leave);
+  assert.throws(()=>P.patch('in',leave,master,now,{},[leave]),/Office has marked/);
+});
