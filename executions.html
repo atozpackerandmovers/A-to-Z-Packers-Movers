@@ -6797,5 +6797,29 @@ window.addEventListener('azp-execution-data',e=>acceptMain(e.detail?.rows||[]));
 <script src="owner-score-config.js"></script>
 <script src="execution-owner-score.js?v=20261015-persist1"></script>
 <script type="module" src="execution-owner-score-bootstrap.js?v=20261015-persist1"></script>
+<!-- Direct owner GPS view: reuses the existing panel and GPS authentication. -->
+<style>
+body.azp-direct-gps .sidebar,body.azp-direct-gps .mobile-bottom,
+body.azp-direct-gps .main-content>header{display:none!important}
+body.azp-direct-gps .app-shell{display:block!important}
+body.azp-direct-gps .main-content{width:100%!important;min-height:100dvh}
+body.azp-direct-gps .with-bottom-pad{padding-bottom:0!important}
+body.azp-direct-gps .content-pad{padding:0!important}
+</style>
+<script>
+(()=>{
+  if(new URLSearchParams(location.search).get('view')!=='gps')return;
+  function openGps(){
+    const button=document.querySelector('[data-module="gps"]');
+    if(!button||!document.getElementById('mod-gps'))return;
+    button.click();
+    if(document.getElementById('mod-gps').classList.contains('hidden'))return;
+    document.body.classList.add('azp-direct-gps');
+    document.title='Vehicle GPS | A TO Z Packers & Movers';
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',openGps,{once:true});
+  else openGps();
+})();
+</script>
 </body>
 </html>
